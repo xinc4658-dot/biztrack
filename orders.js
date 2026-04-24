@@ -1,3 +1,17 @@
+// HTML 防注入转义函数
+function escapeHTML(str) {
+    if (typeof str !== 'string') return str;
+    return str.replace(/[&<>'"]/g, function(tag) {
+        const charsToReplace = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            "'": '&#39;',
+            '"': '&quot;'
+        };
+        return charsToReplace[tag] || tag;
+    });
+}
 
 function openSidebar() {
     var side = document.getElementById('sidebar');
@@ -169,21 +183,22 @@ function renderOrders(orders) {
       const formattedTaxes = typeof order.taxes === 'number' ? `$${order.taxes.toFixed(2)}` : '';
       const formattedTotal = typeof order.orderTotal === 'number' ? `$${order.orderTotal.toFixed(2)}` : '';
 
+      
+      // 修改 orders.js 第 165 行附近
       orderRow.innerHTML = `
-        <td>${order.orderID}</td>
-        <td>${order.orderDate}</td>
-        <td>${order.itemName}</td>
-        <td>${formattedPrice}</td>
-        <td>${order.qtyBought}</td>
-        <td>${formattedShipping}</td>
-        <td>${formattedTaxes}</td>
-        <td class="order-total">${formattedTotal}</td>
-        <td>
-            <div class="status ${statusMap[order.orderStatus]}"><span>${order.orderStatus}</span></div>
-        </td>
-        <td class="action">
-            <i title="Edit" onclick="editRow('${order.orderID}')" class="edit-icon fa-solid fa-pen-to-square"></i>
-            <i onclick="deleteOrder('${order.orderID}')" class="delete-icon fas fa-trash-alt"></i>
+          <td>${escapeHTML(order.orderID)}</td>
+          <td>${order.orderDate}</td>
+          <td>${escapeHTML(order.itemName)}</td> <td>${formattedPrice}</td>
+          <td>${order.qtyBought}</td>
+          <td>${formattedShipping}</td>
+          <td>${formattedTaxes}</td>
+          <td class="order-total">${formattedTotal}</td>
+          <td>
+             <div class="status ${statusMap[order.orderStatus]}"><span>${escapeHTML(order.orderStatus)}</span></div>
+          </td>
+          <td class="action">
+              <i title="Edit" onclick="editRow('${escapeHTML(order.orderID)}')" class="edit-icon fa-solid fa-pen-to-square"></i>
+              <i onclick="deleteOrder('${escapeHTML(order.orderID)}')" class="delete-icon fas fa-trash-alt"></i>
           </td> 
       `;
       orderTableBody.appendChild(orderRow);

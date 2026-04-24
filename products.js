@@ -1,3 +1,17 @@
+// HTML 防注入转义函数
+function escapeHTML(str) {
+    if (typeof str !== 'string') return str;
+    return str.replace(/[&<>'"]/g, function(tag) {
+        const charsToReplace = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            "'": '&#39;',
+            '"': '&quot;'
+        };
+        return charsToReplace[tag] || tag;
+    });
+}
 
 function openSidebar() {
   var side = document.getElementById('sidebar');
@@ -135,15 +149,14 @@ function renderProducts(products) {
       prodRow.dataset.prodSold = product.prodSold;
 
       prodRow.innerHTML = `
-          <td>${product.prodID}</td>
-          <td>${product.prodName}</td>
-          <td>${product.prodDesc}</td>
-          <td>${product.prodCat}</td>
+          <td>${escapeHTML(product.prodID)}</td>
+          <td>${escapeHTML(product.prodName)}</td>
+          <td>${escapeHTML(product.prodDesc)}</td> <td>${escapeHTML(product.prodCat)}</td>
           <td>$${product.prodPrice.toFixed(2)}</td>
           <td>${product.prodSold}</td>
           <td class="action">
-            <i title="Edit" onclick="editRow('${product.prodID}')" class="edit-icon fa-solid fa-pen-to-square"></i>
-            <i onclick="deleteProduct('${product.prodID}')" class="delete-icon fas fa-trash-alt"></i>
+          <i title="Edit" onclick="editRow('${escapeHTML(product.prodID)}')" class="edit-icon fa-solid fa-pen-to-square"></i>
+          <i onclick="deleteProduct('${escapeHTML(product.prodID)}')" class="delete-icon fas fa-trash-alt"></i>
           </td>
       `;
       prodTableBody.appendChild(prodRow);

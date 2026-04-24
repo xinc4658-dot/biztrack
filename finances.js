@@ -1,3 +1,17 @@
+// HTML 防注入转义函数
+function escapeHTML(str) {
+    if (typeof str !== 'string') return str;
+    return str.replace(/[&<>'"]/g, function(tag) {
+        const charsToReplace = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            "'": '&#39;',
+            '"': '&quot;'
+        };
+        return charsToReplace[tag] || tag;
+    });
+}
 
 function openSidebar() {
     var side = document.getElementById('sidebar');
@@ -135,10 +149,9 @@ function renderTransactions(transactions) {
         transactionRow.innerHTML = `
             <td>${transaction.trID}</td>
             <td>${transaction.trDate}</td>
-            <td>${transaction.trCategory}</td>
+            <td>${escapeHTML(transaction.trCategory)}</td>
             <td class="tr-amount">${formattedAmount}</td>
-            <td>${transaction.trNotes}</td>
-            <td class="action">
+            <td>${escapeHTML(transaction.trNotes)}</td> <td class="action">
                 <i title="Edit" onclick="editRow('${transaction.trID}')" class="edit-icon fa-solid fa-pen-to-square"></i>
                 <i onclick="deleteTransaction('${transaction.trID}')" class="delete-icon fas fa-trash-alt"></i>
             </td> 
