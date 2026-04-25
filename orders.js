@@ -1,4 +1,3 @@
-// HTML 防注入转义函数
 function escapeHTML(str) {
     if (typeof str !== 'string') return str;
     return str.replace(/[&<>'"]/g, function(tag) {
@@ -184,7 +183,6 @@ function renderOrders(orders) {
       const formattedTotal = typeof order.orderTotal === 'number' ? `$${order.orderTotal.toFixed(2)}` : '';
 
       
-      // 修改 orders.js 第 165 行附近
       orderRow.innerHTML = `
           <td>${escapeHTML(order.orderID)}</td>
           <td>${order.orderDate}</td>

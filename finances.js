@@ -1,4 +1,3 @@
-// HTML 防注入转义函数
 function escapeHTML(str) {
     if (typeof str !== 'string') return str;
     return str.replace(/[&<>'"]/g, function(tag) {
