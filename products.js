@@ -1,4 +1,3 @@
-
 function openSidebar() {
   var side = document.getElementById('sidebar');
   side.style.display = (side.style.display === "block") ? "none" : "block";
@@ -136,10 +135,10 @@ function renderProducts(products) {
       prodRow.dataset.prodPrice = product.prodPrice;
       prodRow.dataset.prodSold = product.prodSold;
 
-      // 翻译产品名称和类别
-      const translatedName = translateProductName(product.prodName);
-      const translatedCat = translateProductCategory(product.prodCat);
-      
+      // 翻译产品名称和类别 - 使用i18n.js中的函数
+      const translatedName = typeof translateProductName === 'function' ? translateProductName(product.prodName) : product.prodName;
+      const translatedCat = window.t(`products.${product.prodCat.toLowerCase()}`) || product.prodCat;
+
       prodRow.innerHTML = `
           <td>${product.prodID}</td>
           <td>${translatedName}</td>
@@ -216,93 +215,152 @@ function isDuplicateID(prodID, currentID) {
     return products.some(product => product.prodID === prodID && product.prodID !== currentID);
 }
 
-// 翻译产品名称
-function translateProductName(name) {
-  if (!name) return name;
+// ==================== 新增/修改的智能联动逻辑开始 ====================
+
+// 产品名称与类别的映射
+const productCategoryMap = {
+  'Baseball caps': 'Hats',
+  'Snapbacks': 'Hats',
+  'Beanies': 'Hats',
+  'Bucket hats': 'Hats',
+  'Mugs': 'Drinkware',
+  'Water bottles': 'Drinkware',
+  'Tumblers': 'Drinkware',
+  'T-shirts': 'Clothing',
+  'Sweatshirts': 'Clothing',
+  'Hoodies': 'Clothing',
+  'Pillow cases': 'Accessories',
+  'Tote bags': 'Accessories',
+  'Stickers': 'Accessories',
+  'Posters': 'Home decor',
+  'Framed posters': 'Home decor',
+  'Canvas prints': 'Home decor'
+};
+
+// 保存原始的选项HTML结构，用于恢复
+let originalProductOptionsHTML = '';
+
+document.addEventListener('DOMContentLoaded', function() {
+  const productNameSelect = document.getElementById('product-name');
+  const productCategorySelect = document.getElementById('product-cat');
   
-  // 获取当前语言，优先使用i18n.js中的currentLanguage变量
-  let currentLang = 'en';
-  if (typeof currentLanguage !== 'undefined') {
-    currentLang = currentLanguage;
-  } else {
-    currentLang = localStorage.getItem('bizTrackLanguage') || 'en';
+  if (productNameSelect && productCategorySelect) {
+    // 保存原始的选项结构 (等待一小会儿确保 i18n 已经渲染过一次)
+    setTimeout(() => {
+        originalProductOptionsHTML = productNameSelect.innerHTML;
+    }, 150);
+
+    // 1. 当选择了一个具体产品时，自动填充产品类别
+    productNameSelect.addEventListener('change', function() {
+      const selectedProduct = this.value;
+      if (productCategoryMap[selectedProduct]) {
+        productCategorySelect.value = productCategoryMap[selectedProduct];
+      }
+    });
+
+    // 2. 当选择了产品类别时，智能排序产品名称
+    productCategorySelect.addEventListener('change', function() {
+      const selectedCategory = this.value;
+      smartSortProductOptions(selectedCategory, productNameSelect);
+    });
   }
+});
+
+/**
+ * 智能排序产品名称选项
+ * @param {string} selectedCategory - 当前选中的类别
+ * @param {HTMLSelectElement} productNameSelect - 产品名称选择器元素
+ */
+function smartSortProductOptions(selectedCategory, productNameSelect) {
+  // 如果还没保存原始结构，先保存
+  if (!originalProductOptionsHTML) {
+    originalProductOptionsHTML = productNameSelect.innerHTML;
+  }
+
+  const currentValue = productNameSelect.value;
   
-  // 产品名称翻译映射
-  const translations = {
-    en: {
-      'Baseball caps': 'Baseball caps',
-      'Snapbacks': 'Snapbacks',
-      'Beanies': 'Beanies',
-      'Bucket hats': 'Bucket hats',
-      'Mugs': 'Mugs',
-      'Water bottles': 'Water bottles',
-      'Tumblers': 'Tumblers',
-      'T-shirts': 'T-shirts',
-      'Sweatshirts': 'Sweatshirts',
-      'Hoodies': 'Hoodies',
-      'Pillow cases': 'Pillow cases',
-      'Tote bags': 'Tote bags',
-      'Stickers': 'Stickers',
-      'Posters': 'Posters',
-      'Framed posters': 'Framed posters',
-      'Canvas prints': 'Canvas prints'
-    },
-    zh: {
-      'Baseball caps': '棒球帽',
-      'Snapbacks': '平沿帽',
-      'Beanies': '无檐便帽',
-      'Bucket hats': '渔夫帽',
-      'Mugs': '马克杯',
-      'Water bottles': '水瓶',
-      'Tumblers': '平底杯',
-      'T-shirts': 'T恤',
-      'Sweatshirts': '运动衫',
-      'Hoodies': '连帽衫',
-      'Pillow cases': '枕套',
-      'Tote bags': '托特包',
-      'Stickers': '贴纸',
-      'Posters': '海报',
-      'Framed posters': '装裱海报',
-      'Canvas prints': '帆布画'
+  // 1. 检查当前选中的产品是否属于新类别，如果不属于则清空
+  if (currentValue && productCategoryMap[currentValue] !== selectedCategory) {
+    productNameSelect.value = "";
+  }
+
+  // 2. 创建一个临时容器来存放新的顺序
+  const tempContainer = document.createElement('div');
+  
+  // 3. 先复制一份原始的选项
+  tempContainer.innerHTML = originalProductOptionsHTML;
+  
+  // 4. 获取所有的 optgroup
+  const optgroups = tempContainer.querySelectorAll('optgroup');
+  
+  // 5. 创建文档片段用于重新组装
+  const fragment = document.createDocumentFragment();
+  
+  // 6. 先把"请选择产品"的默认选项放回去
+  const firstOption = tempContainer.querySelector('option[value=""][disabled]');
+  if (firstOption) {
+    fragment.appendChild(firstOption.cloneNode(true));
+  }
+
+  // 7. 如果选中了类别，找到对应的 optgroup 并优先放在最前面
+  if (selectedCategory) {
+    let priorityOptgroup = null;
+    
+    // 遍历寻找匹配的 optgroup
+    for (let optgroup of optgroups) {
+      // 这里我们通过 value 映射来反向查找，或者直接比较 label
+      // 为了兼容 i18n，我们检查该组下的第一个产品属于哪个类别
+      const firstOptionInGroup = optgroup.querySelector('option');
+      if (firstOptionInGroup && productCategoryMap[firstOptionInGroup.value] === selectedCategory) {
+        priorityOptgroup = optgroup;
+        break;
+      }
     }
-  };
+
+    if (priorityOptgroup) {
+      fragment.appendChild(priorityOptgroup.cloneNode(true));
+      
+      // 添加一个分隔线
+      const separator = document.createElement('option');
+      separator.disabled = true;
+      separator.textContent = '──────────────';
+      fragment.appendChild(separator);
+    }
+  }
+
+  // 8. 添加所有其他的 optgroup（保持默认顺序）
+  for (let optgroup of optgroups) {
+    // 检查是否已经添加过了 (通过检查该组的第一个选项值是否已存在)
+    const firstOptionVal = optgroup.querySelector('option')?.value;
+    const isAlreadyAdded = fragment.querySelector(`option[value="${firstOptionVal}"]`);
+    
+    if (!isAlreadyAdded) {
+      fragment.appendChild(optgroup.cloneNode(true));
+    }
+  }
+
+  // 9. 清空并重新填充选择器
+  productNameSelect.innerHTML = '';
+  productNameSelect.appendChild(fragment);
   
-  return translations[currentLang][name] || name;
+  // 10. 重新触发 i18n 翻译，确保新插入的元素文字是对的
+  if (typeof updateTranslations === 'function') {
+     // 只翻译这个 select 内部，避免副作用
+     const selectOptions = productNameSelect.querySelectorAll('option[data-i18n], optgroup[data-i18n]');
+     selectOptions.forEach(el => {
+         const key = el.getAttribute('data-i18n');
+         if (key && window.t) {
+             if (el.tagName === 'OPTGROUP') {
+                 el.label = window.t(key);
+             } else {
+                 el.textContent = window.t(key);
+             }
+         }
+     });
+  }
 }
 
-// 翻译产品类别
-function translateProductCategory(category) {
-  if (!category) return category;
-  
-  // 获取当前语言，优先使用i18n.js中的currentLanguage变量
-  let currentLang = 'en';
-  if (typeof currentLanguage !== 'undefined') {
-    currentLang = currentLanguage;
-  } else {
-    currentLang = localStorage.getItem('bizTrackLanguage') || 'en';
-  }
-  
-  // 产品类别翻译映射
-  const translations = {
-    en: {
-      'Hats': 'Hats',
-      'Drinkware': 'Drinkware',
-      'Clothing': 'Clothing',
-      'Accessories': 'Accessories',
-      'Home decor': 'Home decor'
-    },
-    zh: {
-      'Hats': '帽子',
-      'Drinkware': '饮具',
-      'Clothing': '服装',
-      'Accessories': '配饰',
-      'Home decor': '家居装饰'
-    }
-  };
-  
-  return translations[currentLang][category] || category;
-}
+// ==================== 新增/修改的智能联动逻辑结束 ====================
 
 function sortTable(column) {
     const tbody = document.getElementById("tableBody");

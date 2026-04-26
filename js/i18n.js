@@ -64,6 +64,25 @@ const translations = {
       save: "Save",
       cancel: "Cancel"
     },
+    // 产品名称翻译映射
+    productNames: {
+      "Baseball caps": "Baseball caps",
+      "Snapbacks": "Snapbacks",
+      "Beanies": "Beanies",
+      "Bucket hats": "Bucket hats",
+      "Mugs": "Mugs",
+      "Water bottles": "Water bottles",
+      "Tumblers": "Tumblers",
+      "T-shirts": "T-shirts",
+      "Sweatshirts": "Sweatshirts",
+      "Hoodies": "Hoodies",
+      "Pillow cases": "Pillow cases",
+      "Tote bags": "Tote bags",
+      "Stickers": "Stickers",
+      "Posters": "Posters",
+      "Framed posters": "Framed posters",
+      "Canvas prints": "Canvas prints"
+    },
     orders: {
       addOrder: "Add Order",
       exportCSV: "Export to CSV",
@@ -241,6 +260,25 @@ const translations = {
       save: "保存",
       cancel: "取消"
     },
+    // 产品名称翻译映射
+    productNames: {
+      "Baseball caps": "棒球帽",
+      "Snapbacks": "平沿帽",
+      "Beanies": "无檐便帽",
+      "Bucket hats": "渔夫帽",
+      "Mugs": "马克杯",
+      "Water bottles": "水瓶",
+      "Tumblers": "平底杯",
+      "T-shirts": "T恤",
+      "Sweatshirts": "运动衫",
+      "Hoodies": "连帽衫",
+      "Pillow cases": "枕套",
+      "Tote bags": "托特包",
+      "Stickers": "贴纸",
+      "Posters": "海报",
+      "Framed posters": "装裱海报",
+      "Canvas prints": "帆布画"
+    },
     orders: {
       addOrder: "添加订单",
       exportCSV: "导出为CSV",
@@ -306,7 +344,7 @@ const translations = {
 };
 
 // 获取翻译文本
-function t(key) {
+window.t = function(key) {
   const keys = key.split('.');
   let value = translations[currentLanguage];
 
@@ -320,6 +358,17 @@ function t(key) {
 
   return value;
 }
+
+// 获取产品名称的翻译
+window.translateProductName = function(name) {
+  if (!name) return name;
+  
+  // 获取当前语言的产品名称翻译
+  const productNames = translations[currentLanguage].productNames;
+  
+  // 如果找到翻译则返回，否则返回原始名称
+  return productNames && productNames[name] ? productNames[name] : name;
+};
 
 // 更新日期选择器的语言
 function updateDatePickers() {
@@ -354,11 +403,11 @@ function updateDatePickers() {
 
 // 更新页面上的所有翻译
 function updateTranslations() {
-  // 更新带有data-i18n属性的元素
-  const elements = document.querySelectorAll('[data-i18n]');
+  // 更新带有data-i18n属性的元素 (排除 option 和 optgroup，防止内部选项被清空)
+  const elements = document.querySelectorAll('[data-i18n]:not(option):not(optgroup)');
   elements.forEach(element => {
     const key = element.getAttribute('data-i18n');
-    const translation = t(key);
+    const translation = window.t(key);
     if (translation) {
       // 检查元素是否有子元素（除了文本节点）
       const hasChildElements = Array.from(element.childNodes).some(node => 
@@ -379,7 +428,7 @@ function updateTranslations() {
   const placeholderElements = document.querySelectorAll('[data-i18n-placeholder]');
   placeholderElements.forEach(element => {
     const key = element.getAttribute('data-i18n-placeholder');
-    const translation = t(key);
+    const translation = window.t(key);
     if (translation) {
       element.placeholder = translation;
     }
@@ -391,17 +440,19 @@ function updateTranslations() {
     const options = select.querySelectorAll('option[data-i18n]');
     options.forEach(option => {
       const key = option.getAttribute('data-i18n');
-      const translation = t(key);
-      if (translation) {
+      const translation = window.t(key);
+      // 只有当翻译存在且不是原始键时才更新文本内容
+      if (translation && translation !== key) {
         option.textContent = translation;
       }
+      // 如果翻译失败或与原始键相同，保持原始文本内容不变
     });
 
     // 更新optgroup的翻译
     const optgroups = select.querySelectorAll('optgroup[data-i18n]');
     optgroups.forEach(optgroup => {
       const key = optgroup.getAttribute('data-i18n');
-      const translation = t(key);
+      const translation = window.t(key);
       if (translation) {
         optgroup.label = translation;
       }
@@ -412,7 +463,7 @@ function updateTranslations() {
   const titleElements = document.querySelectorAll('[data-i18n-title]');
   titleElements.forEach(element => {
     const key = element.getAttribute('data-i18n-title');
-    const translation = t(key);
+    const translation = window.t(key);
     if (translation) {
       element.title = translation;
     }
