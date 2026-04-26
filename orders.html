@@ -9,6 +9,7 @@
     <meta property="og:url" content="https://sumusa.github.io/biztrack/"/>
     <link rel="stylesheet" href="./styles.css"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css"/>
     <link rel="icon" type="image/x-icon" href="./assets/favicon.ico">
     <title>Orders - BizTrack</title>
 </head>
@@ -25,37 +26,37 @@
             <li>
                 <a href="./index.html">
                     <i class="fa-solid fa-gauge-high"></i>
-                    <span>Dashboard</span>
+                    <span data-i18n="sidebar.dashboard">Dashboard</span>
                 </a>
             </li>
             <li>
                 <a href="./products.html">
                     <i class="fas fa-dolly"></i>
-                    <span>Products</span>
+                    <span data-i18n="sidebar.products">Products</span>
                 </a>
             </li>
             <li class="active">
                 <a href="./orders.html">
                     <i class="fas fa-shopping-cart"></i>
-                    <span>Orders</span>
+                    <span data-i18n="sidebar.orders">Orders</span>
                 </a>
             </li>
             <li>
                 <a href="./finances.html">
                     <i class="fas fa-sack-dollar"></i>
-                    <span>Expenses</span>
+                    <span data-i18n="sidebar.expenses">Expenses</span>
                 </a>
             </li>
             <li>
                 <a href="./help.html">
                     <i class="fas fa-question-circle"></i>
-                    <span>Help</span>
+                    <span data-i18n="sidebar.help">Help</span>
                 </a>
             </li>
             <li class="logout">
                 <a href="./about.html">
                     <i class="fa-solid fa-users-line"></i>
-                    <span>Meet the Developer</span>
+                    <span data-i18n="sidebar.meetDeveloper">Meet the Developer</span>
                 </a>
             </li>
         </ul>
@@ -68,23 +69,28 @@
             </div>
             <div class="header-title">
                 <!-- <span>Primary</span> -->
-                <h2>Orders</h2>
+                <h2 data-i18n="sidebar.orders">Orders</h2>
             </div>
             <div class="user-info">
                 <div class="search-box">
                     <i class="fas fa-search"></i>
-                    <input type="search" id="searchInput" placeholder="Search">
+                    <input type="search" id="searchInput" placeholder="Search" data-i18n-placeholder="common.search">
                 </div>
-                <!-- <i class="fas fa-user-alt fa-xl"></i> -->
+                <div class="language-switcher">
+                    <select id="languageSelector">
+                        <option value="en">English</option>
+                        <option value="zh">中文</option>
+                    </select>
+                </div>
             </div>
         </div>
 
         <div class="table-wrapper">
             <div class="product-title">
-                <h3 class="main-title">Orders</h3>
+                <h3 class="main-title" data-i18n="sidebar.orders">Orders</h3>
                 <div class="order-button">
-                    <button class="add-button" onclick="openForm()">Add Order</button>
-                    <button class="download-button" onclick="exportToCSV()">Export to CSV</button>
+                    <button class="add-button" onclick="openForm()" data-i18n="orders.addOrder">Add Order</button>
+                    <button class="download-button" onclick="exportToCSV()" data-i18n="orders.exportCSV">Export to CSV</button>
                 </div>
             </div>
 
@@ -93,76 +99,76 @@
                     <div class="form-columns">
 
                         <div class="order-first-col">
-                            <label for="order-id"><b>Order ID: </b></label>
+                            <label for="order-id"><b data-i18n="orders.orderId">Order ID: </b></label>
                             <input type="text" id="order-id" placeholder="1001" required>
 
-                            <label for="order-date"><b>Order Date: </b></label>
-                            <input type="date" id="order-date" required>
+                            <label for="order-date"><b data-i18n="orders.orderDate">Order Date: </b></label>
+                            <input type="text" id="order-date" placeholder="YYYY-MM-DD" required>
 
-                            <label for="item-name"><b>Item Name: </b></label>
+                            <label for="item-name"><b data-i18n="orders.itemName">Item Name: </b></label>
                             <select name="item-name" id="item-name" required>
-                                <option value="" disabled selected hidden>Choose an item</option>
-                                <optgroup label="Hats">
-                                    <option value="Baseball caps">Baseball caps</option>
-                                    <option value="Snapbacks">Snapbacks</option>
-                                    <option value="Beanies">Beanies</option>
-                                    <option value="Bucket hats">Bucket hats</option>
+                                <option value="" disabled selected hidden data-i18n="orders.chooseItem">Choose an item</option>
+                                <optgroup label="Hats" data-i18n="products.hats">
+                                    <option value="Baseball caps" data-i18n="products.baseballCaps">Baseball caps</option>
+                                    <option value="Snapbacks" data-i18n="products.snapbacks">Snapbacks</option>
+                                    <option value="Beanies" data-i18n="products.beanies">Beanies</option>
+                                    <option value="Bucket hats" data-i18n="products.bucketHats">Bucket hats</option>
                                 </optgroup>
-                                <optgroup label="Drinkware">
-                                    <option value="Mugs">Mugs</option>
-                                    <option value="Water bottles">Water bottles</option>
-                                    <option value="Tumblers">Tumblers</option>
+                                <optgroup label="Drinkware" data-i18n="products.drinkware">
+                                    <option value="Mugs" data-i18n="products.mugs">Mugs</option>
+                                    <option value="Water bottles" data-i18n="products.waterBottles">Water bottles</option>
+                                    <option value="Tumblers" data-i18n="products.tumblers">Tumblers</option>
                                 </optgroup>   
-                                <optgroup label="Clothing">
-                                    <option value="T-shirts">T-shirts</option>
-                                    <option value="Sweatshirts">Sweatshirts</option>
-                                    <option value="Hoodies">Hoodies</option>
+                                <optgroup label="Clothing" data-i18n="products.clothing">
+                                    <option value="T-shirts" data-i18n="products.tshirts">T-shirts</option>
+                                    <option value="Sweatshirts" data-i18n="products.sweatshirts">Sweatshirts</option>
+                                    <option value="Hoodies" data-i18n="products.hoodies">Hoodies</option>
                                 </optgroup>   
-                                <optgroup label="Accessories">
-                                    <option value="Pillow cases">Pillow cases</option>
-                                    <option value="Tote bags">Tote bags</option>
-                                    <option value="Stickers">Stickers</option>
+                                <optgroup label="Accessories" data-i18n="products.accessories">
+                                    <option value="Pillow cases" data-i18n="products.pillowCases">Pillow cases</option>
+                                    <option value="Tote bags" data-i18n="products.toteBags">Tote bags</option>
+                                    <option value="Stickers" data-i18n="products.stickers">Stickers</option>
                                 </optgroup>   
-                                <optgroup label="Home decor">
-                                    <option value="Posters">Posters</option>
-                                    <option value="Framed posters">Framed posters</option>
-                                    <option value="Canvas prints">Canvas prints</option>
+                                <optgroup label="Home decor" data-i18n="products.homeDecor">
+                                    <option value="Posters" data-i18n="products.posters">Posters</option>
+                                    <option value="Framed posters" data-i18n="products.framedPosters">Framed posters</option>
+                                    <option value="Canvas prints" data-i18n="products.canvasPrints">Canvas prints</option>
                                 </optgroup>
                             </select>
                         </div>
 
                         <div class="order-second-col">
-                            <label for="item-price"><b>Item Price:</b></label>
+                            <label for="item-price"><b data-i18n="orders.itemPrice">Item Price:</b></label>
                             <input type="number" id="item-price" placeholder="$0.00" min="0.00" max="10000.00" step="0.01" required>
 
-                            <label for="qty-bought"><b>Quantity Bought:</b></label>
+                            <label for="qty-bought"><b data-i18n="orders.quantityBought">Quantity Bought:</b></label>
                             <input type="number" id="qty-bought" placeholder="1" required>
 
-                            <label for="shipping"><b>Shipping fee:</b></label>
+                            <label for="shipping"><b data-i18n="orders.shippingFee">Shipping fee:</b></label>
                             <input type="number" id="shipping" placeholder="$2.00" min="0.00" max="10000.00" step="0.01" required>
                         </div>
 
                         <div class="order-third-col">
-                            <label for="taxes"><b>Taxes (VAT/GST/HST):</b></label>
+                            <label for="taxes"><b data-i18n="orders.taxes">Taxes (VAT/GST/HST):</b></label>
                             <input type="number" id="taxes" placeholder="$2.00" min="0.00" max="10000.00" step="0.01" required>
 
-                            <label for="order-status"><b>Order Status:</b></label>
+                            <label for="order-status"><b data-i18n="orders.orderStatus">Order Status:</b></label>
                             <select name="order-status" id="order-status" required>
-                                <option value="" disabled selected hidden>Choose a status</option>
-                                <option value="Pending" class="pending">Pending</option>
-                                <option value="Processing" class="processing">Processing</option>
-                                <option value="Shipped" class="shipped">Shipped</option>
-                                <option value="Delivered" class="delivered">Delivered</option>
+                                <option value="" disabled selected hidden data-i18n="orders.chooseStatus">Choose a status</option>
+                                <option value="Pending" class="pending" data-i18n="orders.pending">Pending</option>
+                                <option value="Processing" class="processing" data-i18n="orders.processing">Processing</option>
+                                <option value="Shipped" class="shipped" data-i18n="orders.shipped">Shipped</option>
+                                <option value="Delivered" class="delivered" data-i18n="orders.delivered">Delivered</option>
                             </select>
 
-                            <label for="order-total"><b>Total Order Amount: <small>(Calculated)</small></b></label>
+                            <label for="order-total"><b data-i18n="orders.totalOrderAmount">Total Order Amount: <small data-i18n="orders.calculated">(Calculated)</small></b></label>
                             <input type="number" id="order-total" placeholder="$0.00" min="0.00" max="10000.00" step="0.01" disabled>
                         </div>
                     </div>
                     
                     <div class="button-col">
-                        <button type="submit" class="btn" id="submitBtn">Add</button>
-                        <button type="button" class="btn cancel" onclick="closeForm()">Cancel</button>
+                        <button type="submit" class="btn" id="submitBtn" data-i18n="orders.save">Add</button>
+                        <button type="button" class="btn cancel" onclick="closeForm()" data-i18n="orders.cancel">Cancel</button>
                     </div>
                 </form>
             </div>
@@ -171,16 +177,16 @@
                 <table id="order-table">
                     <thead>
                         <tr>
-                            <th onclick="sortTable('orderID')">Order ID</th>
-                            <th onclick="sortTable('orderDate')">Order Date</th>
-                            <th onclick="sortTable('itemName')">Item Name</th>
-                            <th onclick="sortTable('itemPrice')">Item Price</th>
-                            <th onclick="sortTable('qtyBought')">Qty</th>
-                            <th onclick="sortTable('shipping')">Shipping Fee</th>
-                            <th onclick="sortTable('taxes')">Taxes</th>
-                            <th onclick="sortTable('orderTotal')">Order Total</th>
-                            <th onclick="sortTable('orderStatus')">Order Status</th>
-                            <th>Action</th>
+                            <th onclick="sortTable('orderID')" data-i18n="orders.orderId">Order ID</th>
+                            <th onclick="sortTable('orderDate')" data-i18n="orders.orderDate">Order Date</th>
+                            <th onclick="sortTable('itemName')" data-i18n="orders.itemName">Item Name</th>
+                            <th onclick="sortTable('itemPrice')" data-i18n="orders.itemPrice">Item Price</th>
+                            <th onclick="sortTable('qtyBought')" data-i18n="orders.quantityBought">Qty</th>
+                            <th onclick="sortTable('shipping')" data-i18n="orders.shippingFee">Shipping Fee</th>
+                            <th onclick="sortTable('taxes')" data-i18n="orders.taxes">Taxes</th>
+                            <th onclick="sortTable('orderTotal')" data-i18n="orders.totalOrderAmount">Order Total</th>
+                            <th onclick="sortTable('orderStatus')" data-i18n="orders.orderStatus">Order Status</th>
+                            <th data-i18n="common.action">Action</th>
                         </tr>
                     </thead>
                     <tbody id="tableBody">
@@ -197,6 +203,9 @@
         </div>
     </div>
 
+    <script src="./js/i18n.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/zh.js"></script>
     <script src="./orders.js"></script>
 </body>
 </html>

@@ -76,10 +76,12 @@ function init() {
 }
 
 function addOrUpdate(event) {
-  let type = document.getElementById("submitBtn").textContent;
-  if (type === 'Add') {
+  const submitBtn = document.getElementById("submitBtn");
+  // 检查按钮的data-i18n属性来确定操作类型
+  const i18nKey = submitBtn.getAttribute('data-i18n');
+  if (i18nKey === 'products.save' && !submitBtn.dataset.isEdit) {
       newProduct(event);
-  } else if (type === 'Update'){
+  } else {
       const prodID = document.getElementById("product-id").value;
       updateProduct(prodID);
   }
@@ -134,11 +136,15 @@ function renderProducts(products) {
       prodRow.dataset.prodPrice = product.prodPrice;
       prodRow.dataset.prodSold = product.prodSold;
 
+      // 翻译产品名称和类别
+      const translatedName = translateProductName(product.prodName);
+      const translatedCat = translateProductCategory(product.prodCat);
+      
       prodRow.innerHTML = `
           <td>${product.prodID}</td>
-          <td>${product.prodName}</td>
+          <td>${translatedName}</td>
           <td>${product.prodDesc}</td>
-          <td>${product.prodCat}</td>
+          <td>${translatedCat}</td>
           <td>$${product.prodPrice.toFixed(2)}</td>
           <td>${product.prodSold}</td>
           <td class="action">
@@ -160,7 +166,7 @@ function editRow(prodID) {
   document.getElementById("product-price").value = productToEdit.prodPrice;
   document.getElementById("product-sold").value = productToEdit.prodSold;
 
-  document.getElementById("submitBtn").textContent = "Update";
+  document.getElementById("submitBtn").dataset.isEdit = true;
 
   document.getElementById("product-form").style.display = "block";
 }
@@ -202,12 +208,100 @@ function updateProduct(prodID) {
         renderProducts(products);
 
         document.getElementById("product-form").reset();
-        document.getElementById("submitBtn").textContent = "Add";
+        document.getElementById("submitBtn").dataset.isEdit = false;
     }
 }
 
 function isDuplicateID(prodID, currentID) {
     return products.some(product => product.prodID === prodID && product.prodID !== currentID);
+}
+
+// 翻译产品名称
+function translateProductName(name) {
+  if (!name) return name;
+  
+  // 获取当前语言，优先使用i18n.js中的currentLanguage变量
+  let currentLang = 'en';
+  if (typeof currentLanguage !== 'undefined') {
+    currentLang = currentLanguage;
+  } else {
+    currentLang = localStorage.getItem('bizTrackLanguage') || 'en';
+  }
+  
+  // 产品名称翻译映射
+  const translations = {
+    en: {
+      'Baseball caps': 'Baseball caps',
+      'Snapbacks': 'Snapbacks',
+      'Beanies': 'Beanies',
+      'Bucket hats': 'Bucket hats',
+      'Mugs': 'Mugs',
+      'Water bottles': 'Water bottles',
+      'Tumblers': 'Tumblers',
+      'T-shirts': 'T-shirts',
+      'Sweatshirts': 'Sweatshirts',
+      'Hoodies': 'Hoodies',
+      'Pillow cases': 'Pillow cases',
+      'Tote bags': 'Tote bags',
+      'Stickers': 'Stickers',
+      'Posters': 'Posters',
+      'Framed posters': 'Framed posters',
+      'Canvas prints': 'Canvas prints'
+    },
+    zh: {
+      'Baseball caps': '棒球帽',
+      'Snapbacks': '平沿帽',
+      'Beanies': '无檐便帽',
+      'Bucket hats': '渔夫帽',
+      'Mugs': '马克杯',
+      'Water bottles': '水瓶',
+      'Tumblers': '平底杯',
+      'T-shirts': 'T恤',
+      'Sweatshirts': '运动衫',
+      'Hoodies': '连帽衫',
+      'Pillow cases': '枕套',
+      'Tote bags': '托特包',
+      'Stickers': '贴纸',
+      'Posters': '海报',
+      'Framed posters': '装裱海报',
+      'Canvas prints': '帆布画'
+    }
+  };
+  
+  return translations[currentLang][name] || name;
+}
+
+// 翻译产品类别
+function translateProductCategory(category) {
+  if (!category) return category;
+  
+  // 获取当前语言，优先使用i18n.js中的currentLanguage变量
+  let currentLang = 'en';
+  if (typeof currentLanguage !== 'undefined') {
+    currentLang = currentLanguage;
+  } else {
+    currentLang = localStorage.getItem('bizTrackLanguage') || 'en';
+  }
+  
+  // 产品类别翻译映射
+  const translations = {
+    en: {
+      'Hats': 'Hats',
+      'Drinkware': 'Drinkware',
+      'Clothing': 'Clothing',
+      'Accessories': 'Accessories',
+      'Home decor': 'Home decor'
+    },
+    zh: {
+      'Hats': '帽子',
+      'Drinkware': '饮具',
+      'Clothing': '服装',
+      'Accessories': '配饰',
+      'Home decor': '家居装饰'
+    }
+  };
+  
+  return translations[currentLang][category] || category;
 }
 
 function sortTable(column) {
@@ -251,6 +345,30 @@ function performSearch() {
 
 
 function exportToCSV() {
+  const currentLanguage = localStorage.getItem('bizTrackLanguage') || 'en';
+
+  // 根据当前语言获取表头翻译
+  const headerTranslations = {
+    en: {
+      prodID: 'Product ID',
+      prodName: 'Product Name',
+      prodDesc: 'Product Description',
+      prodCategory: 'Product Category',
+      prodPrice: 'Product Price',
+      QtySold: 'Quantity Sold'
+    },
+    zh: {
+      prodID: '产品ID',
+      prodName: '产品名称',
+      prodDesc: '产品描述',
+      prodCategory: '产品类别',
+      prodPrice: '产品价格',
+      QtySold: '销售数量'
+    }
+  };
+
+  const headers = headerTranslations[currentLanguage];
+
   const productsToExport = products.map(product => {
       return {
         prodID: product.prodID,
@@ -262,13 +380,20 @@ function exportToCSV() {
       };
   });
 
-  const csvContent = generateCSV(productsToExport);
+  const csvContent = generateCSV(productsToExport, headers);
 
-  const blob = new Blob([csvContent], { type: 'text/csv' });
+  // 使用TextEncoder处理编码问题
+  const encoder = new TextEncoder();
+  const BOM = new Uint8Array([0xEF, 0xBB, 0xBF]);
+  const csvBytes = encoder.encode(csvContent);
+  const csvWithBOM = new Uint8Array(BOM.length + csvBytes.length);
+  csvWithBOM.set(BOM, 0);
+  csvWithBOM.set(csvBytes, BOM.length);
+  const blob = new Blob([csvWithBOM], { type: 'text/csv;charset=utf-8' });
 
   const link = document.createElement('a');
   link.href = window.URL.createObjectURL(blob);
-  link.download = 'biztrack_product_table.csv';
+  link.download = currentLanguage === 'zh' ? 'biztrack_产品表.csv' : 'biztrack_product_table.csv';
 
   document.body.appendChild(link);
   link.click();
@@ -276,11 +401,20 @@ function exportToCSV() {
   document.body.removeChild(link);
 }
 
-function generateCSV(data) {
-  const headers = Object.keys(data[0]).join(',');
+function generateCSV(data, headers) {
+  const headerRow = Object.keys(headers).map(key => headers[key]).join(',');
   const rows = data.map(order => Object.values(order).join(','));
 
-  return `${headers}\n${rows.join('\n')}`;
+  return `${headerRow}\n${rows.join('\n')}`;
 }
 
-init();
+// 确保在DOM加载完成后再初始化
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', function() {
+    // 等待i18n.js初始化完成
+    setTimeout(init, 100);
+  });
+} else {
+  // DOM已经加载完成，等待i18n.js初始化完成
+  setTimeout(init, 100);
+}
