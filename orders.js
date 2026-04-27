@@ -1,3 +1,4 @@
+"HTML anti-injection function"
 function escapeHTML(str) {
     if (typeof str !== 'string') return str;
     return str.replace(/[&<>'"]/g, function(tag) {
