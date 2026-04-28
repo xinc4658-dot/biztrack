@@ -94,12 +94,10 @@
             <div class="form-popup">
                 <form class="form-container" id="product-form" onsubmit="addOrUpdate(event)">
                     <div class="form-columns">
-                        <!-- 第一列：产品名称 (已 Swap) -->
                         <div class="first-col">
                             <label for="product-id"><b data-i18n="products.productId">Product ID: </b></label>
                             <input type="text" id="product-id" placeholder="PD001" required>
                         
-                            <!-- 这里现在是 Product Name -->
                             <label for="product-name"><b data-i18n="products.productName">Product Name:</b></label>
                             <select name="product-name" id="product-name" required>
                                 <option value="" disabled selected hidden data-i18n="products.chooseProduct">Choose a product</option>
@@ -135,9 +133,7 @@
                             <input type="text" id="product-desc" placeholder="Travel Mug" data-i18n-placeholder="products.productDescPlaceholder" required>
                         </div>
 
-                        <!-- 第二列：产品类别 (已 Swap) -->
                         <div class="second-col">
-                            <!-- 这里现在是 Product Category -->
                             <label for="product-cat"><b data-i18n="products.productCategory">Product Category:</b></label>
                             <select name="product-cat" id="product-cat" required>
                                 <option value="" disabled selected data-i18n="products.chooseCategory">Choose a category</option>
@@ -182,7 +178,6 @@
         </div>
     </div>
 
-    <!-- 注意：请确保 JS 路径正确 -->
     <script src="./js/i18n.js"></script>
     <script src="./products.js"></script>
 </body>

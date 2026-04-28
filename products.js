@@ -120,12 +120,46 @@ function addOrUpdate(event) {
 
 function newProduct(event) {
   event.preventDefault();
-  const prodID = document.getElementById("product-id").value;
-  const prodName = document.getElementById("product-name").value;
-  const prodDesc = document.getElementById("product-desc").value;
-  const prodCat = document.getElementById("product-cat").value;
-  const prodPrice = parseFloat(document.getElementById("product-price").value);
-  const prodSold = parseInt(document.getElementById("product-sold").value);
+  const prodID = document.getElementById("product-id").value.trim();
+  const prodName = document.getElementById("product-name").value.trim();
+  const prodDesc = document.getElementById("product-desc").value.trim();
+  const prodCat = document.getElementById("product-cat").value.trim();
+  const prodPriceInput = document.getElementById("product-price").value.trim();
+  const prodSoldInput = document.getElementById("product-sold").value.trim();
+
+  // 空输入校验
+  if (!prodID) {
+    alert(window.t("common.required", { field: window.t("products.productId") }));
+    return;
+  }
+  if (!prodName) {
+    alert(window.t("common.required", { field: window.t("products.productName") }));
+    return;
+  }
+  if (!prodCat) {
+    alert(window.t("common.required", { field: window.t("products.productCategory") }));
+    return;
+  }
+  if (!prodPriceInput) {
+    alert(window.t("common.required", { field: window.t("products.productPrice") }));
+    return;
+  }
+  if (!prodSoldInput) {
+    alert(window.t("common.required", { field: window.t("products.productSold") }));
+    return;
+  }
+
+  // 数字类型校验
+  const prodPrice = parseFloat(prodPriceInput);
+  const prodSold = parseInt(prodSoldInput);
+  if (isNaN(prodPrice)) {
+    alert(window.t("common.invalidNumber", { field: window.t("products.productPrice") }));
+    return;
+  }
+  if (isNaN(prodSold)) {
+    alert(window.t("common.invalidNumber", { field: window.t("products.productSold") }));
+    return;
+  }
 
   if (isDuplicateID(prodID, null)) {
     alert(window.t("common.productIdExists"));
@@ -189,7 +223,7 @@ function editRow(prodID) {
 
   document.getElementById("submitBtn").dataset.isEdit = true;
   document.getElementById("product-form").style.display = "block";
-  syncCategoryWithSelectedName(); // 编辑时也确保类别对应
+  syncCategoryWithSelectedName();
 }
 
 function deleteProduct(prodID) {
@@ -204,13 +238,54 @@ function deleteProduct(prodID) {
 function updateProduct(prodID) {
     const indexToUpdate = products.findIndex(product => product.prodID === prodID);
     if (indexToUpdate !== -1) {
+      const updatedId = document.getElementById("product-id").value.trim();
+      const updatedName = document.getElementById("product-name").value.trim();
+      const updatedDesc = document.getElementById("product-desc").value.trim();
+      const updatedCat = document.getElementById("product-cat").value.trim();
+      const updatedPriceInput = document.getElementById("product-price").value.trim();
+      const updatedSoldInput = document.getElementById("product-sold").value.trim();
+
+      // 空输入校验
+      if (!updatedId) {
+        alert(window.t("common.required", { field: window.t("products.productId") }));
+        return;
+      }
+      if (!updatedName) {
+        alert(window.t("common.required", { field: window.t("products.productName") }));
+        return;
+      }
+      if (!updatedCat) {
+        alert(window.t("common.required", { field: window.t("products.productCategory") }));
+        return;
+      }
+      if (!updatedPriceInput) {
+        alert(window.t("common.required", { field: window.t("products.productPrice") }));
+        return;
+      }
+      if (!updatedSoldInput) {
+        alert(window.t("common.required", { field: window.t("products.productSold") }));
+        return;
+      }
+
+      // 数字类型校验
+      const updatedPrice = parseFloat(updatedPriceInput);
+      const updatedSold = parseInt(updatedSoldInput);
+      if (isNaN(updatedPrice)) {
+        alert(window.t("common.invalidNumber", { field: window.t("products.productPrice") }));
+        return;
+      }
+      if (isNaN(updatedSold)) {
+        alert(window.t("common.invalidNumber", { field: window.t("products.productSold") }));
+        return;
+      }
+
         const updatedProduct = {
-            prodID: document.getElementById("product-id").value,
-            prodName: document.getElementById("product-name").value,
-            prodDesc: document.getElementById("product-desc").value,
-            prodCat: document.getElementById("product-cat").value,
-            prodPrice: parseFloat(document.getElementById("product-price").value),
-            prodSold: parseInt(document.getElementById("product-sold").value),
+            prodID: updatedId,
+            prodName: updatedName,
+            prodDesc: updatedDesc,
+            prodCat: updatedCat,
+            prodPrice: updatedPrice,
+            prodSold: updatedSold,
         };
 
         if (isDuplicateID(updatedProduct.prodID, prodID)) {
