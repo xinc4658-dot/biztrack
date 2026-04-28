@@ -20,8 +20,44 @@ function closeForm() {
 
 
 let products = [];
+let productCategoryMap = {};
+
+function buildProductCategoryMap() {
+  const productNameSelect = document.getElementById("product-name");
+  const map = {};
+
+  Array.from(productNameSelect.options).forEach((option) => {
+    if (!option.value) {
+      return;
+    }
+
+    const parent = option.parentElement;
+    if (parent && parent.tagName === "OPTGROUP") {
+      map[option.value] = parent.label;
+    }
+  });
+
+  productCategoryMap = map;
+}
+
+function syncCategoryWithSelectedName() {
+  const prodName = document.getElementById("product-name").value;
+  const prodCat = productCategoryMap[prodName];
+
+  if (prodCat) {
+    document.getElementById("product-cat").value = prodCat;
+  }
+}
+
+function isNameCategoryPairValid(prodName, prodCat) {
+  const expectedCategory = productCategoryMap[prodName];
+  return expectedCategory && expectedCategory === prodCat;
+}
 
 function init() {
+  buildProductCategoryMap();
+  document.getElementById("product-name").addEventListener("change", syncCategoryWithSelectedName);
+
   const storedProducts = localStorage.getItem("bizTrackProducts");
   if (storedProducts) {
       products = JSON.parse(storedProducts);
@@ -99,6 +135,11 @@ function newProduct(event) {
     return;
   }
 
+  if (!isNameCategoryPairValid(prodName, prodCat)) {
+    alert("Product category must match the selected product name.");
+    return;
+  }
+
   const product = {
     prodID,
     prodName,
@@ -163,6 +204,7 @@ function editRow(prodID) {
   document.getElementById("submitBtn").textContent = "Update";
 
   document.getElementById("product-form").style.display = "block";
+  syncCategoryWithSelectedName();
 }
 
 function deleteProduct(prodID) {
@@ -192,6 +234,11 @@ function updateProduct(prodID) {
 
         if (isDuplicateID(updatedProduct.prodID, prodID)) {
             alert("Product ID already exists. Please use a unique ID.");
+            return;
+        }
+
+        if (!isNameCategoryPairValid(updatedProduct.prodName, updatedProduct.prodCat)) {
+            alert("Product category must match the selected product name.");
             return;
         }
 
