@@ -17,6 +17,39 @@ function closeForm() {
 }
 
 let products = [];
+let productCategoryMap = {};
+
+function buildProductCategoryMap() {
+  const productNameSelect = document.getElementById("product-name");
+  const map = {};
+
+  Array.from(productNameSelect.options).forEach((option) => {
+    if (!option.value) {
+      return;
+    }
+
+    const parent = option.parentElement;
+    if (parent && parent.tagName === "OPTGROUP") {
+      map[option.value] = parent.label;
+    }
+  });
+
+  productCategoryMap = map;
+}
+
+function syncCategoryWithSelectedName() {
+  const prodName = document.getElementById("product-name").value;
+  const prodCat = productCategoryMap[prodName];
+
+  if (prodCat) {
+    document.getElementById("product-cat").value = prodCat;
+  }
+}
+
+function isNameCategoryPairValid(prodName, prodCat) {
+  const expectedCategory = productCategoryMap[prodName];
+  return expectedCategory && expectedCategory === prodCat;
+}
 
 // 产品名称 -> 类别的映射 (用于自动填充)
 let productCategoryMap = {
