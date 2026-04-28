@@ -223,7 +223,9 @@ function editRow(prodID) {
 
   document.getElementById("submitBtn").dataset.isEdit = true;
   document.getElementById("product-form").style.display = "block";
-  syncCategoryWithSelectedName();
+
+  syncCategoryWithSelectedName(); // 编辑时也确保类别对应
+
 }
 
 function deleteProduct(prodID) {
