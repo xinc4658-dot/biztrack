@@ -22,6 +22,21 @@ function closeForm() {
 let products = [];
 let productCategoryMap = {};
 
+async function syncProductsToDb(action, record, beforeRecord) {
+  if (!window.biztrackDbHelpers || !window.biztrackDbHelpers.isReady()) {
+    return;
+  }
+
+  try {
+    await window.biztrackDbHelpers.syncCollection("products", products, "prodID");
+    if (action) {
+      await window.biztrackDbHelpers.logActivity("products", action, record.prodID, record, beforeRecord);
+    }
+  } catch (error) {
+    console.error("Products database sync failed:", error);
+  }
+}
+
 function buildProductCategoryMap() {
   const productNameSelect = document.getElementById("product-name");
   const map = {};
@@ -109,9 +124,11 @@ function init() {
     }
 
     renderProducts(products);
+    syncProductsToDb("sync", { prodID: "all-products" });
 }
 
 function addOrUpdate(event) {
+  event.preventDefault();
   let type = document.getElementById("submitBtn").textContent;
   if (type === 'Add') {
       newProduct(event);
@@ -153,6 +170,7 @@ function newProduct(event) {
 
   renderProducts(products);
   localStorage.setItem("bizTrackProducts", JSON.stringify(products));
+  syncProductsToDb("create", product);
 
   document.getElementById("product-form").reset();
 }
@@ -211,11 +229,13 @@ function deleteProduct(prodID) {
   const indexToDelete = products.findIndex(product => product.prodID === prodID);
 
   if (indexToDelete !== -1) {
+      const deletedProduct = { ...products[indexToDelete] };
       products.splice(indexToDelete, 1);
 
       localStorage.setItem("bizTrackProducts", JSON.stringify(products));
 
       renderProducts(products);
+      syncProductsToDb("delete", { prodID }, deletedProduct);
   }
 }
 
@@ -223,6 +243,7 @@ function updateProduct(prodID) {
     const indexToUpdate = products.findIndex(product => product.prodID === prodID);
 
     if (indexToUpdate !== -1) {
+        const beforeProduct = { ...products[indexToUpdate] };
         const updatedProduct = {
             prodID: document.getElementById("product-id").value,
             prodName: document.getElementById("product-name").value,
@@ -247,6 +268,7 @@ function updateProduct(prodID) {
         localStorage.setItem("bizTrackProducts", JSON.stringify(products));
 
         renderProducts(products);
+        syncProductsToDb("update", updatedProduct, beforeProduct);
 
         document.getElementById("product-form").reset();
         document.getElementById("submitBtn").textContent = "Add";

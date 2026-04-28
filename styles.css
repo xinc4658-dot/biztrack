@@ -661,3 +661,18 @@ ol {
 } */
 
 
+.history-cell {
+    vertical-align: top;
+    min-width: 200px;
+}
+
+.log-data {
+    text-align: left;
+    line-height: 1.4;
+    word-break: break-word;
+}
+
+.log-key {
+    font-weight: 700;
+    color: var(--brown-color);
+}

@@ -22,6 +22,21 @@ function closeForm() {
 let transactions = [];
 let serialNumberCounter;
 
+async function syncExpensesToDb(action, record, beforeRecord) {
+    if (!window.biztrackDbHelpers || !window.biztrackDbHelpers.isReady()) {
+        return;
+    }
+
+    try {
+        await window.biztrackDbHelpers.syncCollection("expenses", transactions, "trID");
+        if (action) {
+            await window.biztrackDbHelpers.logActivity("expenses", action, record.trID, record, beforeRecord);
+        }
+    } catch (error) {
+        console.error("Expenses database sync failed:", error);
+    }
+}
+
 window.onload = function () {
     const storedTransactions = localStorage.getItem("bizTrackTransactions");
     if (storedTransactions) {
@@ -71,9 +86,11 @@ window.onload = function () {
     }
   
     renderTransactions(transactions);
+    syncExpensesToDb("sync", { trID: "all-expenses" });
 }
 
 function addOrUpdate(event) {
+    event.preventDefault();
     let type = document.getElementById("submitBtn").textContent;
     if (type === 'Add') {
         newTransaction(event);
@@ -106,6 +123,7 @@ function newTransaction(event) {
   
     renderTransactions(transactions);
     localStorage.setItem("bizTrackTransactions", JSON.stringify(transactions));
+    syncExpensesToDb("create", transaction);
 
     serialNumberCounter++;
     displayExpenses();
@@ -177,11 +195,13 @@ function deleteTransaction(trID) {
     const indexToDelete = transactions.findIndex(transaction => transaction.trID == trID);
 
     if (indexToDelete !== -1) {
+        const deletedTransaction = { ...transactions[indexToDelete] };
         transactions.splice(indexToDelete, 1);
 
         localStorage.setItem("bizTrackTransactions", JSON.stringify(transactions));
 
         renderTransactions(transactions);
+        syncExpensesToDb("delete", { trID }, deletedTransaction);
     }
 }
 
@@ -189,6 +209,7 @@ function deleteTransaction(trID) {
     const indexToUpdate = transactions.findIndex(transaction => transaction.trID === trID);
 
     if (indexToUpdate !== -1) {
+        const beforeTransaction = { ...transactions[indexToUpdate] };
         const updatedTransaction = {
             trID: trID,
             trDate: document.getElementById("tr-date").value,
@@ -202,6 +223,7 @@ function deleteTransaction(trID) {
         localStorage.setItem("bizTrackTransactions", JSON.stringify(transactions));
 
         renderTransactions(transactions);
+        syncExpensesToDb("update", updatedTransaction, beforeTransaction);
 
         document.getElementById("transaction-form").reset();
         document.getElementById("submitBtn").textContent = "Add";

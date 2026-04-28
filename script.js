@@ -10,8 +10,7 @@ function closeSidebar() {
 }
 
 
-window.onload = function () {
-  const expenses = JSON.parse(localStorage.getItem('bizTrackTransactions')) || [
+const DEFAULT_EXPENSES = [
     {
       trID: 1,
       trDate: "2024-01-05",
@@ -47,8 +46,9 @@ window.onload = function () {
       trAmount: 20.00,
       trNotes: "Pizza"
   },
-  ];
-  const revenues = JSON.parse(localStorage.getItem('bizTrackOrders')) || [
+];
+
+const DEFAULT_ORDERS = [
     {
       orderID: "1001",
       orderDate: "2024-01-05",
@@ -104,7 +104,83 @@ window.onload = function () {
       orderTotal: 37.90,
       orderStatus: "Pending"
   },
-  ];
+];
+
+const DEFAULT_PRODUCTS = [
+  {
+    prodID: "PD001",
+    prodName: "Baseball caps",
+    prodDesc: "Peace embroidered cap",
+    prodCat: "Hats",
+    prodPrice: 25.00,
+    prodSold: 20
+  },
+  {
+    prodID: "PD002",
+    prodName: "Water bottles",
+    prodDesc: "Floral lotus printed bottle",
+    prodCat: "Drinkware",
+    prodPrice: 48.50,
+    prodSold: 10
+  },
+  {
+    prodID: "PD003",
+    prodName: "Sweatshirt",
+    prodDesc: "Palestine sweater",
+    prodCat: "Clothing",
+    prodPrice: 17.50,
+    prodSold: 70
+  },
+  {
+    prodID: "PD004",
+    prodName: "Posters",
+    prodDesc: "Vibes printed poster",
+    prodCat: "Home decor",
+    prodPrice: 12.00,
+    prodSold: 60
+  },
+  {
+    prodID: "PD005",
+    prodName: "Pillow cases",
+    prodDesc: "Morrocan print pillow case",
+    prodCat: "Accessories",
+    prodPrice: 17.00,
+    prodSold: 40
+  },
+];
+
+let barChart = null;
+let donutChart = null;
+
+function toNumber(value) {
+  const num = Number(value);
+  return Number.isFinite(num) ? num : 0;
+}
+
+async function getDataWithFallback(collectionName, localStorageKey, fallbackData) {
+  const localData = JSON.parse(localStorage.getItem(localStorageKey) || "null");
+  const fallback = localData || fallbackData;
+
+  if (window.biztrackDb) {
+    try {
+      const snapshot = await window.biztrackDb.collection(collectionName).get();
+      const remoteData = snapshot.docs.map((doc) => doc.data());
+
+      if (remoteData.length > 0) {
+        localStorage.setItem(localStorageKey, JSON.stringify(remoteData));
+        return remoteData;
+      }
+    } catch (error) {
+      console.error(`Failed to read ${collectionName} from Firestore:`, error);
+    }
+  }
+
+  return fallback;
+}
+
+async function loadDashboardSummary() {
+  const expenses = await getDataWithFallback("expenses", "bizTrackTransactions", DEFAULT_EXPENSES);
+  const revenues = await getDataWithFallback("orders", "bizTrackOrders", DEFAULT_ORDERS);
 
   const totalExpenses = calculateExpTotal(expenses);
   const totalRevenues = calculateRevTotal(revenues);
@@ -135,13 +211,17 @@ window.onload = function () {
     <span class="title">Orders</span>
     <span class="amount-value">${numOrders}</span>
   `;
+}
+
+window.onload = function () {
+  loadDashboardSummary();
 };
 
 function calculateExpTotal(transactions) {
-  return transactions.reduce((total, transaction) => total + transaction.trAmount, 0);
+  return transactions.reduce((total, transaction) => total + toNumber(transaction.trAmount), 0);
 }
 function calculateRevTotal(orders) {
-  return orders.reduce((total, order) => total + order.orderTotal, 0);
+  return orders.reduce((total, order) => total + toNumber(order.orderTotal), 0);
 }
 
 
@@ -159,56 +239,15 @@ function calculateCategorySales(products) {
       categorySales[category] = 0;
     }
 
-    categorySales[category] += product.prodPrice * product.prodSold;
+    categorySales[category] += toNumber(product.prodPrice) * toNumber(product.prodSold);
   });
 
   return categorySales;
 }
 
 
-function initializeChart() {
-  const items = JSON.parse(localStorage.getItem('bizTrackProducts')) || [
-    {
-      prodID: "PD001",
-      prodName: "Baseball caps",
-      prodDesc: "Peace embroidered cap",
-      prodCat: "Hats",
-      prodPrice: 25.00,
-      prodSold: 20
-    },
-    {
-      prodID: "PD002",
-      prodName: "Water bottles",
-      prodDesc: "Floral lotus printed bottle",
-      prodCat: "Drinkware",
-      prodPrice: 48.50,
-      prodSold: 10
-    },
-    {
-      prodID: "PD003",
-      prodName: "Sweatshirt",
-      prodDesc: "Palestine sweater",
-      prodCat: "Clothing",
-      prodPrice: 17.50,
-      prodSold: 70
-    },
-    {
-      prodID: "PD004",
-      prodName: "Posters",
-      prodDesc: "Vibes printed poster",
-      prodCat: "Home decor",
-      prodPrice: 12.00,
-      prodSold: 60
-    },
-    {
-      prodID: "PD005",
-      prodName: "Pillow cases",
-      prodDesc: "Morrocan print pillow case",
-      prodCat: "Accessories",
-      prodPrice: 17.00,
-      prodSold: 40
-    },
-  ];
+async function initializeChart() {
+  const items = await getDataWithFallback("products", "bizTrackProducts", DEFAULT_PRODUCTS);
   const categorySalesData = calculateCategorySales(items);
 
   const sortedCategorySales = Object.entries(categorySalesData)
@@ -269,7 +308,11 @@ function initializeChart() {
       }
     };
     
-  const barChart = new ApexCharts(
+  if (barChart) {
+    barChart.destroy();
+  }
+
+  barChart = new ApexCharts(
     document.querySelector('#bar-chart'), barChartOptions
   );
   barChart.render();
@@ -287,49 +330,13 @@ function initializeChart() {
         categoryExpenses[category] = 0;
       }
 
-      categoryExpenses[category] += transaction.trAmount;
+      categoryExpenses[category] += toNumber(transaction.trAmount);
     });
 
     return categoryExpenses;
   }
 
-  const expItems = JSON.parse(localStorage.getItem('bizTrackTransactions')) || [
-    {
-      trID: 1,
-      trDate: "2024-01-05",
-      trCategory: "Rent",
-      trAmount: 100.00,
-      trNotes: "January Rent"
-  },
-  {
-      trID: 2,
-      trDate: "2024-01-15",
-      trCategory: "Order Fulfillment",
-      trAmount: 35.00,
-      trNotes: "Order #1005"
-  },
-  {
-      trID: 3,
-      trDate: "2024-01-08",
-      trCategory: "Utilities",
-      trAmount: 120.00,
-      trNotes: "Internet"
-  },
-  {
-      trID: 4,
-      trDate: "2024-02-05",
-      trCategory: "Supplies",
-      trAmount: 180.00,
-      trNotes: "Embroidery Machine"
-  },
-  {
-      trID: 5,
-      trDate: "2024-01-25",
-      trCategory: "Miscellaneous",
-      trAmount: 20.00,
-      trNotes: "Pizza"
-  },
-  ];
+  const expItems = await getDataWithFallback("expenses", "bizTrackTransactions", DEFAULT_EXPENSES);
   const categoryExpData = calculateCategoryExp(expItems);
 
   const donutChartOptions = {
@@ -379,7 +386,11 @@ function initializeChart() {
     },
   };
   
-  const donutChart = new ApexCharts(
+  if (donutChart) {
+    donutChart.destroy();
+  }
+
+  donutChart = new ApexCharts(
     document.querySelector('#donut-chart'),
     donutChartOptions
   );

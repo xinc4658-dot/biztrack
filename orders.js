@@ -20,6 +20,21 @@ function closeForm() {
 
 let orders = [];
 
+async function syncOrdersToDb(action, record, beforeRecord) {
+    if (!window.biztrackDbHelpers || !window.biztrackDbHelpers.isReady()) {
+        return;
+    }
+
+    try {
+        await window.biztrackDbHelpers.syncCollection("orders", orders, "orderID");
+        if (action) {
+            await window.biztrackDbHelpers.logActivity("orders", action, record.orderID, record, beforeRecord);
+        }
+    } catch (error) {
+        console.error("Orders database sync failed:", error);
+    }
+}
+
 window.onload = function () {
     const storedOrders = localStorage.getItem("bizTrackOrders");
     if (storedOrders) {
@@ -87,9 +102,11 @@ window.onload = function () {
     }
 
     renderOrders(orders);
+    syncOrdersToDb("sync", { orderID: "all-orders" });
 }
 
 function addOrUpdate(event) {
+    event.preventDefault();
     let type = document.getElementById("submitBtn").textContent;
     if (type === 'Add') {
         newOrder(event);
@@ -133,6 +150,7 @@ function newOrder(event) {
 
   renderOrders(orders);
   localStorage.setItem("bizTrackOrders", JSON.stringify(orders));
+  syncOrdersToDb("create", order);
 
   document.getElementById("order-form").reset();
 }
@@ -224,11 +242,13 @@ function deleteOrder(orderID) {
   const indexToDelete = orders.findIndex(order => order.orderID === orderID);
 
   if (indexToDelete !== -1) {
+      const deletedOrder = { ...orders[indexToDelete] };
       orders.splice(indexToDelete, 1);
 
       localStorage.setItem("bizTrackOrders", JSON.stringify(orders));
 
       renderOrders(orders);
+      syncOrdersToDb("delete", { orderID }, deletedOrder);
   }
 }
 
@@ -236,6 +256,7 @@ function updateOrder(orderID) {
     const indexToUpdate = orders.findIndex(order => order.orderID === orderID);
 
     if (indexToUpdate !== -1) {
+        const beforeOrder = { ...orders[indexToUpdate] };
         const itemPrice = parseFloat(document.getElementById("item-price").value);
         const qtyBought = parseInt(document.getElementById("qty-bought").value);
         const shipping = parseFloat(document.getElementById("shipping").value);
@@ -262,6 +283,7 @@ function updateOrder(orderID) {
         localStorage.setItem("bizTrackOrders", JSON.stringify(orders));
 
         renderOrders(orders);
+        syncOrdersToDb("update", updatedOrder, beforeOrder);
 
         document.getElementById("order-form").reset();
         document.getElementById("submitBtn").textContent = "Add";
