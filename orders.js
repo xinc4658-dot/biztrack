@@ -21,79 +21,145 @@ function closeForm() {
 let orders = [];
 
 window.onload = function () {
-    const storedOrders = localStorage.getItem("bizTrackOrders");
-    if (storedOrders) {
-        orders = JSON.parse(storedOrders);
-    } else {
-        orders = [
-        {
-            orderID: "1001",
-            orderDate: "2024-01-05",
-            itemName: "Baseball caps",
-            itemPrice: 25.00,
-            qtyBought: 2,
-            shipping: 2.50,
-            taxes: 9.00,
-            orderTotal: 61.50,
-            orderStatus: "Pending"
-        },
-        {
-            orderID: "1002",
-            orderDate: "2024-03-05",
-            itemName: "Water bottles",
-            itemPrice: 17.00,
-            qtyBought: 3,
-            shipping: 3.50,
-            taxes: 6.00,
-            orderTotal: 60.50,
-            orderStatus: "Processing"
-        },
-        {
-            orderID: "1003",
-            orderDate: "2024-02-05",
-            itemName: "Tote bags",
-            itemPrice: 20.00,
-            qtyBought: 4,
-            shipping: 2.50,
-            taxes: 2.00,
-            orderTotal: 84.50,
-            orderStatus: "Shipped"
-        },
-        {
-            orderID: "1004",
-            orderDate: "2023-01-05",
-            itemName: "Canvas prints",
-            itemPrice: 55.00,
-            qtyBought: 1,
-            shipping: 2.50,
-            taxes: 19.00,
-            orderTotal: 76.50,
-            orderStatus: "Delivered"
-        },
-        {
-            orderID: "1005",
-            orderDate: "2024-01-15",
-            itemName: "Beanies",
-            itemPrice: 15.00,
-            qtyBought: 2,
-            shipping: 3.90,
-            taxes: 4.00,
-            orderTotal: 37.90,
-            orderStatus: "Pending"
-        },
-        ];
+    // 等待i18n.js初始化完成
+    setTimeout(function() {
+        // 初始化日期选择器
+        const orderDateInput = document.getElementById('order-date');
+        if (orderDateInput) {
+            // 设置placeholder
+            orderDateInput.placeholder = currentLanguage === 'zh' ? '年-月-日' : 'YYYY-MM-DD';
 
-        localStorage.setItem("bizTrackOrders", JSON.stringify(orders));
-    }
+            // 创建自定义按钮
+            const createCustomButtons = (instance) => {
+                const buttonsContainer = document.createElement('div');
+                buttonsContainer.className = 'flatpickr-custom-buttons';
+                buttonsContainer.style.cssText = 'display: flex; justify-content: space-between; padding: 10px;';
 
-    renderOrders(orders);
+                // 今天按钮
+                const todayButton = document.createElement('button');
+                todayButton.type = 'button';
+                todayButton.className = 'flatpickr-today-button';
+                todayButton.textContent = currentLanguage === 'zh' ? '今天' : 'Today';
+                todayButton.style.cssText = 'background: #4a90e2; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer;';
+                todayButton.onclick = () => {
+                    instance.setDate(new Date());
+                };
+
+                // 清除按钮
+                const clearButton = document.createElement('button');
+                clearButton.type = 'button';
+                clearButton.className = 'flatpickr-clear-button';
+                clearButton.textContent = currentLanguage === 'zh' ? '清除' : 'Clear';
+                clearButton.style.cssText = 'background: #e74c3c; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer;';
+                clearButton.onclick = () => {
+                    instance.clear();
+                };
+
+                buttonsContainer.appendChild(todayButton);
+                buttonsContainer.appendChild(clearButton);
+
+                return buttonsContainer;
+            };
+
+            flatpickr(orderDateInput, {
+                dateFormat: 'Y-m-d',
+                locale: currentLanguage === 'zh' ? 'zh' : 'default',
+                allowInput: true,
+                onReady: function(selectedDates, dateStr, instance) {
+                    const calendarContainer = instance.calendarContainer;
+                    const buttonsContainer = createCustomButtons(instance);
+                    calendarContainer.appendChild(buttonsContainer);
+                },
+                onChange: function(selectedDates, dateStr, instance) {
+                    // 更新按钮文本
+                    const todayButton = instance.calendarContainer.querySelector('.flatpickr-today-button');
+                    const clearButton = instance.calendarContainer.querySelector('.flatpickr-clear-button');
+                    if (todayButton) {
+                        todayButton.textContent = currentLanguage === 'zh' ? '今天' : 'Today';
+                    }
+                    if (clearButton) {
+                        clearButton.textContent = currentLanguage === 'zh' ? '清除' : 'Clear';
+                    }
+                }
+            });
+        }
+
+        const storedOrders = localStorage.getItem("bizTrackOrders");
+        if (storedOrders) {
+            orders = JSON.parse(storedOrders);
+        } else {
+            orders = [
+            {
+                orderID: "1001",
+                orderDate: "2024-01-05",
+                itemName: "Baseball caps",
+                itemPrice: 25.00,
+                qtyBought: 2,
+                shipping: 2.50,
+                taxes: 9.00,
+                orderTotal: 61.50,
+                orderStatus: "Pending"
+            },
+            {
+                orderID: "1002",
+                orderDate: "2024-03-05",
+                itemName: "Water bottles",
+                itemPrice: 17.00,
+                qtyBought: 3,
+                shipping: 3.50,
+                taxes: 6.00,
+                orderTotal: 60.50,
+                orderStatus: "Processing"
+            },
+            {
+                orderID: "1003",
+                orderDate: "2024-02-05",
+                itemName: "Tote bags",
+                itemPrice: 20.00,
+                qtyBought: 4,
+                shipping: 2.50,
+                taxes: 2.00,
+                orderTotal: 84.50,
+                orderStatus: "Shipped"
+            },
+            {
+                orderID: "1004",
+                orderDate: "2023-01-05",
+                itemName: "Canvas prints",
+                itemPrice: 55.00,
+                qtyBought: 1,
+                shipping: 2.50,
+                taxes: 19.00,
+                orderTotal: 76.50,
+                orderStatus: "Delivered"
+            },
+            {
+                orderID: "1005",
+                orderDate: "2024-01-15",
+                itemName: "Beanies",
+                itemPrice: 15.00,
+                qtyBought: 2,
+                shipping: 3.90,
+                taxes: 4.00,
+                orderTotal: 37.90,
+                orderStatus: "Pending"
+            },
+            ];
+
+            localStorage.setItem("bizTrackOrders", JSON.stringify(orders));
+        }
+
+        renderOrders(orders);
+    }, 100);
 }
 
 function addOrUpdate(event) {
-    let type = document.getElementById("submitBtn").textContent;
-    if (type === 'Add') {
+    const submitBtn = document.getElementById("submitBtn");
+    // 检查按钮的data-i18n属性来确定操作类型
+    const i18nKey = submitBtn.getAttribute('data-i18n');
+    if (i18nKey === 'orders.save' && !submitBtn.dataset.isEdit) {
         newOrder(event);
-    } else if (type === 'Update'){
+    } else {
         const orderID = document.getElementById("order-id").value;
         updateOrder(orderID);
     }
@@ -113,7 +179,7 @@ function newOrder(event) {
   const orderStatus = document.getElementById("order-status").value;
 
   if (isDuplicateID(orderID, null)) {
-    alert("Order ID already exists. Please use a unique ID.");
+    alert(window.t("common.orderIdExists"));
     return;
   }
 
@@ -137,6 +203,38 @@ function newOrder(event) {
   document.getElementById("order-form").reset();
 }
 
+
+
+// 翻译订单状态
+function translateOrderStatus(status) {
+  if (!status) return status;
+
+  // 获取当前语言，优先使用i18n.js中的currentLanguage变量
+  let currentLang = 'en';
+  if (typeof currentLanguage !== 'undefined') {
+    currentLang = currentLanguage;
+  } else {
+    currentLang = localStorage.getItem('bizTrackLanguage') || 'en';
+  }
+
+  // 订单状态翻译映射
+  const translations = {
+    en: {
+      'Pending': 'Pending',
+      'Processing': 'Processing',
+      'Shipped': 'Shipped',
+      'Delivered': 'Delivered'
+    },
+    zh: {
+      'Pending': '待处理',
+      'Processing': '处理中',
+      'Shipped': '已发货',
+      'Delivered': '已送达'
+    }
+  };
+
+  return translations[currentLang][status] || status;
+}
 
 function renderOrders(orders) {
     const orderTableBody = document.getElementById("tableBody");
@@ -169,17 +267,21 @@ function renderOrders(orders) {
       const formattedTaxes = typeof order.taxes === 'number' ? `$${order.taxes.toFixed(2)}` : '';
       const formattedTotal = typeof order.orderTotal === 'number' ? `$${order.orderTotal.toFixed(2)}` : '';
 
+      // 翻译产品名称和订单状态 - 使用i18n.js中的函数
+      const translatedName = typeof translateProductName === 'function' ? translateProductName(order.itemName) : order.itemName;
+      const translatedStatus = translateOrderStatus(order.orderStatus);
+
       orderRow.innerHTML = `
         <td>${order.orderID}</td>
         <td>${order.orderDate}</td>
-        <td>${order.itemName}</td>
+        <td>${translatedName}</td>
         <td>${formattedPrice}</td>
         <td>${order.qtyBought}</td>
         <td>${formattedShipping}</td>
         <td>${formattedTaxes}</td>
         <td class="order-total">${formattedTotal}</td>
         <td>
-            <div class="status ${statusMap[order.orderStatus]}"><span>${order.orderStatus}</span></div>
+            <div class="status ${statusMap[order.orderStatus]}"><span>${translatedStatus}</span></div>
         </td>
         <td class="action">
             <i title="Edit" onclick="editRow('${order.orderID}')" class="edit-icon fa-solid fa-pen-to-square"></i>
@@ -197,8 +299,19 @@ function displayRevenue() {
     const totalRevenue = orders
         .reduce((total, order) => total + order.orderTotal, 0);
 
+    // 获取当前语言，优先使用i18n.js中的currentLanguage变量
+    let currentLang = 'en';
+    if (typeof currentLanguage !== 'undefined') {
+      currentLang = currentLanguage;
+    } else {
+      currentLang = localStorage.getItem('bizTrackLanguage') || 'en';
+    }
+
+    // 翻译"总收入"文本
+    const totalRevenueText = currentLang === 'zh' ? '总收入' : 'Total Revenue';
+
     resultElement.innerHTML = `
-        <span>Total Revenue: $${totalRevenue.toFixed(2)}</span>
+        <span>${totalRevenueText}: $${totalRevenue.toFixed(2)}</span>
     `;
 }
 
@@ -215,7 +328,7 @@ function editRow(orderID) {
     document.getElementById("order-total").value = orderToEdit.orderTotal;
     document.getElementById("order-status").value = orderToEdit.orderStatus;
 
-    document.getElementById("submitBtn").textContent = "Update";
+    document.getElementById("submitBtn").dataset.isEdit = true;
 
     document.getElementById("order-form").style.display = "block";
 }
@@ -253,7 +366,7 @@ function updateOrder(orderID) {
         };
 
         if (isDuplicateID(updatedOrder.orderID, orderID)) {
-            alert("Order ID already exists. Please use a unique ID.");
+            alert(window.t("common.orderIdExists"));
             return;
         }
 
@@ -264,7 +377,7 @@ function updateOrder(orderID) {
         renderOrders(orders);
 
         document.getElementById("order-form").reset();
-        document.getElementById("submitBtn").textContent = "Add";
+        document.getElementById("submitBtn").dataset.isEdit = false;
     }
 }
 
@@ -328,13 +441,51 @@ function exportToCSV() {
         };
     });
   
-    const csvContent = generateCSV(ordersToExport);
+    const currentLanguage = localStorage.getItem('bizTrackLanguage') || 'en';
+
+    // 根据当前语言获取表头翻译
+    const headerTranslations = {
+        en: {
+            orderID: 'Order ID',
+            orderDate: 'Order Date',
+            itemName: 'Product Name',
+            itemPrice: 'Product Price',
+            qtyBought: 'Quantity Bought',
+            shipping: 'Shipping',
+            taxes: 'Taxes',
+            orderTotal: 'Order Total',
+            orderStatus: 'Order Status'
+        },
+        zh: {
+            orderID: '订单ID',
+            orderDate: '订单日期',
+            itemName: '产品名称',
+            itemPrice: '产品价格',
+            qtyBought: '购买数量',
+            shipping: '运费',
+            taxes: '税费',
+            orderTotal: '订单总额',
+            orderStatus: '订单状态'
+        }
+    };
+
+    const headers = headerTranslations[currentLanguage];
+
+    const csvContent = generateCSV(ordersToExport, headers);
   
-    const blob = new Blob([csvContent], { type: 'text/csv' });
+    // 添加BOM以确保Excel能正确识别UTF-8编码
+    // 使用TextEncoder处理编码问题
+    const encoder = new TextEncoder();
+    const BOM = new Uint8Array([0xEF, 0xBB, 0xBF]);
+    const csvBytes = encoder.encode(csvContent);
+    const csvWithBOM = new Uint8Array(BOM.length + csvBytes.length);
+    csvWithBOM.set(BOM, 0);
+    csvWithBOM.set(csvBytes, BOM.length);
+    const blob = new Blob([csvWithBOM], { type: 'text/csv;charset=utf-8' });
   
     const link = document.createElement('a');
     link.href = window.URL.createObjectURL(blob);
-    link.download = 'biztrack_order_table.csv';
+    link.download = currentLanguage === 'zh' ? 'biztrack_订单表.csv' : 'biztrack_order_table.csv';
   
     document.body.appendChild(link);
     link.click();
@@ -342,9 +493,9 @@ function exportToCSV() {
     document.body.removeChild(link);
 }
   
-function generateCSV(data) {
-    const headers = Object.keys(data[0]).join(',');
+function generateCSV(data, headers) {
+    const headerRow = Object.keys(headers).map(key => headers[key]).join(',');
     const rows = data.map(order => Object.values(order).join(','));
 
-    return `${headers}\n${rows.join('\n')}`;
+    return `${headerRow}\n${rows.join('\n')}`;
 }

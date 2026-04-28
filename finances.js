@@ -11,7 +11,9 @@ function closeSidebar() {
 
 function openForm() {
     var form = document.getElementById("transaction-form")
+    console.log('Form display before toggle:', form.style.display);
     form.style.display = (form.style.display === "block") ? "none" : "block";
+    console.log('Form display after toggle:', form.style.display);
 }
 
 function closeForm() {
@@ -23,6 +25,92 @@ let transactions = [];
 let serialNumberCounter;
 
 window.onload = function () {
+    console.log('finances.js loaded');
+    console.log('addOrUpdate function:', typeof addOrUpdate);
+    console.log('newTransaction function:', typeof newTransaction);
+
+    // 初始化i18n
+    if (typeof initI18n === 'function') {
+        initI18n();
+    }
+
+    // 添加表单的submit事件监听器
+    const form = document.getElementById('transaction-form');
+    console.log('Form:', form);
+    if (form) {
+        console.log('Form found');
+        form.addEventListener('submit', function(event) {
+            console.log('Form submitted');
+            console.log('Event type:', event.type);
+            console.log('Event target:', event.target);
+            event.preventDefault();
+            addOrUpdate(event);
+        });
+    } else {
+        console.log('Form not found');
+    }
+
+    // 初始化日期选择器
+    const trDateInput = document.getElementById('tr-date');
+    if (trDateInput) {
+        // 设置placeholder
+        trDateInput.placeholder = currentLanguage === 'zh' ? '年-月-日' : 'YYYY-MM-DD';
+
+        // 创建自定义按钮
+        const createCustomButtons = (instance) => {
+            const buttonsContainer = document.createElement('div');
+            buttonsContainer.className = 'flatpickr-custom-buttons';
+            buttonsContainer.style.cssText = 'display: flex; justify-content: space-between; padding: 10px;';
+
+            // 今天按钮
+            const todayButton = document.createElement('button');
+            todayButton.type = 'button';
+            todayButton.className = 'flatpickr-today-button';
+            todayButton.textContent = currentLanguage === 'zh' ? '今天' : 'Today';
+            todayButton.style.cssText = 'background: #4a90e2; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer;';
+            todayButton.onclick = () => {
+                instance.setDate(new Date());
+            };
+
+            // 清除按钮
+            const clearButton = document.createElement('button');
+            clearButton.type = 'button';
+            clearButton.className = 'flatpickr-clear-button';
+            clearButton.textContent = currentLanguage === 'zh' ? '清除' : 'Clear';
+            clearButton.style.cssText = 'background: #e74c3c; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer;';
+            clearButton.onclick = () => {
+                instance.clear();
+            };
+
+            buttonsContainer.appendChild(todayButton);
+            buttonsContainer.appendChild(clearButton);
+
+            return buttonsContainer;
+        };
+
+        flatpickr(trDateInput, {
+            dateFormat: 'Y-m-d',
+            locale: currentLanguage === 'zh' ? 'zh' : 'default',
+            allowInput: true,
+            onReady: function(selectedDates, dateStr, instance) {
+                const calendarContainer = instance.calendarContainer;
+                const buttonsContainer = createCustomButtons(instance);
+                calendarContainer.appendChild(buttonsContainer);
+            },
+            onChange: function(selectedDates, dateStr, instance) {
+                // 更新按钮文本
+                const todayButton = instance.calendarContainer.querySelector('.flatpickr-today-button');
+                const clearButton = instance.calendarContainer.querySelector('.flatpickr-clear-button');
+                if (todayButton) {
+                    todayButton.textContent = currentLanguage === 'zh' ? '今天' : 'Today';
+                }
+                if (clearButton) {
+                    clearButton.textContent = currentLanguage === 'zh' ? '清除' : 'Clear';
+                }
+            }
+        });
+    }
+
     const storedTransactions = localStorage.getItem("bizTrackTransactions");
     if (storedTransactions) {
         transactions = JSON.parse(storedTransactions);
@@ -74,25 +162,71 @@ window.onload = function () {
 }
 
 function addOrUpdate(event) {
-    let type = document.getElementById("submitBtn").textContent;
-    if (type === 'Add') {
+    console.log('addOrUpdate called');
+    let type = document.getElementById("submitBtn").textContent.trim();
+    const addText = currentLanguage === 'zh' ? '添加' : 'Add';
+    const updateText = currentLanguage === 'zh' ? '更新' : 'Update';
+    const saveText = currentLanguage === 'zh' ? '保存' : 'Save';
+
+    console.log('Submit button text:', type);
+    console.log('Add text:', addText);
+    console.log('Update text:', updateText);
+    console.log('Save text:', saveText);
+
+    // 如果按钮文本是"保存"或"添加"/"Add"，则执行添加操作
+    if (type === addText || type === saveText) {
         newTransaction(event);
-    } else if (type === 'Update'){
+    } else if (type === updateText){
         const trId = document.getElementById("tr-id").value;
         updateTransaction(+trId); // convert to number
+    }
+}
+
+// 更新提交按钮的文本
+function updateSubmitButtonText() {
+    const submitBtn = document.getElementById("submitBtn");
+    if (submitBtn) {
+        const currentText = submitBtn.textContent;
+        const addText = currentLanguage === 'zh' ? '添加' : 'Add';
+        const updateText = currentLanguage === 'zh' ? '更新' : 'Update';
+
+        if (currentText === 'Add' || currentText === '添加') {
+            submitBtn.textContent = addText;
+        } else if (currentText === 'Update' || currentText === '更新') {
+            submitBtn.textContent = updateText;
+        }
     }
 }
 
 
 function newTransaction(event) {
     event.preventDefault();
-    const trDate = document.getElementById("tr-date").value;
+    const trDateInput = document.getElementById("tr-date");
+    const trDate = trDateInput.value;
     const trCategory = document.getElementById("tr-category").value;
     const trAmount = parseFloat(document.getElementById("tr-amount").value);
     const trNotes = document.getElementById("tr-notes").value;
 
-    serialNumberCounter = transactions.length + 1;
-    let trID = serialNumberCounter;
+    // 调试信息
+    console.log('trDate:', trDate);
+    console.log('trCategory:', trCategory);
+    console.log('trAmount:', trAmount);
+    console.log('trNotes:', trNotes);
+
+    // 检查日期是否为空
+    if (!trDate) {
+        alert(window.t("common.selectDate"));
+        return;
+    }
+
+    // 生成唯一的 trID
+    let maxID = 0;
+    transactions.forEach(t => {
+        if (t.trID > maxID) {
+            maxID = t.trID;
+        }
+    });
+    let trID = maxID + 1;
     
     const transaction = {
       trID,
@@ -102,21 +236,47 @@ function newTransaction(event) {
       trNotes,
     };
     
+    console.log('New transaction:', transaction);
+    console.log('Transactions before push:', transactions);
+
     transactions.push(transaction);
+
+    console.log('Transactions after push:', transactions);
   
     renderTransactions(transactions);
     localStorage.setItem("bizTrackTransactions", JSON.stringify(transactions));
 
-    serialNumberCounter++;
+    serialNumberCounter = trID;
     displayExpenses();
   
     document.getElementById("transaction-form").reset();
+
+    // 清除 Flatpickr 的日期选择
+    const fp = trDateInput._flatpickr;
+    if (fp) {
+        fp.clear();
+    }
 }
 
+// 翻译类别
+function translateCategory(category) {
+    const categoryTranslations = {
+        'Rent': currentLanguage === 'zh' ? '租金' : 'Rent',
+        'Utilities': currentLanguage === 'zh' ? '水电费' : 'Utilities',
+        'Supplies': currentLanguage === 'zh' ? '用品' : 'Supplies',
+        'Order Fulfillment': currentLanguage === 'zh' ? '订单履行' : 'Order Fulfillment',
+        'Miscellaneous': currentLanguage === 'zh' ? '杂项' : 'Miscellaneous'
+    };
+    return categoryTranslations[category] || category;
+}
 
 function renderTransactions(transactions) {
     const transactionTableBody = document.getElementById("tableBody");
     transactionTableBody.innerHTML = "";
+
+    // 调试信息
+    console.log('renderTransactions called with:', transactions);
+    console.log('transactionTableBody:', transactionTableBody);
 
     const transactionToRender = transactions;
 
@@ -131,11 +291,12 @@ function renderTransactions(transactions) {
         transactionRow.dataset.trNotes = transaction.trNotes;
 
         const formattedAmount = typeof transaction.trAmount === 'number' ? `$${transaction.trAmount.toFixed(2)}` : '';
+        const translatedCategory = translateCategory(transaction.trCategory);
 
         transactionRow.innerHTML = `
             <td>${transaction.trID}</td>
             <td>${transaction.trDate}</td>
-            <td>${transaction.trCategory}</td>
+            <td>${translatedCategory}</td>
             <td class="tr-amount">${formattedAmount}</td>
             <td>${transaction.trNotes}</td>
             <td class="action">
@@ -154,8 +315,9 @@ function displayExpenses() {
     const totalExpenses = transactions
         .reduce((total, transaction) => total + transaction.trAmount,0);
 
+    const totalExpensesText = currentLanguage === 'zh' ? '总支出: ' : 'Total Expenses: ';
     resultElement.innerHTML = `
-        <span>Total Expenses: $${totalExpenses.toFixed(2)}</span>
+        <span>${totalExpensesText}$${totalExpenses.toFixed(2)}</span>
     `;
 }
 
@@ -168,7 +330,8 @@ function editRow(trID) {
     document.getElementById("tr-amount").value = trToEdit.trAmount;
     document.getElementById("tr-notes").value = trToEdit.trNotes;
   
-    document.getElementById("submitBtn").textContent = "Update";
+    const updateText = currentLanguage === 'zh' ? '更新' : 'Update';
+    document.getElementById("submitBtn").textContent = updateText;
 
     document.getElementById("transaction-form").style.display = "block";
   }
@@ -204,7 +367,8 @@ function deleteTransaction(trID) {
         renderTransactions(transactions);
 
         document.getElementById("transaction-form").reset();
-        document.getElementById("submitBtn").textContent = "Add";
+        const addText = currentLanguage === 'zh' ? '添加' : 'Add';
+        document.getElementById("submitBtn").textContent = addText;
     }
 }
 
@@ -260,13 +424,42 @@ function exportToCSV() {
         };
     });
   
-    const csvContent = generateCSV(transactionsToExport);
+    const currentLanguage = localStorage.getItem('bizTrackLanguage') || 'en';
+
+    // 根据当前语言获取表头翻译
+    const headerTranslations = {
+        en: {
+            trID: 'Transaction ID',
+            trDate: 'Transaction Date',
+            trCategory: 'Category',
+            trAmount: 'Amount',
+            trNotes: 'Notes'
+        },
+        zh: {
+            trID: '交易ID',
+            trDate: '交易日期',
+            trCategory: '类别',
+            trAmount: '金额',
+            trNotes: '备注'
+        }
+    };
+
+    const headers = headerTranslations[currentLanguage];
+
+    const csvContent = generateCSV(transactionsToExport, headers);
   
-    const blob = new Blob([csvContent], { type: 'text/csv' });
+    // 使用TextEncoder处理编码问题
+    const encoder = new TextEncoder();
+    const BOM = new Uint8Array([0xEF, 0xBB, 0xBF]);
+    const csvBytes = encoder.encode(csvContent);
+    const csvWithBOM = new Uint8Array(BOM.length + csvBytes.length);
+    csvWithBOM.set(BOM, 0);
+    csvWithBOM.set(csvBytes, BOM.length);
+    const blob = new Blob([csvWithBOM], { type: 'text/csv;charset=utf-8' });
   
     const link = document.createElement('a');
     link.href = window.URL.createObjectURL(blob);
-    link.download = 'biztrack_expense_table.csv';
+    link.download = currentLanguage === 'zh' ? 'biztrack_支出表.csv' : 'biztrack_expense_table.csv';
   
     document.body.appendChild(link);
     link.click();
@@ -274,9 +467,9 @@ function exportToCSV() {
     document.body.removeChild(link);
 }
   
-function generateCSV(data) {
-    const headers = Object.keys(data[0]).join(',');
+function generateCSV(data, headers) {
+    const headerRow = Object.keys(headers).map(key => headers[key]).join(',');
     const rows = data.map(order => Object.values(order).join(','));
 
-    return `${headers}\n${rows.join('\n')}`;
+    return `${headerRow}\n${rows.join('\n')}`;
 }
