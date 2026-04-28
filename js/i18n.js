@@ -131,7 +131,11 @@ const translations = {
     },
     common: {
       search: "Search",
-      action: "Action"
+      action: "Action",
+      productIdExists: "Product ID already exists. Please use a unique ID.",
+      categoryMustMatch: "Product category must match the selected product name.",
+      orderIdExists: "Order ID already exists. Please use a unique ID.",
+      selectDate: "Please select a date"
     },
     help: {
       title: "Using BizTrack: A Quick Guide",
@@ -327,7 +331,11 @@ const translations = {
     },
     common: {
       search: "搜索",
-      action: "操作"
+      action: "操作",
+      productIdExists: "产品ID已存在，请使用唯一的ID。",
+      categoryMustMatch: "产品类别必须与所选产品名称匹配。",
+      orderIdExists: "订单ID已存在，请使用唯一的ID。",
+      selectDate: "请选择日期"
     },
     about: {
       title: "我的编程之旅",

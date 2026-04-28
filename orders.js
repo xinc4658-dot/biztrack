@@ -179,7 +179,7 @@ function newOrder(event) {
   const orderStatus = document.getElementById("order-status").value;
 
   if (isDuplicateID(orderID, null)) {
-    alert("Order ID already exists. Please use a unique ID.");
+    alert(window.t("common.orderIdExists"));
     return;
   }
 
@@ -204,60 +204,6 @@ function newOrder(event) {
 }
 
 
-// 翻译产品名称
-// function translateItemName(name) { // 已移除，使用i18n.js中的translateProductName函数
-  // if (!name) return name; // 已注释，使用i18n.js中的函数
-
-  // 获取当前语言，优先使用i18n.js中的currentLanguage变量
-  // let currentLang = 'en';
-  // if (typeof currentLanguage !== 'undefined') {
-  //   currentLang = currentLanguage;
-  // } else {
-  //   currentLang = localStorage.getItem('bizTrackLanguage') || 'en';
-  // }
-
-  // 产品名称翻译映射
-  // const translations = {
-    // en: {
-    //   'Baseball caps': 'Baseball caps',
-    //   'Snapbacks': 'Snapbacks',
-    //   'Beanies': 'Beanies',
-    //   'Bucket hats': 'Bucket hats',
-    //   'Mugs': 'Mugs',
-    //   'Water bottles': 'Water bottles',
-    //   'Tumblers': 'Tumblers',
-    //   'T-shirts': 'T-shirts',
-    //   'Sweatshirts': 'Sweatshirts',
-    //   'Hoodies': 'Hoodies',
-    //   'Pillow cases': 'Pillow cases',
-    //   'Tote bags': 'Tote bags',
-    //   'Stickers': 'Stickers',
-    //   'Posters': 'Posters',
-    //   'Framed posters': 'Framed posters',
-    //   'Canvas prints': 'Canvas prints'
-    // },
-    // zh: {
-    //   'Baseball caps': '棒球帽',
-    //   'Snapbacks': '平沿帽',
-    //   'Beanies': '无檐便帽',
-    //   'Bucket hats': '渔夫帽',
-    //   'Mugs': '马克杯',
-    //   'Water bottles': '水瓶',
-    //   'Tumblers': '平底杯',
-    //   'T-shirts': 'T恤',
-    //   'Sweatshirts': '运动衫',
-    //   'Hoodies': '连帽衫',
-    //   'Pillow cases': '枕套',
-    //   'Tote bags': '托特包',
-    //   'Stickers': '贴纸',
-    //   'Posters': '海报',
-    //   'Framed posters': '装裱海报',
-    //   'Canvas prints': '帆布画'
-    // }
-  // };
-
-  // return translations[currentLang][name] || name; // 已注释，使用i18n.js中的函数
-// }
 
 // 翻译订单状态
 function translateOrderStatus(status) {
@@ -420,7 +366,7 @@ function updateOrder(orderID) {
         };
 
         if (isDuplicateID(updatedOrder.orderID, orderID)) {
-            alert("Order ID already exists. Please use a unique ID.");
+            alert(window.t("common.orderIdExists"));
             return;
         }
 

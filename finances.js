@@ -215,7 +215,7 @@ function newTransaction(event) {
 
     // 检查日期是否为空
     if (!trDate) {
-        alert(currentLanguage === 'zh' ? '请选择日期' : 'Please select a date');
+        alert(window.t("common.selectDate"));
         return;
     }
 
@@ -367,7 +367,8 @@ function deleteTransaction(trID) {
         renderTransactions(transactions);
 
         document.getElementById("transaction-form").reset();
-        document.getElementById("submitBtn").textContent = "Add";
+        const addText = currentLanguage === 'zh' ? '添加' : 'Add';
+        document.getElementById("submitBtn").textContent = addText;
     }
 }
 
