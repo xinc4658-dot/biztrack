@@ -288,10 +288,13 @@ function renderOrders(orders) {
       const translatedName = typeof translateProductName === 'function' ? translateProductName(order.itemName) : order.itemName;
       const translatedStatus = translateOrderStatus(order.orderStatus);
 
+      // 【新增】对 itemName 进行转义
+      const safeName = window.escapeHTML(translatedName);
+
       orderRow.innerHTML = `
         <td>${order.orderID}</td>
         <td>${order.orderDate}</td>
-        <td>${translatedName}</td>
+        <td>${safeName}</td>
         <td>${formattedPrice}</td>
         <td>${order.qtyBought}</td>
         <td>${formattedShipping}</td>

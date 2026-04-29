@@ -304,12 +304,15 @@ function renderTransactions(transactions) {
         const formattedAmount = typeof transaction.trAmount === 'number' ? `$${transaction.trAmount.toFixed(2)}` : '';
         const translatedCategory = translateCategory(transaction.trCategory);
 
+        // 【新增】对用户输入的备注进行 XSS 净化
+        const safeNotes = window.escapeHTML(transaction.trNotes);
+
         transactionRow.innerHTML = `
             <td>${transaction.trID}</td>
             <td>${transaction.trDate}</td>
             <td>${translatedCategory}</td>
             <td class="tr-amount">${formattedAmount}</td>
-            <td>${transaction.trNotes}</td>
+            <td>${safeNotes}</td>
             <td class="action">
                 <i title="Edit" onclick="editRow('${transaction.trID}')" class="edit-icon fa-solid fa-pen-to-square"></i>
                 <i onclick="deleteTransaction('${transaction.trID}')" class="delete-icon fas fa-trash-alt"></i>

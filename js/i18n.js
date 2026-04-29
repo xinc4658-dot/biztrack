@@ -1,5 +1,19 @@
 // i18n.js - 国际化模块
 
+// js/i18n.js 顶部添加转义函数
+window.escapeHTML = function(str) {
+  if (typeof str !== 'string') return str;
+  return str.replace(/[&<>'"]/g, 
+    tag => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        "'": '&#39;',
+        '"': '&quot;'
+    }[tag] || tag)
+  );
+};
+
 // 当前语言
 let currentLanguage = localStorage.getItem('bizTrackLanguage') || 'en';
 
