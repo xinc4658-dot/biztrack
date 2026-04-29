@@ -53,6 +53,12 @@
                 </a>
             </li>
             <li>
+                <a href="./balance.html">
+                    <i class="fas fa-scale-balanced"></i>
+                    <span data-i18n="sidebar.balance">Balance</span>
+                </a>
+            </li>
+            <li>
                 <a href="./history.html">
                     <i class="fa-solid fa-clock-rotate-left"></i>
                     <span data-i18n="sidebar.history">History</span>
@@ -128,7 +134,7 @@
                         <span class="card-detail">**** **** **** 1047</span>
                     </div>
                 </a>
-                <a href="#">
+                <a href="./balance.html">
                     <div class="payment-card">
                         <div class="card-header">
                             <div class="amount" id="balance"></div>
@@ -139,16 +145,37 @@
                 </a> 
             </div>
         </div>
-        <div class="charts-container">
-            <h3 class="main-title" data-i18n="dashboard.analytics">Analytics</h3>
-            <div class="charts-wrapper">
-                <div class="charts-card">
-                    <span class="chart-title" data-i18n="dashboard.salesByProductCategory">Sales by Product Category</span>
-                    <div id="bar-chart"></div>
+
+        <div class="card-container dashboard-tools">
+            <div class="dashboard-tools-grid">
+                <div class="dashboard-tool-card">
+                    <h3 class="main-title" data-i18n="dashboard.quickActions">Quick Actions</h3>
+                    <div class="quick-action-buttons">
+                        <a class="quick-action-btn" href="./products.html?quickAdd=1" data-i18n="products.addProduct">Add Product</a>
+                        <a class="quick-action-btn" href="./orders.html?quickAdd=1" data-i18n="orders.addOrder">Add Order</a>
+                        <a class="quick-action-btn" href="./finances.html?quickAdd=1" data-i18n="expenses.addExpense">Add Expense</a>
+                    </div>
                 </div>
-                <div class="charts-card">
-                    <span class="chart-title" data-i18n="dashboard.expenses">Expenses</span>
-                    <div id="donut-chart"></div>
+                <div class="dashboard-tool-card">
+                    <h3 class="main-title" data-i18n="dashboard.orderStatusOverview">Order Status</h3>
+                    <div class="pending-order-stats">
+                        <div class="pending-stat-item">
+                            <span class="pending-stat-label" data-i18n="orders.pending">Pending</span>
+                            <span class="pending-stat-value" id="pending-order-count">0</span>
+                        </div>
+                        <div class="pending-stat-item">
+                            <span class="pending-stat-label" data-i18n="orders.processing">Processing</span>
+                            <span class="pending-stat-value" id="processing-order-count">0</span>
+                        </div>
+                        <div class="pending-stat-item">
+                            <span class="pending-stat-label" data-i18n="orders.shipped">Shipped</span>
+                            <span class="pending-stat-value" id="shipped-order-count">0</span>
+                        </div>
+                        <div class="pending-stat-item">
+                            <span class="pending-stat-label" data-i18n="orders.delivered">Delivered</span>
+                            <span class="pending-stat-value" id="delivered-order-count">0</span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
