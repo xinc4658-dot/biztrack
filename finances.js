@@ -24,6 +24,21 @@ function closeForm() {
 let transactions = [];
 let serialNumberCounter;
 
+async function syncExpensesToDb(action, record, beforeRecord) {
+    if (!window.biztrackDbHelpers || !window.biztrackDbHelpers.isReady()) {
+        return;
+    }
+
+    try {
+        await window.biztrackDbHelpers.syncCollection("expenses", transactions, "trID");
+        if (action) {
+            await window.biztrackDbHelpers.logActivity("expenses", action, record.trID, record, beforeRecord);
+        }
+    } catch (error) {
+        console.error("Expenses database sync failed:", error);
+    }
+}
+
 window.onload = function () {
     console.log('finances.js loaded');
     console.log('addOrUpdate function:', typeof addOrUpdate);
@@ -159,26 +174,21 @@ window.onload = function () {
     }
   
     renderTransactions(transactions);
+    syncExpensesToDb("sync", { trID: "all-expenses" });
 }
 
 function addOrUpdate(event) {
-    console.log('addOrUpdate called');
-    let type = document.getElementById("submitBtn").textContent.trim();
+    event.preventDefault();
+    const type = document.getElementById("submitBtn").textContent.trim();
     const addText = currentLanguage === 'zh' ? '添加' : 'Add';
     const updateText = currentLanguage === 'zh' ? '更新' : 'Update';
     const saveText = currentLanguage === 'zh' ? '保存' : 'Save';
 
-    console.log('Submit button text:', type);
-    console.log('Add text:', addText);
-    console.log('Update text:', updateText);
-    console.log('Save text:', saveText);
-
-    // 如果按钮文本是"保存"或"添加"/"Add"，则执行添加操作
     if (type === addText || type === saveText) {
         newTransaction(event);
-    } else if (type === updateText){
+    } else if (type === updateText) {
         const trId = document.getElementById("tr-id").value;
-        updateTransaction(+trId); // convert to number
+        updateTransaction(+trId);
     }
 }
 
@@ -245,6 +255,7 @@ function newTransaction(event) {
   
     renderTransactions(transactions);
     localStorage.setItem("bizTrackTransactions", JSON.stringify(transactions));
+    syncExpensesToDb("create", transaction);
 
     serialNumberCounter = trID;
     displayExpenses();
@@ -340,11 +351,13 @@ function deleteTransaction(trID) {
     const indexToDelete = transactions.findIndex(transaction => transaction.trID == trID);
 
     if (indexToDelete !== -1) {
+        const deletedTransaction = { ...transactions[indexToDelete] };
         transactions.splice(indexToDelete, 1);
 
         localStorage.setItem("bizTrackTransactions", JSON.stringify(transactions));
 
         renderTransactions(transactions);
+        syncExpensesToDb("delete", { trID }, deletedTransaction);
     }
 }
 
@@ -352,6 +365,7 @@ function deleteTransaction(trID) {
     const indexToUpdate = transactions.findIndex(transaction => transaction.trID === trID);
 
     if (indexToUpdate !== -1) {
+        const beforeTransaction = { ...transactions[indexToUpdate] };
         const updatedTransaction = {
             trID: trID,
             trDate: document.getElementById("tr-date").value,
@@ -365,6 +379,7 @@ function deleteTransaction(trID) {
         localStorage.setItem("bizTrackTransactions", JSON.stringify(transactions));
 
         renderTransactions(transactions);
+        syncExpensesToDb("update", updatedTransaction, beforeTransaction);
 
         document.getElementById("transaction-form").reset();
         const addText = currentLanguage === 'zh' ? '添加' : 'Add';

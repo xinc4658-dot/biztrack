@@ -13,7 +13,48 @@ const translations = {
       expenses: "Expenses",
       help: "Help",
       meetDeveloper: "Meet the Developer",
-      close: "Close"
+      close: "Close",
+      history: "History"
+    },
+    history: {
+      pageTitle: "Activity History",
+      sectionTitle: "Operation Logs",
+      colTime: "Time",
+      colEntity: "Entity",
+      colRecordId: "Record ID",
+      colAction: "Action",
+      colBefore: "Before",
+      colAfter: "After",
+      noRecords: "No records yet",
+      noHistoryYet: "No history logs yet",
+      dbNotConnected: "Database is not connected.",
+      entityProducts: "Products",
+      entityOrders: "Orders",
+      entityExpenses: "Expenses",
+      actionCreate: "Create",
+      actionUpdate: "Update",
+      actionDelete: "Delete",
+      actionSync: "Sync",
+      fieldProdID: "Product ID",
+      fieldProdName: "Product Name",
+      fieldProdDesc: "Description",
+      fieldProdCat: "Category",
+      fieldProdPrice: "Price",
+      fieldProdSold: "Units Sold",
+      fieldOrderID: "Order ID",
+      fieldOrderDate: "Order Date",
+      fieldItemName: "Item Name",
+      fieldItemPrice: "Item Price",
+      fieldQtyBought: "Qty Bought",
+      fieldShipping: "Shipping",
+      fieldTaxes: "Taxes",
+      fieldOrderTotal: "Order Total",
+      fieldOrderStatus: "Order Status",
+      fieldTrID: "S/N",
+      fieldTrDate: "Date",
+      fieldTrCategory: "Category",
+      fieldTrAmount: "Amount",
+      fieldTrNotes: "Notes"
     },
     dashboard: {
       title: "Dashboard",
@@ -185,7 +226,48 @@ const translations = {
       expenses: "支出",
       help: "帮助",
       meetDeveloper: "开发者介绍",
-      close: "关闭"
+      close: "关闭",
+      history: "历史记录"
+    },
+    history: {
+      pageTitle: "操作历史",
+      sectionTitle: "操作记录",
+      colTime: "时间",
+      colEntity: "对象",
+      colRecordId: "记录 ID",
+      colAction: "操作",
+      colBefore: "变更前",
+      colAfter: "变更后",
+      noRecords: "暂无记录",
+      noHistoryYet: "暂无历史记录",
+      dbNotConnected: "数据库未连接。",
+      entityProducts: "产品",
+      entityOrders: "订单",
+      entityExpenses: "支出",
+      actionCreate: "创建",
+      actionUpdate: "更新",
+      actionDelete: "删除",
+      actionSync: "同步",
+      fieldProdID: "产品 ID",
+      fieldProdName: "产品名称",
+      fieldProdDesc: "描述",
+      fieldProdCat: "类别",
+      fieldProdPrice: "价格",
+      fieldProdSold: "销售数量",
+      fieldOrderID: "订单 ID",
+      fieldOrderDate: "订单日期",
+      fieldItemName: "商品名称",
+      fieldItemPrice: "商品单价",
+      fieldQtyBought: "购买数量",
+      fieldShipping: "运费",
+      fieldTaxes: "税费",
+      fieldOrderTotal: "订单总额",
+      fieldOrderStatus: "订单状态",
+      fieldTrID: "序号",
+      fieldTrDate: "日期",
+      fieldTrCategory: "类别",
+      fieldTrAmount: "金额",
+      fieldTrNotes: "备注"
     },
     dashboard: {
       title: "仪表盘",
@@ -611,6 +693,12 @@ function changeLanguage(lang) {
     }
   }
 
+  if (window.location.pathname.includes('history.html')) {
+    if (typeof window.refreshHistoryLogs === 'function') {
+      window.refreshHistoryLogs();
+    }
+  }
+
   // 强制刷新日期选择器
   setTimeout(() => {
     const dateInputs = document.querySelectorAll('input[type="date"]');
@@ -924,6 +1012,12 @@ function initI18n() {
         if (typeof renderTransactions === 'function') {
           const transactions = JSON.parse(localStorage.getItem('bizTrackTransactions')) || [];
           renderTransactions(transactions);
+        }
+      }
+
+      if (window.location.pathname.includes('history.html')) {
+        if (typeof window.refreshHistoryLogs === 'function') {
+          window.refreshHistoryLogs();
         }
       }
 

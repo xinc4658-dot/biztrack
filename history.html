@@ -7,16 +7,15 @@
     <meta property="og:description" content="A project born out of real small business challenges, now simplifying product, order, and finance management."/>
     <meta property="og:image:secure_url" content="https://i.imgur.com/0O47fVi.jpg"/>
     <meta property="og:url" content="https://sumusa.github.io/biztrack/"/>
-    <link rel="stylesheet" href="styles.css"/>
-        <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="stylesheet" href="./styles.css"/>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
     <link rel="preload" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
     <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap"></noscript>
     <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
     <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"></noscript>
     <link rel="icon" type="image/x-icon" href="./assets/favicon.ico">
-    <title>Dashboard - BizTrack</title>
+    <title>History - BizTrack</title>
 </head>
 <body>
     <div id="sidebar" class="sidebar">
@@ -28,7 +27,7 @@
             <i class="fa-solid fa-xmark" data-i18n-title="sidebar.close" title="Close" onclick="closeSidebar()"></i>
         </div>
         <ul class="menu">
-            <li class="active">
+            <li>
                 <a href="./index.html">
                     <i class="fa-solid fa-gauge-high"></i>
                     <span data-i18n="sidebar.dashboard">Dashboard</span>
@@ -52,7 +51,7 @@
                     <span data-i18n="sidebar.expenses">Expenses</span>
                 </a>
             </li>
-            <li>
+            <li class="active">
                 <a href="./history.html">
                     <i class="fa-solid fa-clock-rotate-left"></i>
                     <span data-i18n="sidebar.history">History</span>
@@ -79,8 +78,7 @@
                 <i class="fa-solid fa-bars"></i>
             </div>
             <div class="header-title">
-                <!-- <span>Primary</span> -->
-                <h2 data-i18n="dashboard.title">Dashboard</h2>
+                <h2 data-i18n="history.pageTitle">Activity History</h2>
             </div>
             <div class="user-info">
                 <div class="language-switcher">
@@ -89,77 +87,35 @@
                         <option value="zh">中文</option>
                     </select>
                 </div>
-                <!-- <div class="search-box">
-                    <i class="fas fa-search"></i>
-                    <input type="search" id="searchInput" placeholder="Search">
-                </div> -->
-                <!-- <i class="fas fa-user-alt fa-xl"></i> -->
             </div>
         </div>
 
-        <div class="card-container">
-            <h3 class="main-title" data-i18n="dashboard.summary">Summary</h3>
-            <div class="card-wrapper">
-                <a href="./orders.html">
-                    <div class="payment-card">
-                        <div class="card-header">
-                            <div class="amount" id="rev-amount">
-                            </div>
-                            <i class="fas fa-sack-dollar icon"></i>
-                        </div>
-                        <span class="card-detail">**** **** **** 5674</span>
-                    </div>
-                </a>
-                <a href="./finances.html">    
-                    <div class="payment-card">
-                        <div class="card-header">
-                            <div class="amount" id="exp-amount"></div>
-                            <i class="fas fa-credit-card icon"></i>
-                        </div>
-                        <span class="card-detail">**** **** **** 2356</span>
-                    </div>
-                </a>
-                <a href="./orders.html"> 
-                    <div class="payment-card">
-                        <div class="card-header">
-                            <div class="amount" id="num-orders"></div>
-                            <i class="fas fa-shopping-cart icon"></i>
-                        </div>
-                        <span class="card-detail">**** **** **** 1047</span>
-                    </div>
-                </a>
-                <a href="#">
-                    <div class="payment-card">
-                        <div class="card-header">
-                            <div class="amount" id="balance"></div>
-                            <i class="fas fa-arrow-up-right-dots icon"></i>
-                        </div>
-                        <span class="card-detail">**** **** **** 2951</span>
-                    </div>
-                </a> 
+        <div class="table-wrapper">
+            <div class="product-title">
+                <h3 class="main-title" data-i18n="history.sectionTitle">Operation Logs</h3>
             </div>
-        </div>
-        <div class="charts-container">
-            <h3 class="main-title" data-i18n="dashboard.analytics">Analytics</h3>
-            <div class="charts-wrapper">
-                <div class="charts-card">
-                    <span class="chart-title" data-i18n="dashboard.salesByProductCategory">Sales by Product Category</span>
-                    <div id="bar-chart"></div>
-                </div>
-                <div class="charts-card">
-                    <span class="chart-title" data-i18n="dashboard.expenses">Expenses</span>
-                    <div id="donut-chart"></div>
-                </div>
+            <div class="table-container">
+                <table id="history-table">
+                    <thead>
+                        <tr>
+                            <th data-i18n="history.colTime">Time</th>
+                            <th data-i18n="history.colEntity">Entity</th>
+                            <th data-i18n="history.colRecordId">Record ID</th>
+                            <th data-i18n="history.colAction">Action</th>
+                            <th data-i18n="history.colBefore">Before</th>
+                            <th data-i18n="history.colAfter">After</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historyTableBody"></tbody>
+                </table>
             </div>
         </div>
     </div>
 
-    <!-- Apex Charts -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/apexcharts/3.45.2/apexcharts.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
     <script src="./firebase.js"></script>
     <script src="./js/i18n.js"></script>
-    <script src="./script.js"></script>
+    <script src="./history.js"></script>
 </body>
 </html>

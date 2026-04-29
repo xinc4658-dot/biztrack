@@ -20,6 +20,21 @@ function closeForm() {
 
 let orders = [];
 
+async function syncOrdersToDb(action, record, beforeRecord) {
+    if (!window.biztrackDbHelpers || !window.biztrackDbHelpers.isReady()) {
+        return;
+    }
+
+    try {
+        await window.biztrackDbHelpers.syncCollection("orders", orders, "orderID");
+        if (action) {
+            await window.biztrackDbHelpers.logActivity("orders", action, record.orderID, record, beforeRecord);
+        }
+    } catch (error) {
+        console.error("Orders database sync failed:", error);
+    }
+}
+
 window.onload = function () {
     // 等待i18n.js初始化完成
     setTimeout(function() {
@@ -150,12 +165,13 @@ window.onload = function () {
         }
 
         renderOrders(orders);
+        syncOrdersToDb("sync", { orderID: "all-orders" });
     }, 100);
 }
 
 function addOrUpdate(event) {
+    event.preventDefault();
     const submitBtn = document.getElementById("submitBtn");
-    // 检查按钮的data-i18n属性来确定操作类型
     const i18nKey = submitBtn.getAttribute('data-i18n');
     if (i18nKey === 'orders.save' && !submitBtn.dataset.isEdit) {
         newOrder(event);
@@ -199,6 +215,7 @@ function newOrder(event) {
 
   renderOrders(orders);
   localStorage.setItem("bizTrackOrders", JSON.stringify(orders));
+  syncOrdersToDb("create", order);
 
   document.getElementById("order-form").reset();
 }
@@ -337,11 +354,13 @@ function deleteOrder(orderID) {
   const indexToDelete = orders.findIndex(order => order.orderID === orderID);
 
   if (indexToDelete !== -1) {
+      const deletedOrder = { ...orders[indexToDelete] };
       orders.splice(indexToDelete, 1);
 
       localStorage.setItem("bizTrackOrders", JSON.stringify(orders));
 
       renderOrders(orders);
+      syncOrdersToDb("delete", { orderID }, deletedOrder);
   }
 }
 
@@ -349,6 +368,7 @@ function updateOrder(orderID) {
     const indexToUpdate = orders.findIndex(order => order.orderID === orderID);
 
     if (indexToUpdate !== -1) {
+        const beforeOrder = { ...orders[indexToUpdate] };
         const itemPrice = parseFloat(document.getElementById("item-price").value);
         const qtyBought = parseInt(document.getElementById("qty-bought").value);
         const shipping = parseFloat(document.getElementById("shipping").value);
@@ -375,6 +395,7 @@ function updateOrder(orderID) {
         localStorage.setItem("bizTrackOrders", JSON.stringify(orders));
 
         renderOrders(orders);
+        syncOrdersToDb("update", updatedOrder, beforeOrder);
 
         document.getElementById("order-form").reset();
         document.getElementById("submitBtn").dataset.isEdit = false;

@@ -18,7 +18,22 @@ function closeForm() {
 
 let products = [];
 
-// 产品名称 -> 类别的映射 (用于自动填充)
+async function syncProductsToDb(action, record, beforeRecord) {
+  if (!window.biztrackDbHelpers || !window.biztrackDbHelpers.isReady()) {
+    return;
+  }
+
+  try {
+    await window.biztrackDbHelpers.syncCollection("products", products, "prodID");
+    if (action) {
+      await window.biztrackDbHelpers.logActivity("products", action, record.prodID, record, beforeRecord);
+    }
+  } catch (error) {
+    console.error("Products database sync failed:", error);
+  }
+}
+
+// 产品名称 -> 类别的映射 (用于自动填充；与存储的 prodCat 英文值一致)
 let productCategoryMap = {
   'Baseball caps': 'Hats',
   'Snapbacks': 'Hats',
@@ -105,9 +120,11 @@ function init() {
       localStorage.setItem("bizTrackProducts", JSON.stringify(products));
     }
     renderProducts(products);
+    syncProductsToDb("sync", { prodID: "all-products" });
 }
 
 function addOrUpdate(event) {
+  event.preventDefault();
   const submitBtn = document.getElementById("submitBtn");
   const i18nKey = submitBtn.getAttribute('data-i18n');
   if (i18nKey === 'products.save' && !submitBtn.dataset.isEdit) {
@@ -176,6 +193,8 @@ function newProduct(event) {
 
   renderProducts(products);
   localStorage.setItem("bizTrackProducts", JSON.stringify(products));
+  syncProductsToDb("create", product);
+
   document.getElementById("product-form").reset();
 }
 
@@ -231,55 +250,56 @@ function editRow(prodID) {
 function deleteProduct(prodID) {
   const indexToDelete = products.findIndex(product => product.prodID === prodID);
   if (indexToDelete !== -1) {
+      const deletedProduct = { ...products[indexToDelete] };
       products.splice(indexToDelete, 1);
       localStorage.setItem("bizTrackProducts", JSON.stringify(products));
       renderProducts(products);
+      syncProductsToDb("delete", { prodID }, deletedProduct);
   }
 }
 
 function updateProduct(prodID) {
     const indexToUpdate = products.findIndex(product => product.prodID === prodID);
     if (indexToUpdate !== -1) {
-      const updatedId = document.getElementById("product-id").value.trim();
-      const updatedName = document.getElementById("product-name").value.trim();
-      const updatedDesc = document.getElementById("product-desc").value.trim();
-      const updatedCat = document.getElementById("product-cat").value.trim();
-      const updatedPriceInput = document.getElementById("product-price").value.trim();
-      const updatedSoldInput = document.getElementById("product-sold").value.trim();
+        const beforeProduct = { ...products[indexToUpdate] };
+        const updatedId = document.getElementById("product-id").value.trim();
+        const updatedName = document.getElementById("product-name").value.trim();
+        const updatedDesc = document.getElementById("product-desc").value.trim();
+        const updatedCat = document.getElementById("product-cat").value.trim();
+        const updatedPriceInput = document.getElementById("product-price").value.trim();
+        const updatedSoldInput = document.getElementById("product-sold").value.trim();
 
-      // 空输入校验
-      if (!updatedId) {
-        alert(window.t("common.required", { field: window.t("products.productId") }));
-        return;
-      }
-      if (!updatedName) {
-        alert(window.t("common.required", { field: window.t("products.productName") }));
-        return;
-      }
-      if (!updatedCat) {
-        alert(window.t("common.required", { field: window.t("products.productCategory") }));
-        return;
-      }
-      if (!updatedPriceInput) {
-        alert(window.t("common.required", { field: window.t("products.productPrice") }));
-        return;
-      }
-      if (!updatedSoldInput) {
-        alert(window.t("common.required", { field: window.t("products.productSold") }));
-        return;
-      }
+        if (!updatedId) {
+            alert(window.t("common.required", { field: window.t("products.productId") }));
+            return;
+        }
+        if (!updatedName) {
+            alert(window.t("common.required", { field: window.t("products.productName") }));
+            return;
+        }
+        if (!updatedCat) {
+            alert(window.t("common.required", { field: window.t("products.productCategory") }));
+            return;
+        }
+        if (!updatedPriceInput) {
+            alert(window.t("common.required", { field: window.t("products.productPrice") }));
+            return;
+        }
+        if (!updatedSoldInput) {
+            alert(window.t("common.required", { field: window.t("products.productSold") }));
+            return;
+        }
 
-      // 数字类型校验
-      const updatedPrice = parseFloat(updatedPriceInput);
-      const updatedSold = parseInt(updatedSoldInput);
-      if (isNaN(updatedPrice)) {
-        alert(window.t("common.invalidNumber", { field: window.t("products.productPrice") }));
-        return;
-      }
-      if (isNaN(updatedSold)) {
-        alert(window.t("common.invalidNumber", { field: window.t("products.productSold") }));
-        return;
-      }
+        const updatedPrice = parseFloat(updatedPriceInput);
+        const updatedSold = parseInt(updatedSoldInput);
+        if (isNaN(updatedPrice)) {
+            alert(window.t("common.invalidNumber", { field: window.t("products.productPrice") }));
+            return;
+        }
+        if (isNaN(updatedSold)) {
+            alert(window.t("common.invalidNumber", { field: window.t("products.productSold") }));
+            return;
+        }
 
         const updatedProduct = {
             prodID: updatedId,
@@ -303,6 +323,7 @@ function updateProduct(prodID) {
         products[indexToUpdate] = updatedProduct;
         localStorage.setItem("bizTrackProducts", JSON.stringify(products));
         renderProducts(products);
+        syncProductsToDb("update", updatedProduct, beforeProduct);
 
         document.getElementById("product-form").reset();
         document.getElementById("submitBtn").dataset.isEdit = false;
