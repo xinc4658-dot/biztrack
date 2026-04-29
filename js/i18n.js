@@ -230,8 +230,29 @@ const translations = {
       coachAppreciation: "But none of this would be possible without the guidance of my amazing coach, <a href=\"https://github.com/samwise-nl\" target=\"_blank\">Sam Russell</a>. Sam has been the compass in my coding journey. Patient, encouraging, and always ready with a helpful tip – he has made navigating the coding seas a whole lot less daunting.",
       invitation: "So, why spill all this in an about me section? Well, I'm not just sharing my story; I'm inviting you to join me on my journey. Whether you're into the chaos of small business life, curious about coding escapades, or just want to see where the two collide – you're welcome here.",
       thanks: "Here's to coding, chaos, everything in between and heartfelt thanks to Sam!"
+    },
+    // 【新增】隐私合规相关翻译
+    privacy: {
+        cookieMessage: "We use essential cookies and local storage to ensure the core functionality of BizTrack.",
+        policyLink: "Privacy Policy",
+        acceptAll: "Accept All",
+        rejectAll: "Reject All",         // 按钮 2
+        necessaryOnly: "Necessary Only", // 按钮 3
+        // 页面标题和章节
+        pageTitle: "Privacy Policy",
+        whatWeCollect: "1. What we collect",
+        whatWeCollectDesc: "We collect product details, order history, and expense records that you manually input into the application.",
+        howWeUseIt: "2. How we use it",
+        howWeUseItDesc: "Your data is strictly used to power the Dashboard analytics, generate tables, and provide you with business tracking functionalities.",
+        cookieChoices: "3. Cookie choices",
+        cookieChoicesDesc: "We only use 'Local Storage' to save your language preference and temporary session data. No tracking cookies are used.",
+        thirdParties: "4. Third parties",
+        thirdPartiesDesc: "Your data is stored securely via Google Firebase. We do not sell or share your data with any advertising agencies.",
+        contact: "5. Contact",
+        contactDesc: "If you have any questions, please contact us via the Help page."
     }
   },
+  
   zh: {
     sidebar: {
       dashboard: "仪表盘",
@@ -443,6 +464,25 @@ const translations = {
       coachAppreciation: "但是，如果没有我出色的教练<a href=\"https://github.com/samwise-nl\" target=\"_blank\">Sam Russell</a>的指导，这一切都不可能实现。Sam是我编程旅程中的指南针。耐心、鼓励，总是准备着有用的提示——他让航行在编码的海洋中变得不再那么令人生畏。",
       invitation: "那么，为什么要在关于我的部分中分享这些呢？嗯，我不仅仅是在分享我的故事；我邀请您加入我的旅程。无论您是对小企业生活的混乱感兴趣，对编码冒险感到好奇，还是只是想看看两者的碰撞——您都受欢迎。",
       thanks: "为了编码、混乱以及介于两者之间的一切，以及对Sam的衷心感谢！"
+    },
+    // 【新增】隐私合规相关翻译
+    privacy: {
+        cookieMessage: "我们使用必要的 Cookie 和本地存储来确保 BizTrack 的核心功能。",
+        policyLink: "隐私政策",
+        acceptAll: "全部接受",
+        rejectAll: "全部拒绝",       // 按钮 2
+        necessaryOnly: "仅必要",     // 按钮 3
+        pageTitle: "隐私政策",
+        whatWeCollect: "1. 我们收集什么",
+        whatWeCollectDesc: "我们收集您手动输入到应用中的产品详情、订单历史和支出记录。",
+        howWeUseIt: "2. 我们如何使用",
+        howWeUseItDesc: "您的数据严格用于驱动仪表盘分析、生成表格以及为您提供业务跟踪功能。",
+        cookieChoices: "3. Cookie 选择",
+        cookieChoicesDesc: "我们仅使用“本地存储”来保存您的语言偏好和临时会话数据。不使用任何追踪型 Cookie。",
+        thirdParties: "4. 第三方",
+        thirdPartiesDesc: "您的数据通过 Google Firebase 安全存储。我们绝不会将您的数据出售或分享给广告机构。",
+        contact: "5. 联系方式",
+        contactDesc: "如有任何疑问，请通过帮助（Help）页面联系我们。"
     }
   }
 };
@@ -1043,6 +1083,65 @@ function initI18n() {
       }
     }
   });
+}
+
+// ==========================================
+// 隐私合规与 Cookie 横幅 
+// ==========================================
+function initCookieBanner() {
+    if (!localStorage.getItem('bizTrack_cookieChoice')) {
+        const banner = document.createElement('div');
+        banner.id = 'cookie-compliance-banner';
+        
+        // 样式调整，以适应三个按钮的布局
+        banner.style.cssText = `
+            position: fixed; bottom: 0; left: 0; width: 100%; 
+            background-color: #f8f9fa; color: #333; 
+            padding: 15px 20px; display: flex; flex-direction: row; justify-content: space-between; 
+            align-items: center; flex-wrap: wrap; gap: 15px; z-index: 9999; 
+            box-shadow: 0 -4px 15px rgba(0,0,0,0.1); 
+            font-family: 'Lato', sans-serif; font-size: 14px; box-sizing: border-box;
+        `;
+        
+        banner.innerHTML = `
+            <div style="flex-grow: 1; text-align: left; min-width: 250px;">
+                <span data-i18n="privacy.cookieMessage">${window.t('privacy.cookieMessage')}</span>
+                <a href="./privacy.html" style="color: #247BA0; text-decoration: underline; margin-left: 5px; font-weight: bold;" data-i18n="privacy.policyLink">${window.t('privacy.policyLink')}</a>
+            </div>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <button id="reject-all-btn" style="background-color: transparent; border: 1px solid #dc3545; color: #dc3545; padding: 6px 14px; border-radius: 4px; cursor: pointer; white-space: nowrap;" data-i18n="privacy.rejectAll">${window.t('privacy.rejectAll')}</button>
+                
+                <button id="necessary-only-btn" style="background-color: transparent; border: 1px solid #6c757d; color: #6c757d; padding: 6px 14px; border-radius: 4px; cursor: pointer; white-space: nowrap;" data-i18n="privacy.necessaryOnly">${window.t('privacy.necessaryOnly')}</button>
+                
+                <button id="accept-all-btn" style="background-color: #249672; color: white; border: none; padding: 7px 18px; border-radius: 4px; cursor: pointer; font-weight: bold; white-space: nowrap;" data-i18n="privacy.acceptAll">${window.t('privacy.acceptAll')}</button>
+            </div>
+        `;
+        document.body.appendChild(banner);
+
+        // 绑定事件：全部拒绝
+        document.getElementById('reject-all-btn').addEventListener('click', () => {
+            localStorage.setItem('bizTrack_cookieChoice', 'rejected_all');
+            banner.style.display = 'none';
+        });
+
+        // 绑定事件：仅必要
+        document.getElementById('necessary-only-btn').addEventListener('click', () => {
+            localStorage.setItem('bizTrack_cookieChoice', 'necessary_only');
+            banner.style.display = 'none';
+        });
+
+        // 绑定事件：全部接受
+        document.getElementById('accept-all-btn').addEventListener('click', () => {
+            localStorage.setItem('bizTrack_cookieChoice', 'accepted_all');
+            banner.style.display = 'none';
+        });
+    }
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initCookieBanner);
+} else {
+    initCookieBanner();
 }
 
 // 页面加载完成后初始化i18n

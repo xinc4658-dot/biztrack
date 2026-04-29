@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="./styles.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <title>Privacy Policy - BizTrack</title>
+</head>
+<body>
+    <div id="sidebar" class="sidebar">
+        <div class="sidebar-brand">
+            <h2>BizTrack</h2>
+            <div class="close-icon" onclick="closeSidebar()"><i class="fa-solid fa-xmark"></i></div>
+        </div>
+        <ul class="sidebar-nav">
+            <li><a href="./index.html"><i class="fa-solid fa-chart-line"></i> <span data-i18n="sidebar.dashboard">Dashboard</span></a></li>
+            <li><a href="./products.html"><i class="fa-solid fa-box"></i> <span data-i18n="sidebar.products">Products</span></a></li>
+            <li><a href="./orders.html"><i class="fa-solid fa-cart-shopping"></i> <span data-i18n="sidebar.orders">Orders</span></a></li>
+            <li><a href="./finances.html"><i class="fa-solid fa-wallet"></i> <span data-i18n="sidebar.finances">Finances</span></a></li>
+            <li><a href="./history.html"><i class="fa-solid fa-history"></i> <span data-i18n="sidebar.history">History</span></a></li>
+            <li><a href="./help.html"><i class="fa-solid fa-question-circle"></i> <span data-i18n="sidebar.help">Help</span></a></li>
+            <li><a href="./about.html"><i class="fa-solid fa-info-circle"></i> <span data-i18n="sidebar.about">About</span></a></li>
+        </ul>
+    </div>
+
+    <div class="main-content">
+        <div class="header-wrapper">
+            <div class="menu-icon" onclick="openSidebar()"><i class="fa-solid fa-bars"></i></div>
+            <div class="header-title">
+                <h2 data-i18n="privacy.pageTitle">Privacy Policy</h2>
+            </div>
+            <div class="user-info">
+                <div class="language-switcher">
+                    <select id="languageSelector">
+                        <option value="en">English</option>
+                        <option value="zh">中文</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="about-container">
+            <section>
+                <article>
+                    <h3 class="main-title" data-i18n="privacy.whatWeCollect">1. What we collect</h3>
+                    <p data-i18n="privacy.whatWeCollectDesc">We collect product details, order history, and expense records that you manually input into the application.</p>
+                </article>
+                <article>
+                    <h3 class="main-title" data-i18n="privacy.howWeUseIt">2. How we use it</h3>
+                    <p data-i18n="privacy.howWeUseItDesc">Your data is strictly used to power the Dashboard analytics, generate tables, and provide you with business tracking functionalities.</p>
+                </article>
+                <article>
+                    <h3 class="main-title" data-i18n="privacy.cookieChoices">3. Cookie choices</h3>
+                    <p data-i18n="privacy.cookieChoicesDesc">We only use 'Local Storage' to save your language preference and temporary session data. No tracking cookies are used.</p>
+                </article>
+                <article>
+                    <h3 class="main-title" data-i18n="privacy.thirdParties">4. Third parties</h3>
+                    <p data-i18n="privacy.thirdPartiesDesc">Your data is stored securely via Google Firebase. We do not sell or share your data with any advertising agencies.</p>
+                </article>
+                <article>
+                    <h3 class="main-title" data-i18n="privacy.contact">5. Contact</h3>
+                    <p data-i18n="privacy.contactDesc">If you have any questions, please contact us via the Help page.</p>
+                </article>
+            </section>
+        </div>
+    </div>
+
+    <script src="./js/i18n.js"></script>
+    <script>
+        // 修复后的侧边栏开关逻辑
+        function openSidebar() {
+            const side = document.getElementById('sidebar');
+            if (side) {
+                side.style.display = 'block';
+            }
+        }
+
+        function closeSidebar() {
+            const side = document.getElementById('sidebar');
+            if (side) {
+                side.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>
