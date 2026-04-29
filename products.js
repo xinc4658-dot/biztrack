@@ -214,11 +214,15 @@ function renderProducts(products) {
 
       const translatedName = typeof translateProductName === 'function' ? translateProductName(product.prodName) : product.prodName;
       const translatedCat = window.t(`products.${product.prodCat.toLowerCase()}`) || product.prodCat;
+      
+      // 【新增】对可能包含恶意代码的用户输入进行 XSS 转义
+      const safeName = window.escapeHTML(translatedName);
+      const safeDesc = window.escapeHTML(product.prodDesc);
 
       prodRow.innerHTML = `
           <td>${product.prodID}</td>
-          <td>${translatedName}</td>
-          <td>${product.prodDesc}</td>
+          <td>${safeName}</td>
+          <td>${safeDesc}</td>
           <td>${translatedCat}</td>
           <td>$${product.prodPrice.toFixed(2)}</td>
           <td>${product.prodSold}</td>
