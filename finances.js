@@ -175,6 +175,18 @@ window.onload = function () {
   
     renderTransactions(transactions);
     syncExpensesToDb("sync", { trID: "all-expenses" });
+    handleQuickAddOpen();
+}
+
+function handleQuickAddOpen() {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("quickAdd") !== "1") return;
+
+    const form = document.getElementById("transaction-form");
+    if (!form) return;
+
+    form.style.display = "block";
+    form.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 function addOrUpdate(event) {

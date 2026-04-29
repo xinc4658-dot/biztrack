@@ -281,6 +281,10 @@ async function loadDashboardSummary() {
   const totalRevenues = calculateRevTotal(revenues);
   const totalBalance = totalRevenues - totalExpenses;
   const numOrders = revenues.length;
+  const pendingOrders = revenues.filter((order) => order.orderStatus === "Pending").length;
+  const processingOrders = revenues.filter((order) => order.orderStatus === "Processing").length;
+  const shippedOrders = revenues.filter((order) => order.orderStatus === "Shipped").length;
+  const deliveredOrders = revenues.filter((order) => order.orderStatus === "Delivered").length;
 
   const currentLang = localStorage.getItem('bizTrackLanguage') || 'en';
 
@@ -336,6 +340,15 @@ async function loadDashboardSummary() {
     <span class="amount-value">${numOrders}</span>
   `;
   }
+
+  const pendingCountElement = document.getElementById("pending-order-count");
+  const processingCountElement = document.getElementById("processing-order-count");
+  const shippedCountElement = document.getElementById("shipped-order-count");
+  const deliveredCountElement = document.getElementById("delivered-order-count");
+  if (pendingCountElement) pendingCountElement.textContent = String(pendingOrders);
+  if (processingCountElement) processingCountElement.textContent = String(processingOrders);
+  if (shippedCountElement) shippedCountElement.textContent = String(shippedOrders);
+  if (deliveredCountElement) deliveredCountElement.textContent = String(deliveredOrders);
 }
 
 async function initializeChart() {
@@ -534,7 +547,6 @@ async function initializeChart() {
 window.onload = function () {
   (async () => {
     await loadDashboardSummary();
-    await initializeChart();
 
     if (typeof initI18n === 'function') {
       initI18n();

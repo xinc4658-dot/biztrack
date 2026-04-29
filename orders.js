@@ -166,7 +166,19 @@ window.onload = function () {
 
         renderOrders(orders);
         syncOrdersToDb("sync", { orderID: "all-orders" });
+        handleQuickAddOpen();
     }, 100);
+}
+
+function handleQuickAddOpen() {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("quickAdd") !== "1") return;
+
+    const form = document.getElementById("order-form");
+    if (!form) return;
+
+    form.style.display = "block";
+    form.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 function addOrUpdate(event) {

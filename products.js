@@ -121,6 +121,18 @@ function init() {
     }
     renderProducts(products);
     syncProductsToDb("sync", { prodID: "all-products" });
+    handleQuickAddOpen();
+}
+
+function handleQuickAddOpen() {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get("quickAdd") !== "1") return;
+
+  const form = document.getElementById("product-form");
+  if (!form) return;
+
+  form.style.display = "block";
+  form.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 function addOrUpdate(event) {
