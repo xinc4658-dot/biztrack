@@ -19,7 +19,7 @@
     <title>Help - BizTrack</title>
 </head>
 <body>
-    <div id="sidebar" class="sidebar">
+    <nav id="sidebar" class="sidebar" aria-label="Main navigation">
         <div class="logo">
             <a href="./index.html">
                 <i class="fas fa-b"></i>
@@ -77,19 +77,19 @@
                 </a>
             </li>
         </ul>
-    </div>
+    </nav>
 
-    <div class="main-content">
+    <main class="main-content">
         <div class="header-wrapper">
-            <div class="menu-icon" onclick="openSidebar()">
+            <button class="menu-icon" onclick="openSidebar()" aria-label="Open sidebar menu">
                 <i class="fa-solid fa-bars"></i>
-            </div>
+            </button>
             <div class="header-title">
-                <h2 data-i18n="help.title">Using BizTrack: A Quick Guide</h2>
+                <h1 data-i18n="help.title">Using BizTrack: A Quick Guide</h1>
             </div>
             <div class="user-info">
                 <div class="language-switcher">
-                    <select id="languageSelector">
+                    <select id="languageSelector" aria-label="Select language">
                         <option value="en">English</option>
                         <option value="zh">中文</option>
                     </select>
@@ -100,29 +100,29 @@
         <div class="guide-container">
             <section id="using-biztrack">
                 <article>
-                    <h3 class="main-title" data-i18n="help.whatIsBizTrack">What is BizTrack?</h3>
+                    <h2 class="main-title" data-i18n="help.whatIsBizTrack">What is BizTrack?</h2>
                     <p data-i18n="help.whatIsBizTrackContent">BizTrack is your go-to business management tool designed with small business owners in mind. It's an all-in-one platform that helps you effortlessly manage your products, track orders, and stay on top of your finances. Let me walk you through the basics:</p>
                 </article>
                 <article>
-                    <h3 class="main-title" data-i18n="help.navigatingDashboard">Navigating the Dashboard</h3>
+                    <h2 class="main-title" data-i18n="help.navigatingDashboard">Navigating the Dashboard</h2>
                     <p data-i18n="help.navigatingDashboardContent">The Dashboard is your central hub, giving you a snapshot of your business's overall performance. Here, you'll find key metrics like total expenses, revenues, profits and the number of orders. It's your command center for a quick overview.</p>
                 </article>
                 <article>
-                    <h3 class="main-title" data-i18n="help.expensesPage">Expenses Page</h3>
+                    <h2 class="main-title" data-i18n="help.expensesPage">Expenses Page</h2>
                     <ol>
                         <li><b data-i18n="help.recordExpenses">Record Your Expenses: </b><span data-i18n="help.recordExpensesContent">Head to the Expenses page to add your business expenses. Fill in the date, choose a category, enter the amount, and jot down any notes. It's that simple.</span></li>
                         <li><b data-i18n="help.editDeleteExpenses">Edit or Delete Expenses: </b><span data-i18n="help.editDeleteExpensesContent">Made a mistake? No worries! You can easily edit or delete expense records right from the Expenses page.</span></li>
                     </ol>
                 </article>
                 <article>
-                    <h3 class="main-title" data-i18n="help.ordersPage">Orders Page</h3>
+                    <h2 class="main-title" data-i18n="help.ordersPage">Orders Page</h2>
                     <ol>
                         <li><b data-i18n="help.trackOrders">Track Your Orders: </b><span data-i18n="help.trackOrdersContent">On the Orders page, you can keep tabs on all your orders. Each entry details the product, quantity, and order status.</span></li>
                         <li><b data-i18n="help.effortlessEditing">Effortless Editing: </b><span data-i18n="help.effortlessEditingContent">Need to update an order status? Click the "Edit" button and make your changes. It's hassle-free.</span></li>
                     </ol>
                 </article>
                 <article>
-                    <h3 class="main-title" data-i18n="help.addingNew">Adding a New Expense, Order or Product</h3>
+                    <h2 class="main-title" data-i18n="help.addingNew">Adding a New Expense, Order or Product</h2>
                     <ol>
                         <li data-i18n="help.addingNewStep1">Click on "Add Expense" or the equivalent button on the order or product page.</li>
                         <li data-i18n="help.addingNewStep2">Fill in the product details or order details or transaction date, category, amount, and any notes.</li>
@@ -130,14 +130,14 @@
                     </ol>
                 </article>
                 <article>
-                    <h3 class="main-title" data-i18n="help.sortingSearching">Sorting and Searching Entries/Tables</h3>
+                    <h2 class="main-title" data-i18n="help.sortingSearching">Sorting and Searching Entries/Tables</h2>
                     <ol>
                         <li data-i18n="help.sortingSearchingStep1">Click on any column heading (headers) to sort the entries in the table by that column in either ascending order or alphabetical order.</li>
                         <li data-i18n="help.sortingSearchingStep2">You can also search for a particular product, order or expense by entrering the value in the search box at the top of the respective page.</li>
                     </ol>
                 </article>
                 <article>
-                    <h3 class="main-title" data-i18n="help.exportToCSV">Export to CSV</h3>
+                    <h2 class="main-title" data-i18n="help.exportToCSV">Export to CSV</h2>
                     <p data-i18n="help.exportToCSVContent1">Want to keep a backup or analyze your data elsewhere? Simply click on "Export to CSV" to download a CSV file with all your business data.</p>
                     <p data-i18n="help.exportToCSVContent2">BizTrack is designed to be intuitive, user-friendly, and adaptable to your business needs. Explore the different pages, try out the features, and let BizTrack simplify your small business management.</p>
                 </article>
@@ -146,24 +146,24 @@
                 <p data-i18n="help.contact">Have questions, feedback, or just want to connect? Feel free to reach out!</p>
                 <ul class="contact-icon">
                     <li>
-                        <a href="https://www.linkedin.com/in/sumayyahmusa/" target=”_blank”
+                        <a href="https://www.linkedin.com/in/sumayyahmusa/" target="_blank" aria-label="Visit LinkedIn profile">
                             <i class="fa-brands fa-linkedin"></i>
                         </a> 
                     </li>
                     <li>
-                        <a href="https://github.com/sumusa/"target=”_blank”
+                        <a href="https://github.com/sumusa/" target="_blank" aria-label="Visit GitHub profile">
                             <i class="fa-brands fa-square-github"></i>
                         </a> 
                     </li>
                     <li>
-                        <a href="mailto:info@summeesarts.com" target=”_blank”
+                        <a href="mailto:info@summeesarts.com" target="_blank" aria-label="Send email">
                             <i class="fa-solid fa-envelope"></i>
                         </a> 
                     </li>
                 </ul>
             </section>
         </div>
-    </div>
+    </main>
     <script src="./js/i18n.js"></script>
     <script src="./help.js"></script>
 </body>

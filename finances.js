@@ -326,8 +326,8 @@ function renderTransactions(transactions) {
             <td class="tr-amount">${formattedAmount}</td>
             <td>${safeNotes}</td>
             <td class="action">
-                <i title="Edit" onclick="editRow('${transaction.trID}')" class="edit-icon fa-solid fa-pen-to-square"></i>
-                <i onclick="deleteTransaction('${transaction.trID}')" class="delete-icon fas fa-trash-alt"></i>
+                <button title="Edit" onclick="editRow('${transaction.trID}')" class="edit-icon fa-solid fa-pen-to-square" aria-label="Edit order"></button>
+                <button onclick="deleteTransaction('${transaction.trID}')" class="delete-icon fas fa-trash-alt" aria-label="Delete order"></button>
             </td> 
         `;
         transactionTableBody.appendChild(transactionRow);

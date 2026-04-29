@@ -19,7 +19,7 @@
     <title>About - Biztrack</title>
 </head>
 <body>
-    <div id="sidebar" class="sidebar">
+    <nav id="sidebar" class="sidebar">
         <div class="logo">
             <a href="./index.html">
                 <i class="fas fa-b"></i>
@@ -77,19 +77,19 @@
                 </a>
             </li>
         </ul>
-    </div>
+    </nav>
 
-    <div class="main-content">
+    <main class="main-content">
         <div class="header-wrapper">
-            <div class="menu-icon" onclick="openSidebar()">
+            <button class="menu-icon" onclick="openSidebar()" aria-label="Open sidebar menu">
                 <i class="fa-solid fa-bars"></i>
-            </div>
+            </button>
             <div class="header-title">
-                <h2 data-i18n="about.title">My Coding Journey</h2>
+                <h1 data-i18n="about.title">My Coding Journey</h1>
             </div>
             <div class="user-info">
                 <div class="language-switcher">
-                    <select id="languageSelector">
+                    <select id="languageSelector" aria-label="Select language">
                         <option value="en">English</option>
                         <option value="zh">中文</option>
                     </select>
@@ -100,8 +100,7 @@
         <div class="about-container">
             <section id="using-biztrack">
                 <article>
-                    <h3 class="main-title" data-i18n="about.greeting">Hey, I'm Sumayyah!
-                    </h3>
+                    <h2 class="main-title" data-i18n="about.greeting">Hey, I'm Sumayyah!</h2>
                     <p data-i18n="about.greetingContent">Welcome to my little corner of the internet, where I'm rolling up my sleeves and diving into the coding world. I'm not your typical tech guru �C I'm just a small business owner navigating the hustle and bustle of entrepreneurship. Oh, and did I mention I'm also part of the <a href="https://www.getcoding.ca/coaching-program-nl" target="_blank">GetCoding NL</a> program? Yeah, it's been quite the journey, and I owe a huge shoutout to my coding coach, Sam.</p>
                 </article>
                 <article>
@@ -117,17 +116,17 @@
 
                     <ul class="contact-icon">
                         <li>
-                            <a href="https://www.linkedin.com/in/sumayyahmusa/" target="_blank">
+                            <a href="https://www.linkedin.com/in/sumayyahmusa/" target="_blank" aria-label="Visit my LinkedIn profile">
                                 <i class="fa-brands fa-linkedin"></i>
                             </a>
                         </li>
                         <li>
-                            <a href="https://github.com/sumusa/" target="_blank">
+                            <a href="https://github.com/sumusa/" target="_blank" aria-label="Visit my GitHub profile">
                                 <i class="fa-brands fa-square-github"></i>
                             </a>
                         </li>
                         <li>
-                            <a href="mailto:info@summeesarts.com" target="_blank">
+                            <a href="mailto:info@summeesarts.com" target="_blank" aria-label="Send me an email">
                                 <i class="fa-solid fa-envelope"></i>
                             </a>
                         </li>
@@ -137,7 +136,7 @@
                 </article>
             </section>
         </div>
-    </div>
+    </main>
     <script src="./js/i18n.js"></script>
     <script src="./about.js"></script>
 </body>

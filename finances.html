@@ -22,7 +22,7 @@
     <title>Expenses - BizTrack</title>
 </head>
 <body>
-    <div id="sidebar" class="sidebar">
+    <nav id="sidebar" class="sidebar" aria-label="Main navigation">
         <div class="logo">
             <a href="./index.html">
                 <i class="fas fa-b"></i>
@@ -80,13 +80,13 @@
                 </a>
             </li>
         </ul>
-    </div>
+    </nav>
 
-    <div class="main-content">
+    <main class="main-content">
         <div class="header-wrapper">
-            <div class="menu-icon" onclick="openSidebar()">
+            <button class="menu-icon" onclick="openSidebar()" aria-label="Open sidebar menu">
                 <i class="fa-solid fa-bars"></i>
-            </div>
+            </button>
             <div class="header-title">
                 <!-- <span>Primary</span> -->
                 <h2 data-i18n="sidebar.expenses">Expenses</h2>
@@ -97,7 +97,7 @@
                     <input type="search" id="searchInput" placeholder="Search" data-i18n-placeholder="common.search">
                 </div>
                 <div class="language-switcher">
-                    <select id="languageSelector">
+                    <select id="languageSelector" aria-label="Select language">
                         <option value="en">English</option>
                         <option value="zh">中文</option>
                     </select>
@@ -107,7 +107,7 @@
 
         <div class="table-wrapper">
             <div class="product-title">
-                <h3 class="main-title" data-i18n="sidebar.expenses">Expenses</h3>
+                <h1 class="main-title" data-i18n="sidebar.expenses">Expenses</h1>
                 <div class="finance-button">
                     <button class="add-button" onclick="openForm()" data-i18n="expenses.addExpense">Add Expense</button>
                     <button class="download-button" onclick="exportToCSV()" data-i18n="expenses.exportCSV">Export to CSV</button>
@@ -169,7 +169,7 @@
                 </table>
             </div>
         </div>
-    </div>
+    </main>
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>

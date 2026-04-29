@@ -8,7 +8,7 @@
     <title>Privacy Policy - BizTrack</title>
 </head>
 <body>
-    <div id="sidebar" class="sidebar">
+    <nav id="sidebar" class="sidebar" aria-label="Main navigation">
         <div class="sidebar-brand">
             <h2>BizTrack</h2>
             <div class="close-icon" onclick="closeSidebar()"><i class="fa-solid fa-xmark"></i></div>
@@ -22,17 +22,19 @@
             <li><a href="./help.html"><i class="fa-solid fa-question-circle"></i> <span data-i18n="sidebar.help">Help</span></a></li>
             <li><a href="./about.html"><i class="fa-solid fa-info-circle"></i> <span data-i18n="sidebar.about">About</span></a></li>
         </ul>
-    </div>
+    </nav>
 
-    <div class="main-content">
+    <main class="main-content">
         <div class="header-wrapper">
-            <div class="menu-icon" onclick="openSidebar()"><i class="fa-solid fa-bars"></i></div>
+            <button class="menu-icon" onclick="openSidebar()" aria-label="Open sidebar menu">
+                <i class="fa-solid fa-bars"></i>
+            </button>
             <div class="header-title">
                 <h2 data-i18n="privacy.pageTitle">Privacy Policy</h2>
             </div>
             <div class="user-info">
                 <div class="language-switcher">
-                    <select id="languageSelector">
+                    <select id="languageSelector" aria-label="Select language">
                         <option value="en">English</option>
                         <option value="zh">中文</option>
                     </select>
@@ -64,7 +66,7 @@
                 </article>
             </section>
         </div>
-    </div>
+    </main>
 
     <script src="./js/i18n.js"></script>
     <script>
