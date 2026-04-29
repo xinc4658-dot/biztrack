@@ -8,7 +8,12 @@
     <meta property="og:image:secure_url" content="https://i.imgur.com/0O47fVi.jpg"/>
     <meta property="og:url" content="https://sumusa.github.io/biztrack/"/>
     <link rel="stylesheet" href="./styles.css"/>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap"></noscript>
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"></noscript>
     <link rel="icon" type="image/x-icon" href="./assets/favicon.ico">
     <title>History - BizTrack</title>
 </head>
@@ -19,49 +24,49 @@
                 <i class="fas fa-b"></i>
                 <span>BizTrack</span>
             </a>
-            <i class="fa-solid fa-xmark" title="Close" onclick="closeSidebar()"></i>
+            <i class="fa-solid fa-xmark" data-i18n-title="sidebar.close" title="Close" onclick="closeSidebar()"></i>
         </div>
         <ul class="menu">
             <li>
                 <a href="./index.html">
                     <i class="fa-solid fa-gauge-high"></i>
-                    <span>Dashboard</span>
+                    <span data-i18n="sidebar.dashboard">Dashboard</span>
                 </a>
             </li>
             <li>
                 <a href="./products.html">
                     <i class="fas fa-dolly"></i>
-                    <span>Products</span>
+                    <span data-i18n="sidebar.products">Products</span>
                 </a>
             </li>
             <li>
                 <a href="./orders.html">
                     <i class="fas fa-shopping-cart"></i>
-                    <span>Orders</span>
+                    <span data-i18n="sidebar.orders">Orders</span>
                 </a>
             </li>
             <li>
                 <a href="./finances.html">
                     <i class="fas fa-sack-dollar"></i>
-                    <span>Expenses</span>
+                    <span data-i18n="sidebar.expenses">Expenses</span>
                 </a>
             </li>
             <li class="active">
                 <a href="./history.html">
                     <i class="fa-solid fa-clock-rotate-left"></i>
-                    <span>History</span>
+                    <span data-i18n="sidebar.history">History</span>
                 </a>
             </li>
             <li>
                 <a href="./help.html">
                     <i class="fas fa-question-circle"></i>
-                    <span>Help</span>
+                    <span data-i18n="sidebar.help">Help</span>
                 </a>
             </li>
             <li class="logout">
                 <a href="./about.html">
                     <i class="fa-solid fa-users-line"></i>
-                    <span>Meet the Developer</span>
+                    <span data-i18n="sidebar.meetDeveloper">Meet the Developer</span>
                 </a>
             </li>
         </ul>
@@ -73,25 +78,32 @@
                 <i class="fa-solid fa-bars"></i>
             </div>
             <div class="header-title">
-                <h2>Activity History</h2>
+                <h2 data-i18n="history.pageTitle">Activity History</h2>
             </div>
-            <div class="user-info"></div>
+            <div class="user-info">
+                <div class="language-switcher">
+                    <select id="languageSelector">
+                        <option value="en">English</option>
+                        <option value="zh">中文</option>
+                    </select>
+                </div>
+            </div>
         </div>
 
         <div class="table-wrapper">
             <div class="product-title">
-                <h3 class="main-title">Operation Logs</h3>
+                <h3 class="main-title" data-i18n="history.sectionTitle">Operation Logs</h3>
             </div>
             <div class="table-container">
                 <table id="history-table">
                     <thead>
                         <tr>
-                            <th>Time</th>
-                            <th>Entity</th>
-                            <th>Record ID</th>
-                            <th>Action</th>
-                            <th>Before</th>
-                            <th>After</th>
+                            <th data-i18n="history.colTime">Time</th>
+                            <th data-i18n="history.colEntity">Entity</th>
+                            <th data-i18n="history.colRecordId">Record ID</th>
+                            <th data-i18n="history.colAction">Action</th>
+                            <th data-i18n="history.colBefore">Before</th>
+                            <th data-i18n="history.colAfter">After</th>
                         </tr>
                     </thead>
                     <tbody id="historyTableBody"></tbody>
@@ -103,6 +115,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
     <script src="./firebase.js"></script>
+    <script src="./js/i18n.js"></script>
     <script src="./history.js"></script>
 </body>
 </html>

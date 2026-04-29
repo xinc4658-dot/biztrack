@@ -8,7 +8,16 @@
     <meta property="og:image:secure_url" content="https://i.imgur.com/0O47fVi.jpg"/>
     <meta property="og:url" content="https://sumusa.github.io/biztrack/"/>
     <link rel="stylesheet" href="./styles.css"/>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+    <link rel="preconnect" href="https://cdn.jsdelivr.net">
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap"></noscript>
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"></noscript>
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css"></noscript>
     <link rel="icon" type="image/x-icon" href="./assets/favicon.ico">
     <title>Expenses - BizTrack</title>
 </head>
@@ -25,43 +34,43 @@
             <li>
                 <a href="./index.html">
                     <i class="fa-solid fa-gauge-high"></i>
-                    <span>Dashboard</span>
+                    <span data-i18n="sidebar.dashboard">Dashboard</span>
                 </a>
             </li>
             <li>
                 <a href="./products.html">
                     <i class="fas fa-dolly"></i>
-                    <span>Products</span>
+                    <span data-i18n="sidebar.products">Products</span>
                 </a>
             </li>
             <li>
                 <a href="./orders.html">
                     <i class="fas fa-shopping-cart"></i>
-                    <span>Orders</span>
+                    <span data-i18n="sidebar.orders">Orders</span>
                 </a>
             </li>
             <li class="active">
                 <a href="./finances.html">
                     <i class="fas fa-sack-dollar"></i>
-                    <span>Expenses</span>
+                    <span data-i18n="sidebar.expenses">Expenses</span>
                 </a>
             </li>
             <li>
                 <a href="./history.html">
                     <i class="fa-solid fa-clock-rotate-left"></i>
-                    <span>History</span>
+                    <span data-i18n="sidebar.history">History</span>
                 </a>
             </li>
             <li>
                 <a href="./help.html">
                     <i class="fas fa-question-circle"></i>
-                    <span>Help</span>
+                    <span data-i18n="sidebar.help">Help</span>
                 </a>
             </li>
             <li class="logout">
                 <a href="./about.html">
                     <i class="fa-solid fa-users-line"></i>
-                    <span>Meet the Developer</span>
+                    <span data-i18n="sidebar.meetDeveloper">Meet the Developer</span>
                 </a>
             </li>
         </ul>
@@ -74,53 +83,58 @@
             </div>
             <div class="header-title">
                 <!-- <span>Primary</span> -->
-                <h2>Expenses</h2>
+                <h2 data-i18n="sidebar.expenses">Expenses</h2>
             </div>
             <div class="user-info">
                 <div class="search-box">
                     <i class="fas fa-search"></i>
-                    <input type="search" id="searchInput" placeholder="Search">
+                    <input type="search" id="searchInput" placeholder="Search" data-i18n-placeholder="common.search">
                 </div>
-                <!-- <i class="fas fa-user-alt fa-xl"></i> -->
+                <div class="language-switcher">
+                    <select id="languageSelector">
+                        <option value="en">English</option>
+                        <option value="zh">中文</option>
+                    </select>
+                </div>
             </div>
         </div>
 
         <div class="table-wrapper">
             <div class="product-title">
-                <h3 class="main-title">Expenses</h3>
+                <h3 class="main-title" data-i18n="sidebar.expenses">Expenses</h3>
                 <div class="finance-button">
-                    <button class="add-button" onclick="openForm()">Add Expense</button>
-                    <button class="download-button" onclick="exportToCSV()">Export to CSV</button>
+                    <button class="add-button" onclick="openForm()" data-i18n="expenses.addExpense">Add Expense</button>
+                    <button class="download-button" onclick="exportToCSV()" data-i18n="expenses.exportCSV">Export to CSV</button>
                 </div>
             </div>
 
             <div class="form-popup">
-                <form class="form-container" id="transaction-form" onsubmit="addOrUpdate(event)">
+                <form class="form-container" id="transaction-form">
                     <div class="form-columns">
                             <input type="hidden" id="tr-id">
-                            <label for="tr-date"><b>Date: </b></label>
-                            <input type="date" id="tr-date" required>
+                            <label for="tr-date"><b data-i18n="expenses.date">Date: </b></label>
+                            <input type="text" id="tr-date" placeholder="YYYY-MM-DD" required>
 
-                            <label for="tr-category"><b>Category: </b></label>
+                            <label for="tr-category"><b data-i18n="expenses.category">Category: </b></label>
                             <select name="tr-category" id="tr-category" required>
-                                <option value="" disabled selected hidden>Choose an expense category</option>
-                                <option value="Rent">Rent</option>
-                                <option value="Utilities">Utilities</option>
-                                <option value="Supplies">Supplies</option>
-                                <option value="Order Fulfillment">Order Fulfillment</option>
-                                <option value="Miscellaneous">Miscellaneous</option>
+                                <option value="" disabled selected hidden data-i18n="expenses.chooseCategory">Choose an expense category</option>
+                                <option value="Rent" data-i18n="expenses.rent">Rent</option>
+                                <option value="Utilities" data-i18n="expenses.utilities">Utilities</option>
+                                <option value="Supplies" data-i18n="expenses.supplies">Supplies</option>
+                                <option value="Order Fulfillment" data-i18n="expenses.orderFulfillment">Order Fulfillment</option>
+                                <option value="Miscellaneous" data-i18n="expenses.miscellaneous">Miscellaneous</option>
                             </select>
 
-                            <label for="tr-amount"><b>Amount: </b></label>
+                            <label for="tr-amount"><b data-i18n="expenses.amount">Amount: </b></label>
                             <input type="number" id="tr-amount" placeholder="$0.00" min="0.00" max="10000.00" step="0.01" required>
 
-                            <label for="tr-notes"><b>Notes: </b></label>
-                            <input type="text" id="tr-notes" placeholder="Power bill" required>
+                            <label for="tr-notes"><b data-i18n="expenses.notes">Notes: </b></label>
+                            <input type="text" id="tr-notes" data-i18n-placeholder="expenses.notesPlaceholder" placeholder="Power bill" required>
                     </div>
                     
                     <div class="button-col">
-                        <button type="submit" class="btn" id="submitBtn">Add</button>
-                        <button type="button" class="btn cancel" onclick="closeForm()">Cancel</button>
+                        <button type="submit" class="btn" id="submitBtn" data-i18n="expenses.add">Add</button>
+                        <button type="button" class="btn cancel" onclick="closeForm()" data-i18n="expenses.cancel">Cancel</button>
                     </div>
                 </form>
             </div>
@@ -130,11 +144,11 @@
                     <thead>
                         <tr>
                             <th onclick="sortTable('trID')">S/N</th>
-                            <th onclick="sortTable('trDate')">Date</th>
-                            <th onclick="sortTable('trCategory')">Expense Category</th>
-                            <th onclick="sortTable('trAmount')">Amount</th>
-                            <th onclick="sortTable('trNotes')">Notes</th>
-                            <th>Action</th>
+                            <th onclick="sortTable('trDate')" data-i18n="expenses.date">Date</th>
+                            <th onclick="sortTable('trCategory')" data-i18n="expenses.category">Expense Category</th>
+                            <th onclick="sortTable('trAmount')" data-i18n="expenses.amount">Amount</th>
+                            <th onclick="sortTable('trNotes')" data-i18n="expenses.notes">Notes</th>
+                            <th data-i18n="common.action">Action</th>
                         </tr>
                     </thead>
                     <tbody id="tableBody">
@@ -155,6 +169,9 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
     <script src="./firebase.js"></script>
+    <script src="./js/i18n.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/zh.js"></script>
     <script src="./finances.js"></script>
 </body>
 </html>
