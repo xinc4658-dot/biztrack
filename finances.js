@@ -446,15 +446,20 @@ function performSearch() {
         return;
     }
 
-    const filteredTransactions = transactions.filter(transaction =>
-        [
+    const filteredTransactions = transactions.filter(transaction => {
+        const translatedCategory = typeof translateCategory === "function"
+            ? translateCategory(transaction.trCategory)
+            : transaction.trCategory;
+
+        return [
             transaction.trID,
             transaction.trDate,
             transaction.trCategory,
+            translatedCategory,
             transaction.trAmount,
             transaction.trNotes
-        ].some(value => String(value).toLowerCase().includes(keyword))
-    );
+        ].some(value => String(value).toLowerCase().includes(keyword));
+    });
 
     renderTransactions(filteredTransactions);
 }

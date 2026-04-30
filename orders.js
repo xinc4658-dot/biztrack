@@ -463,19 +463,29 @@ function performSearch() {
         return;
     }
 
-    const filteredOrders = orders.filter(order =>
-        [
+    const filteredOrders = orders.filter(order => {
+        const translatedItemName = typeof translateProductName === "function"
+            ? translateProductName(order.itemName)
+            : order.itemName;
+
+        const translatedStatus = typeof window.t === "function"
+            ? window.t(`orders.${String(order.orderStatus).toLowerCase()}`)
+            : order.orderStatus;
+
+        return [
             order.orderID,
             order.orderDate,
             order.itemName,
+            translatedItemName,
             order.itemPrice,
             order.qtyBought,
             order.shipping,
             order.taxes,
             order.orderTotal,
-            order.orderStatus
-        ].some(value => String(value).toLowerCase().includes(keyword))
-    );
+            order.orderStatus,
+            translatedStatus
+        ].some(value => String(value).toLowerCase().includes(keyword));
+    });
 
     renderOrders(filteredOrders);
 }

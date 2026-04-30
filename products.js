@@ -381,16 +381,26 @@ function performSearch() {
         return;
     }
 
-    const filteredProducts = products.filter(product =>
-        [
+    const filteredProducts = products.filter(product => {
+        const translatedName = typeof translateProductName === "function"
+            ? translateProductName(product.prodName)
+            : product.prodName;
+
+        const translatedCategory = typeof window.t === "function"
+            ? window.t(`products.${String(product.prodCat).toLowerCase()}`)
+            : product.prodCat;
+
+        return [
             product.prodID,
             product.prodName,
+            translatedName,
             product.prodDesc,
             product.prodCat,
+            translatedCategory,
             product.prodPrice,
             product.prodSold
-        ].some(value => String(value).toLowerCase().includes(keyword))
-    );
+        ].some(value => String(value).toLowerCase().includes(keyword));
+    });
 
     renderProducts(filteredProducts);
 }
