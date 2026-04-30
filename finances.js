@@ -439,13 +439,24 @@ document.getElementById("searchInput").addEventListener("keyup", function(event)
 
 
 function performSearch() {
-    const searchInput = document.getElementById("searchInput").value.toLowerCase();
-    const rows = document.querySelectorAll(".transaction-row");
+    const keyword = document.getElementById("searchInput").value.trim().toLowerCase();
 
-    rows.forEach(row => {
-        const visible = row.innerText.toLowerCase().includes(searchInput);
-        row.style.display = visible ? "table-row" : "none";
-    });
+    if (!keyword) {
+        renderTransactions(transactions);
+        return;
+    }
+
+    const filteredTransactions = transactions.filter(transaction =>
+        [
+            transaction.trID,
+            transaction.trDate,
+            transaction.trCategory,
+            transaction.trAmount,
+            transaction.trNotes
+        ].some(value => String(value).toLowerCase().includes(keyword))
+    );
+
+    renderTransactions(filteredTransactions);
 }
 
 
