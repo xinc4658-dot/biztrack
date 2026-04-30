@@ -295,7 +295,9 @@ function renderTrendChart(monthlyData, lang) {
   if (trendChart) {
     trendChart.destroy();
   }
-  trendChart = new ApexCharts(document.querySelector("#balance-trend-chart"), options);
+  const trendChartElement = document.querySelector("#balance-trend-chart");
+  trendChartElement.innerHTML = "";
+  trendChart = new ApexCharts(trendChartElement, options);
   trendChart.render();
 }
 
@@ -377,7 +379,9 @@ function renderMarginChart(monthlyData, lang) {
   if (marginChart) {
     marginChart.destroy();
   }
-  marginChart = new ApexCharts(document.querySelector("#balance-margin-chart"), options);
+  const marginChartElement = document.querySelector("#balance-margin-chart");
+  marginChartElement.innerHTML = "";
+  marginChart = new ApexCharts(marginChartElement, options);
   marginChart.render();
 }
 
@@ -464,7 +468,9 @@ function renderSalesCategoryChart(orders, products, lang) {
   if (salesCategoryChart) {
     salesCategoryChart.destroy();
   }
-  salesCategoryChart = new ApexCharts(document.querySelector("#balance-sales-category-chart"), options);
+  const salesCategoryChartElement = document.querySelector("#balance-sales-category-chart");
+  salesCategoryChartElement.innerHTML = "";
+  salesCategoryChart = new ApexCharts(salesCategoryChartElement, options);
   salesCategoryChart.render();
 }
 
@@ -534,7 +540,9 @@ function renderExpenseCategoryChart(expenses, lang) {
   if (expenseCategoryChart) {
     expenseCategoryChart.destroy();
   }
-  expenseCategoryChart = new ApexCharts(document.querySelector("#balance-expenses-chart"), options);
+  const expenseCategoryChartElement = document.querySelector("#balance-expenses-chart");
+  expenseCategoryChartElement.innerHTML = "";
+  expenseCategoryChart = new ApexCharts(expenseCategoryChartElement, options);
   expenseCategoryChart.render();
 }
 

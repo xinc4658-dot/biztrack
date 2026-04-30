@@ -213,7 +213,7 @@ function newProduct(event) {
 
 function renderProducts(products) {
   const prodTableBody = document.getElementById("tableBody");
-  const fragment = document.createDocumentFragment();
+  prodTableBody.innerHTML = "";
 
   products.forEach(product => {
       const prodRow = document.createElement("tr");
@@ -244,10 +244,8 @@ function renderProducts(products) {
             <button title="Delete" onclick="deleteProduct('${product.prodID}')" class="delete-icon fas fa-trash-alt" aria-label="Delete order"></button>
           </td>
       `;
-      fragment.appendChild(prodRow);
+      prodTableBody.appendChild(prodRow);
   });
-
-  prodTableBody.replaceChildren(fragment);
 }
 
 function editRow(prodID) {
