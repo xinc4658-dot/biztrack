@@ -267,7 +267,7 @@ function translateOrderStatus(status) {
 
 function renderOrders(orders) {
     const orderTableBody = document.getElementById("tableBody");
-    orderTableBody.innerHTML = "";
+    const fragment = document.createDocumentFragment();
 
     const orderToRender = orders;
     const statusMap = {
@@ -320,8 +320,10 @@ function renderOrders(orders) {
             <button onclick="deleteOrder('${order.orderID}')" class="delete-icon fas fa-trash-alt" aria-label="Delete order"></button>
           </td> 
       `;
-      orderTableBody.appendChild(orderRow);
+      fragment.appendChild(orderRow);
   });
+
+  orderTableBody.replaceChildren(fragment);
   displayRevenue();
 }
 
