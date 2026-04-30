@@ -267,7 +267,7 @@ async function loadHistory() {
       throw new Error(errText);
     }
 
-    const snapshot = await logsRef.orderBy("createdAt", "desc").get();
+    const snapshot = await logsRef.orderBy("createdAt", "desc").limit(50).get();
     const logs = snapshot.docs
       .map((doc) => doc.data())
       .filter((log) => {
