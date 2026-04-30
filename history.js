@@ -223,7 +223,7 @@ function formatComparableData(beforeData, afterData, entity) {
 
 function renderLogs(logs) {
   const tbody = document.getElementById("historyTableBody");
-  tbody.innerHTML = "";
+  const fragment = document.createDocumentFragment();
 
   const emptyMsg = window.t("history.noRecords");
   const emptyText = emptyMsg !== "history.noRecords" ? emptyMsg : "No records yet";
@@ -231,7 +231,7 @@ function renderLogs(logs) {
   if (!logs.length) {
     const emptyRow = document.createElement("tr");
     emptyRow.innerHTML = `<td colspan="6" style="text-align:center;">${emptyText}</td>`;
-    tbody.appendChild(emptyRow);
+    tbody.replaceChildren(emptyRow);
     return;
   }
 
@@ -251,8 +251,10 @@ function renderLogs(logs) {
       <td class="history-cell">${comparable.beforeHtml}</td>
       <td class="history-cell">${comparable.afterHtml}</td>
     `;
-    tbody.appendChild(row);
+    fragment.appendChild(row);
   });
+
+  tbody.replaceChildren(fragment);
 }
 
 async function loadHistory() {
