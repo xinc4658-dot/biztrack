@@ -324,8 +324,8 @@ function renderOrders(orders) {
             <div class="status ${statusMap[order.orderStatus]}"><span>${translatedStatus}</span></div>
         </td>
         <td class="action">
-            <button title="Edit" onclick="editRow('${order.orderID}')" class="edit-icon fa-solid fa-pen-to-square" aria-label="Edit order"></button>
-            <button onclick="deleteOrder('${order.orderID}')" class="delete-icon fas fa-trash-alt" aria-label="Delete order"></button>
+            <button title="${window.t ? window.t(`common.edit`) : `Edit`}" onclick="editRow('${order.orderID}')" class="edit-icon fa-solid fa-pen-to-square" aria-label="${window.t ? window.t(`common.edit`) : `Edit`}"></button>
+            <button title="${window.t ? window.t(`common.delete`) : `Delete`}" onclick="deleteOrder('${order.orderID}')" class="delete-icon fas fa-trash-alt" aria-label="${window.t ? window.t(`common.delete`) : `Delete`}"></button>
           </td> 
       `;
       fragment.appendChild(orderRow);

@@ -293,8 +293,8 @@ function renderProducts(products) {
           <td>$${product.prodPrice.toFixed(2)}</td>
           <td>${product.prodSold}</td>
           <td class="action">
-            <button title="Edit" onclick="editRow('${product.prodID}')" class="edit-icon fa-solid fa-pen-to-square" aria-label="Edit order"></button>
-            <button title="Delete" onclick="deleteProduct('${product.prodID}')" class="delete-icon fas fa-trash-alt" aria-label="Delete order"></button>
+            <button title="${window.t ? window.t(`common.edit`) : `Edit`}" onclick="editRow('${product.prodID}')" class="edit-icon fa-solid fa-pen-to-square" aria-label="${window.t ? window.t(`common.edit`) : `Edit`}"></button>
+            <button title="${window.t ? window.t(`common.delete`) : `Delete`}" onclick="deleteProduct('${product.prodID}')" class="delete-icon fas fa-trash-alt" aria-label="${window.t ? window.t(`common.delete`) : `Delete`}"></button>
           </td>
       `;
       prodTableBody.appendChild(prodRow);
