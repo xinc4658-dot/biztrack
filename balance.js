@@ -260,6 +260,7 @@ function renderTrendChart(monthlyData, lang) {
     chart: {
       type: "line",
       height: 350,
+      animations: { enabled: false },
       toolbar: { show: false },
     },
     stroke: {
@@ -325,6 +326,7 @@ function renderMarginChart(monthlyData, lang) {
     chart: {
       type: "bar",
       height: 350,
+      animations: { enabled: false },
       toolbar: { show: false },
     },
     plotOptions: {
@@ -427,6 +429,7 @@ function renderSalesCategoryChart(orders, products, lang) {
     chart: {
       type: "bar",
       height: 350,
+      animations: { enabled: false },
       toolbar: { show: false },
     },
     theme: { palette: "palette9" },
@@ -494,6 +497,7 @@ function renderExpenseCategoryChart(expenses, lang) {
     chart: {
       type: "donut",
       width: "100%",
+      animations: { enabled: false },
       toolbar: { show: false },
     },
     theme: { palette: "palette1" },
