@@ -1,3 +1,56 @@
+function translateProductDescription(description) {
+  const currentLanguage = localStorage.getItem("bizTrackLanguage") || "en";
+
+  const descriptions = {
+    zh: {
+      "Peace embroidered cap": "和平刺绣帽",
+      "Classic snapback fit": "经典平沿帽版型",
+      "Warm knit beanie": "保暖针织帽",
+      "Summer bucket style": "夏季渔夫帽款式",
+      "Ceramic travel mug": "陶瓷旅行杯",
+      "Floral lotus printed bottle": "花卉莲花印刷水瓶",
+      "Insulated tumbler": "保温平底杯",
+      "Soft cotton tee": "柔软棉质T恤",
+      "Palestine sweater": "巴勒斯坦图案运动衫",
+      "Fleece-lined hoodie": "加绒连帽衫",
+      "Morrocan print pillow case": "摩洛哥印花枕套",
+      "Canvas tote": "帆布托特包",
+      "Vinyl sticker pack": "乙烯基贴纸套装",
+      "Vibes printed poster": "氛围印花海报",
+      "Ready-to-hang frame": "即挂式相框",
+      "Gallery canvas wrap": "画廊风格帆布画"
+    }
+  };
+
+  return descriptions[currentLanguage] && descriptions[currentLanguage][description]
+    ? descriptions[currentLanguage][description]
+    : description;
+}
+
+function translateProductCategory(category) {
+  const currentLanguage = localStorage.getItem("bizTrackLanguage") || "en";
+
+  const categories = {
+    zh: {
+      "Hats": "帽子",
+      "Drinkware": "饮具",
+      "Clothing": "服装",
+      "Accessories": "配饰",
+      "Home decor": "家居装饰"
+    }
+  };
+
+  return categories[currentLanguage] && categories[currentLanguage][category]
+    ? categories[currentLanguage][category]
+    : category;
+}
+function escapeCSVValue(value) {
+  const text = String(value ?? "");
+  if (/[",\n\r]/.test(text)) {
+    return `"${text.replace(/"/g, '""')}"`;
+  }
+  return text;
+}
 function debounce(fn, delay = 250) {
     let timer;
     return function (...args) {
@@ -413,9 +466,15 @@ function exportToCSV() {
   const headers = headerTranslations[currentLanguage];
   const productsToExport = products.map(product => ({
         prodID: product.prodID,
-        prodName: product.prodName,
-        prodDesc: product.prodDesc,
-        prodCategory: product.prodCat,
+        prodName: currentLanguage === "zh" && typeof translateProductName === "function"
+          ? translateProductName(product.prodName)
+          : product.prodName,
+        prodDesc: currentLanguage === "zh"
+          ? translateProductDescription(product.prodDesc)
+          : product.prodDesc,
+        prodCategory: currentLanguage === "zh"
+          ? translateProductCategory(product.prodCat)
+          : product.prodCat,
         prodPrice: product.prodPrice.toFixed(2),
         QtySold: product.prodSold,
   }));
@@ -438,8 +497,8 @@ function exportToCSV() {
 }
 
 function generateCSV(data, headers) {
-  const headerRow = Object.keys(headers).map(key => headers[key]).join(',');
-  const rows = data.map(order => Object.values(order).join(','));
+  const headerRow = Object.keys(headers).map(key => headers[key]).map(escapeCSVValue).join(',');
+  const rows = data.map(order => Object.values(order).map(escapeCSVValue).join(','));
   return `${headerRow}\n${rows.join('\n')}`;
 }
 
