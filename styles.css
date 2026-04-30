@@ -537,6 +537,18 @@ label {
 .balance-page .charts-card {
     width: 100%;
 }
+.balance-chart-box {
+    min-height: 330px;
+}
+
+.chart-loading-placeholder {
+    min-height: 330px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #6f6f6f;
+    font-size: 15px;
+}
 .charts-card:hover {
     transform: translateY(-6px);
 }
