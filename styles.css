@@ -890,3 +890,18 @@ select:focus {
   padding: 0 4px;
 }
 
+
+.sidebar-brand .fa-xmark {
+    width: 44px;
+    height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    line-height: 1;
+}
+
+.sidebar-brand .fa-xmark:focus-visible {
+    outline: 2px solid #ffffff;
+    outline-offset: 2px;
+}
