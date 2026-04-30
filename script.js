@@ -14,6 +14,46 @@ function toNumber(value) {
   return Number.isFinite(num) ? num : 0;
 }
 
+function escapeHtmlForText(text) {
+  if (text == null || text === undefined) return '';
+  return String(text)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function renderLowStockList(products) {
+  const listEl = document.getElementById('low-stock-list');
+  if (!listEl) return;
+
+  const t = (key) => (typeof window.t === 'function' ? window.t(key) : key);
+
+  if (!products || products.length === 0) {
+    listEl.innerHTML = `<li class="low-stock-item low-stock-empty"><span class="low-stock-name">${escapeHtmlForText(t('dashboard.noProductData'))}</span></li>`;
+    return;
+  }
+
+  const sorted = [...products]
+    .map((p) => ({
+      name: p.prodName,
+      stock: toNumber(p.prodSold),
+    }))
+    .filter((p) => p.name)
+    .sort((a, b) => a.stock - b.stock || String(a.name).localeCompare(String(b.name)))
+    .slice(0, 3);
+
+  listEl.innerHTML = sorted
+    .map(
+      (item) => `
+    <li class="low-stock-item">
+      <span class="low-stock-name">${escapeHtmlForText(item.name)}</span>
+      <span class="low-stock-qty" title="${escapeHtmlForText(t('products.productSold'))}">${item.stock}</span>
+    </li>`
+    )
+    .join('');
+}
+
 const DEFAULT_EXPENSES = [
   {
     trID: 1,
@@ -110,47 +150,24 @@ const DEFAULT_ORDERS = [
   },
 ];
 
+// 与 products.js 默认目录一致（表单下拉顺序）
 const DEFAULT_PRODUCTS = [
-  {
-    prodID: "PD001",
-    prodName: "Baseball caps",
-    prodDesc: "Peace embroidered cap",
-    prodCat: "Hats",
-    prodPrice: 25.00,
-    prodSold: 20
-  },
-  {
-    prodID: "PD002",
-    prodName: "Water bottles",
-    prodDesc: "Floral lotus printed bottle",
-    prodCat: "Drinkware",
-    prodPrice: 48.50,
-    prodSold: 10
-  },
-  {
-    prodID: "PD003",
-    prodName: "Sweatshirt",
-    prodDesc: "Palestine sweater",
-    prodCat: "Clothing",
-    prodPrice: 17.50,
-    prodSold: 70
-  },
-  {
-    prodID: "PD004",
-    prodName: "Posters",
-    prodDesc: "Vibes printed poster",
-    prodCat: "Home decor",
-    prodPrice: 12.00,
-    prodSold: 60
-  },
-  {
-    prodID: "PD005",
-    prodName: "Pillow cases",
-    prodDesc: "Morrocan print pillow case",
-    prodCat: "Accessories",
-    prodPrice: 17.00,
-    prodSold: 40
-  },
+  { prodID: "PD001", prodName: "Baseball caps", prodDesc: "Peace embroidered cap", prodCat: "Hats", prodPrice: 25.0, prodSold: 20 },
+  { prodID: "PD002", prodName: "Snapbacks", prodDesc: "Classic snapback fit", prodCat: "Hats", prodPrice: 28.0, prodSold: 15 },
+  { prodID: "PD003", prodName: "Beanies", prodDesc: "Warm knit beanie", prodCat: "Hats", prodPrice: 18.5, prodSold: 32 },
+  { prodID: "PD004", prodName: "Bucket hats", prodDesc: "Summer bucket style", prodCat: "Hats", prodPrice: 22.0, prodSold: 12 },
+  { prodID: "PD005", prodName: "Mugs", prodDesc: "Ceramic travel mug", prodCat: "Drinkware", prodPrice: 14.0, prodSold: 45 },
+  { prodID: "PD006", prodName: "Water bottles", prodDesc: "Floral lotus printed bottle", prodCat: "Drinkware", prodPrice: 48.5, prodSold: 10 },
+  { prodID: "PD007", prodName: "Tumblers", prodDesc: "Insulated tumbler", prodCat: "Drinkware", prodPrice: 32.0, prodSold: 28 },
+  { prodID: "PD008", prodName: "T-shirts", prodDesc: "Soft cotton tee", prodCat: "Clothing", prodPrice: 19.99, prodSold: 55 },
+  { prodID: "PD009", prodName: "Sweatshirts", prodDesc: "Palestine sweater", prodCat: "Clothing", prodPrice: 17.5, prodSold: 70 },
+  { prodID: "PD010", prodName: "Hoodies", prodDesc: "Fleece-lined hoodie", prodCat: "Clothing", prodPrice: 42.0, prodSold: 35 },
+  { prodID: "PD011", prodName: "Pillow cases", prodDesc: "Morrocan print pillow case", prodCat: "Accessories", prodPrice: 17.0, prodSold: 40 },
+  { prodID: "PD012", prodName: "Tote bags", prodDesc: "Canvas tote", prodCat: "Accessories", prodPrice: 24.0, prodSold: 22 },
+  { prodID: "PD013", prodName: "Stickers", prodDesc: "Vinyl sticker pack", prodCat: "Accessories", prodPrice: 6.5, prodSold: 100 },
+  { prodID: "PD014", prodName: "Posters", prodDesc: "Vibes printed poster", prodCat: "Home decor", prodPrice: 12.0, prodSold: 60 },
+  { prodID: "PD015", prodName: "Framed posters", prodDesc: "Ready-to-hang frame", prodCat: "Home decor", prodPrice: 35.0, prodSold: 18 },
+  { prodID: "PD016", prodName: "Canvas prints", prodDesc: "Gallery canvas wrap", prodCat: "Home decor", prodPrice: 55.0, prodSold: 14 },
 ];
 
 let barChart = null;
@@ -164,21 +181,40 @@ function calculateRevTotal(orders) {
   return orders.reduce((total, order) => total + toNumber(order.orderTotal), 0);
 }
 
-function calculateCategorySales(products) {
-  const categorySales = {};
+const PRODUCT_CATEGORY_ORDER = ["Hats", "Drinkware", "Clothing", "Accessories", "Home decor"];
 
-  products.forEach(product => {
-    const category = product.prodCat;
-
-    if (!categorySales[category]) {
-      categorySales[category] = 0;
-    }
-
-    categorySales[category] += toNumber(product.prodPrice) * toNumber(product.prodSold);
-  });
-
-  return categorySales;
+function findCategoryForItemName(itemName, products) {
+  if (!itemName || typeof itemName !== "string") return null;
+  const trimmed = itemName.trim();
+  for (let i = 0; i < products.length; i++) {
+    const p = products[i];
+    if (!p || !p.prodName) continue;
+    if (p.prodName === trimmed) return p.prodCat;
+  }
+  const lower = trimmed.toLowerCase();
+  for (let j = 0; j < products.length; j++) {
+    const q = products[j];
+    if (!q || !q.prodName) continue;
+    if (q.prodName.trim().toLowerCase() === lower) return q.prodCat;
+  }
+  return null;
 }
+
+function calculateCategoryUnitsSoldFromOrders(orders, products) {
+  const totals = {};
+  PRODUCT_CATEGORY_ORDER.forEach((c) => {
+    totals[c] = 0;
+  });
+  (orders || []).forEach((order) => {
+    const cat = findCategoryForItemName(order.itemName, products);
+    if (!cat || totals[cat] === undefined) return;
+    totals[cat] += toNumber(order.qtyBought);
+  });
+  return totals;
+}
+
+window.PRODUCT_CATEGORY_ORDER = PRODUCT_CATEGORY_ORDER;
+window.calculateCategoryUnitsSoldFromOrders = calculateCategoryUnitsSoldFromOrders;
 
 function calculateCategoryExp(transactions) {
   const categoryExpenses = {};
@@ -349,6 +385,9 @@ async function loadDashboardSummary() {
   if (processingCountElement) processingCountElement.textContent = String(processingOrders);
   if (shippedCountElement) shippedCountElement.textContent = String(shippedOrders);
   if (deliveredCountElement) deliveredCountElement.textContent = String(deliveredOrders);
+
+  const products = await getDataWithFallback('products', 'bizTrackProducts', DEFAULT_PRODUCTS);
+  renderLowStockList(products);
 }
 
 async function initializeChart() {
@@ -356,12 +395,12 @@ async function initializeChart() {
 
   const chartTranslations = {
     en: {
-      totalSales: 'Total Sales',
-      totalSalesYAxis: 'Total Sales ($)',
+      seriesName: 'Units sold',
+      yAxis: 'Cumulative units sold',
     },
     zh: {
-      totalSales: '总销售额',
-      totalSalesYAxis: '总销售额 ($)',
+      seriesName: '销售件数',
+      yAxis: '累计销售件数',
     }
   };
 
@@ -386,21 +425,18 @@ async function initializeChart() {
     }
   };
 
+  const orders = await getDataWithFallback("orders", "bizTrackOrders", DEFAULT_ORDERS);
   const items = await getDataWithFallback("products", "bizTrackProducts", DEFAULT_PRODUCTS);
-  const categorySalesData = calculateCategorySales(items);
-
-  const sortedCategorySales = Object.entries(categorySalesData)
-    .sort(([, a], [, b]) => b - a)
-    .reduce((acc, [key, value]) => ({ ...acc, [key]: value }), {});
-
-  const translatedCategories = Object.keys(sortedCategorySales).map(category =>
+  const categoryUnits = calculateCategoryUnitsSoldFromOrders(orders, items);
+  const translatedCategories = PRODUCT_CATEGORY_ORDER.map((category) =>
     (categoryTranslations[currentLang] && categoryTranslations[currentLang][category]) || category
   );
+  const data = PRODUCT_CATEGORY_ORDER.map((c) => (categoryUnits[c] != null ? categoryUnits[c] : 0));
 
   const barChartOptions = {
     series: [{
-      name: chartTranslations[currentLang].totalSales,
-      data: Object.values(sortedCategorySales),
+      name: chartTranslations[currentLang].seriesName,
+      data: data,
     }],
     chart: {
       type: 'bar',
@@ -436,7 +472,7 @@ async function initializeChart() {
     },
     yaxis: {
       title: {
-        text: chartTranslations[currentLang].totalSalesYAxis,
+        text: chartTranslations[currentLang].yAxis,
       },
       axisTicks: {
         show: false,
@@ -445,7 +481,7 @@ async function initializeChart() {
     tooltip: {
       y: {
         formatter: function (val) {
-          return '$' + val.toFixed(2);
+          return String(Math.round(Number(val)));
         }
       }
     }
@@ -455,8 +491,11 @@ async function initializeChart() {
     barChart.destroy();
   }
 
+  const barEl = document.querySelector('#bar-chart');
+  if (!barEl) return;
+
   barChart = new ApexCharts(
-    document.querySelector('#bar-chart'),
+    barEl,
     barChartOptions
   );
   barChart.render();

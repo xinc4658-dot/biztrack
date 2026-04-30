@@ -19,7 +19,7 @@
     <title>Dashboard - BizTrack</title>
 </head>
 <body>
-    <div id="sidebar" class="sidebar">
+    <nav id="sidebar" class="sidebar" aria-label="Main navigation">
         <div class="logo">
             <a href="./index.html">
                 <i class="fas fa-b"></i>
@@ -77,20 +77,20 @@
                 </a>
             </li>
         </ul>
-    </div>
+    </nav>
 
-    <div class="main-content">
+    <main class="main-content">
         <div class="header-wrapper">
-            <div class="menu-icon" onclick="openSidebar()">
+            <button class="menu-icon" onclick="openSidebar()" aria-label="Open sidebar menu">
                 <i class="fa-solid fa-bars"></i>
-            </div>
+            </button>
             <div class="header-title">
                 <!-- <span>Primary</span> -->
-                <h2 data-i18n="dashboard.title">Dashboard</h2>
+                <h1 data-i18n="dashboard.title">Dashboard</h1>
             </div>
             <div class="user-info">
                 <div class="language-switcher">
-                    <select id="languageSelector">
+                    <select id="languageSelector" aria-label="Select language">
                         <option value="en">English</option>
                         <option value="zh">中文</option>
                     </select>
@@ -104,7 +104,7 @@
         </div>
 
         <div class="card-container">
-            <h3 class="main-title" data-i18n="dashboard.summary">Summary</h3>
+            <h2 class="main-title" data-i18n="dashboard.summary">Summary</h2>
             <div class="card-wrapper">
                 <a href="./orders.html">
                     <div class="payment-card">
@@ -149,15 +149,21 @@
         <div class="card-container dashboard-tools">
             <div class="dashboard-tools-grid">
                 <div class="dashboard-tool-card">
-                    <h3 class="main-title" data-i18n="dashboard.quickActions">Quick Actions</h3>
+                    <h2 class="main-title" data-i18n="dashboard.quickActions">Quick Actions</h2>
                     <div class="quick-action-buttons">
                         <a class="quick-action-btn" href="./products.html?quickAdd=1" data-i18n="products.addProduct">Add Product</a>
                         <a class="quick-action-btn" href="./orders.html?quickAdd=1" data-i18n="orders.addOrder">Add Order</a>
                         <a class="quick-action-btn" href="./finances.html?quickAdd=1" data-i18n="expenses.addExpense">Add Expense</a>
                     </div>
                 </div>
+                <div class="dashboard-tool-card dashboard-inventory-card">
+                    <h2 class="main-title" data-i18n="dashboard.inventoryAndProducts">Inventory &amp; Products</h2>
+                    <h3 class="dashboard-inventory-subtitle" data-i18n="dashboard.lowStockReminder">Low stock reminder</h3>
+                    <ul class="low-stock-list" id="low-stock-list" aria-live="polite"></ul>
+                    <a class="low-stock-link" href="./products.html" data-i18n="dashboard.viewProducts">View products</a>
+                </div>
                 <div class="dashboard-tool-card">
-                    <h3 class="main-title" data-i18n="dashboard.orderStatusOverview">Order Status</h3>
+                    <h2 class="main-title" data-i18n="dashboard.orderStatusOverview">Order Status</h2>
                     <div class="pending-order-stats">
                         <div class="pending-stat-item">
                             <span class="pending-stat-label" data-i18n="orders.pending">Pending</span>
@@ -179,7 +185,7 @@
                 </div>
             </div>
         </div>
-    </div>
+    </main>
 
     <!-- Apex Charts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/apexcharts/3.45.2/apexcharts.min.js"></script>

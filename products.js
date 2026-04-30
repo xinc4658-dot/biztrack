@@ -67,61 +67,54 @@ function isNameCategoryPairValid(prodName, prodCat) {
   return expectedCategory && expectedCategory === prodCat;
 }
 
+// 默认商品：顺序与表单下拉一致 — Hats → Drinkware → Clothing → Accessories → Home decor
+var PRODUCTS_CATALOG_VERSION = "full-16-v1";
+var DEFAULT_PRODUCTS_FULL = [
+  { prodID: "PD001", prodName: "Baseball caps", prodDesc: "Peace embroidered cap", prodCat: "Hats", prodPrice: 25.0, prodSold: 20 },
+  { prodID: "PD002", prodName: "Snapbacks", prodDesc: "Classic snapback fit", prodCat: "Hats", prodPrice: 28.0, prodSold: 15 },
+  { prodID: "PD003", prodName: "Beanies", prodDesc: "Warm knit beanie", prodCat: "Hats", prodPrice: 18.5, prodSold: 32 },
+  { prodID: "PD004", prodName: "Bucket hats", prodDesc: "Summer bucket style", prodCat: "Hats", prodPrice: 22.0, prodSold: 12 },
+  { prodID: "PD005", prodName: "Mugs", prodDesc: "Ceramic travel mug", prodCat: "Drinkware", prodPrice: 14.0, prodSold: 45 },
+  { prodID: "PD006", prodName: "Water bottles", prodDesc: "Floral lotus printed bottle", prodCat: "Drinkware", prodPrice: 48.5, prodSold: 10 },
+  { prodID: "PD007", prodName: "Tumblers", prodDesc: "Insulated tumbler", prodCat: "Drinkware", prodPrice: 32.0, prodSold: 28 },
+  { prodID: "PD008", prodName: "T-shirts", prodDesc: "Soft cotton tee", prodCat: "Clothing", prodPrice: 19.99, prodSold: 55 },
+  { prodID: "PD009", prodName: "Sweatshirts", prodDesc: "Palestine sweater", prodCat: "Clothing", prodPrice: 17.5, prodSold: 70 },
+  { prodID: "PD010", prodName: "Hoodies", prodDesc: "Fleece-lined hoodie", prodCat: "Clothing", prodPrice: 42.0, prodSold: 35 },
+  { prodID: "PD011", prodName: "Pillow cases", prodDesc: "Morrocan print pillow case", prodCat: "Accessories", prodPrice: 17.0, prodSold: 40 },
+  { prodID: "PD012", prodName: "Tote bags", prodDesc: "Canvas tote", prodCat: "Accessories", prodPrice: 24.0, prodSold: 22 },
+  { prodID: "PD013", prodName: "Stickers", prodDesc: "Vinyl sticker pack", prodCat: "Accessories", prodPrice: 6.5, prodSold: 100 },
+  { prodID: "PD014", prodName: "Posters", prodDesc: "Vibes printed poster", prodCat: "Home decor", prodPrice: 12.0, prodSold: 60 },
+  { prodID: "PD015", prodName: "Framed posters", prodDesc: "Ready-to-hang frame", prodCat: "Home decor", prodPrice: 35.0, prodSold: 18 },
+  { prodID: "PD016", prodName: "Canvas prints", prodDesc: "Gallery canvas wrap", prodCat: "Home decor", prodPrice: 55.0, prodSold: 14 },
+];
+
+function loadProductsFromStorage() {
+  var storedProducts = localStorage.getItem("bizTrackProducts");
+  var catalogVersion = localStorage.getItem("bizTrackProductsCatalogVersion");
+  var needsFullCatalog =
+    !storedProducts ||
+    catalogVersion !== PRODUCTS_CATALOG_VERSION;
+
+  if (needsFullCatalog) {
+    products = DEFAULT_PRODUCTS_FULL.map(function (row) {
+      return Object.assign({}, row);
+    });
+    localStorage.setItem("bizTrackProducts", JSON.stringify(products));
+    localStorage.setItem("bizTrackProductsCatalogVersion", PRODUCTS_CATALOG_VERSION);
+    return;
+  }
+
+  products = JSON.parse(storedProducts);
+}
+
 function init() {
   // 绑定事件：选择名称后自动填类别
   document.getElementById("product-name").addEventListener("change", syncCategoryWithSelectedName);
 
-  const storedProducts = localStorage.getItem("bizTrackProducts");
-  if (storedProducts) {
-      products = JSON.parse(storedProducts);
-  } else {
-      products = [
-        {
-          prodID: "PD001",
-          prodName: "Baseball caps",
-          prodDesc: "Peace embroidered cap",
-          prodCat: "Hats",
-          prodPrice: 25.00,
-          prodSold: 20
-        },
-        {
-          prodID: "PD002",
-          prodName: "Water bottles",
-          prodDesc: "Floral lotus printed bottle",
-          prodCat: "Drinkware",
-          prodPrice: 48.50,
-          prodSold: 10
-        },
-        {
-          prodID: "PD003",
-          prodName: "Sweatshirts",
-          prodDesc: "Palestine sweater",
-          prodCat: "Clothing",
-          prodPrice: 17.50,
-          prodSold: 70
-        },
-        {
-          prodID: "PD004",
-          prodName: "Posters",
-          prodDesc: "Vibes printed poster",
-          prodCat: "Home decor",
-          prodPrice: 12.00,
-          prodSold: 60
-        },
-        {
-          prodID: "PD005",
-          prodName: "Pillow cases",
-          prodDesc: "Morrocan print pillow case",
-          prodCat: "Accessories",
-          prodPrice: 17.00,
-          prodSold: 40
-        },
-      ];
-      localStorage.setItem("bizTrackProducts", JSON.stringify(products));
-    }
-    renderProducts(products);
-    syncProductsToDb("sync", { prodID: "all-products" });
-    handleQuickAddOpen();
+  loadProductsFromStorage();
+  renderProducts(products);
+  syncProductsToDb("sync", { prodID: "all-products" });
+  handleQuickAddOpen();
 }
 
 function handleQuickAddOpen() {
@@ -226,17 +219,21 @@ function renderProducts(products) {
 
       const translatedName = typeof translateProductName === 'function' ? translateProductName(product.prodName) : product.prodName;
       const translatedCat = window.t(`products.${product.prodCat.toLowerCase()}`) || product.prodCat;
+      
+      // 【新增】对可能包含恶意代码的用户输入进行 XSS 转义
+      const safeName = window.escapeHTML(translatedName);
+      const safeDesc = window.escapeHTML(product.prodDesc);
 
       prodRow.innerHTML = `
           <td>${product.prodID}</td>
-          <td>${translatedName}</td>
-          <td>${product.prodDesc}</td>
+          <td>${safeName}</td>
+          <td>${safeDesc}</td>
           <td>${translatedCat}</td>
           <td>$${product.prodPrice.toFixed(2)}</td>
           <td>${product.prodSold}</td>
           <td class="action">
-            <i title="Edit" onclick="editRow('${product.prodID}')" class="edit-icon fa-solid fa-pen-to-square"></i>
-            <i onclick="deleteProduct('${product.prodID}')" class="delete-icon fas fa-trash-alt"></i>
+            <button title="Edit" onclick="editRow('${product.prodID}')" class="edit-icon fa-solid fa-pen-to-square" aria-label="Edit order"></button>
+            <button title="Delete" onclick="deleteProduct('${product.prodID}')" class="delete-icon fas fa-trash-alt" aria-label="Delete order"></button>
           </td>
       `;
       prodTableBody.appendChild(prodRow);
@@ -383,8 +380,8 @@ function performSearch() {
 function exportToCSV() {
   const currentLanguage = localStorage.getItem('bizTrackLanguage') || 'en';
   const headerTranslations = {
-    en: { prodID: 'Product ID', prodName: 'Product Name', prodDesc: 'Product Description', prodCategory: 'Product Category', prodPrice: 'Product Price', QtySold: 'Quantity Sold' },
-    zh: { prodID: '产品ID', prodName: '产品名称', prodDesc: '产品描述', prodCategory: '产品类别', prodPrice: '产品价格', QtySold: '销售数量' }
+    en: { prodID: 'Product ID', prodName: 'Product Name', prodDesc: 'Product Description', prodCategory: 'Product Category', prodPrice: 'Product Price', QtySold: 'Stock Quantity' },
+    zh: { prodID: '产品ID', prodName: '产品名称', prodDesc: '产品描述', prodCategory: '产品类别', prodPrice: '产品价格', QtySold: '库存量' }
   };
 
   const headers = headerTranslations[currentLanguage];

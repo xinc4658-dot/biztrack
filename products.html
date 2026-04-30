@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width", initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta property="og:title" content="BizTrack Project by Sumayyah"/>
     <meta property="og:description" content="A project born out of real small business challenges, now simplifying product, order, and finance management."/>
     <meta property="og:image:secure_url" content="https://i.imgur.com/0O47fVi.jpg"/>
@@ -18,8 +18,8 @@
     <link rel="icon" type="image/x-icon" href="./assets/favicon.ico">
     <title>Products - BizTrack</title>
 </head>
-<body>
-    <div id="sidebar" class="sidebar">
+<body class="products-page">
+    <nav id="sidebar" class="sidebar" aria-label="Main navigation">
         <div class="logo">
             <a href="./index.html">
                 <i class="fas fa-b"></i>
@@ -77,13 +77,13 @@
                 </a>
             </li>
         </ul>
-    </div>
+    </nav>
 
-    <div class="main-content">
+    <main class="main-content">
         <div class="header-wrapper">
-            <div class="menu-icon" onclick="openSidebar()">
+            <button class="menu-icon" onclick="openSidebar()" aria-label="Open sidebar menu">
                 <i class="fa-solid fa-bars"></i>
-            </div>
+            </button>
             <div class="header-title">
                 <h2 data-i18n="sidebar.products">Products</h2>
             </div>
@@ -93,7 +93,7 @@
                     <input type="search" id="searchInput" placeholder="Search" data-i18n-placeholder="common.search">
                 </div>
                 <div class="language-switcher">
-                    <select id="languageSelector">
+                    <select id="languageSelector" aria-label="Select language">
                         <option value="en">English</option>
                         <option value="zh">中文</option>
                     </select>
@@ -103,7 +103,7 @@
 
         <div class="table-wrapper">
             <div class="product-title">
-                <h3 class="main-title" data-i18n="sidebar.products">Products</h3>
+                <h1 class="main-title" data-i18n="sidebar.products">Products</h1>
                 <div class="product-button">
                     <button class="add-button" onclick="openForm()" data-i18n="products.addProduct">Add Product</button>
                     <button class="download-button" onclick="exportToCSV()" data-i18n="products.downloadCSV">Download CSV</button>
@@ -165,7 +165,7 @@
                             <label for="product-price"><b data-i18n="products.productPrice">Product Price:</b></label>
                             <input type="number" id="product-price" placeholder="$0.00" min="0.00" max="10000.00" step="0.01" required>
     
-                            <label for="product-sold"><b data-i18n="products.productSold">Number of Units Sold:</b></label>
+                            <label for="product-sold"><b data-i18n="products.productSold">Stock Quantity:</b></label>
                             <input type="number" id="product-sold" placeholder="10" required>
                         </div>
                     </div>
@@ -185,7 +185,7 @@
                             <th onclick="sortTable('prodDesc')" data-i18n="products.productDesc">Description</th>
                             <th onclick="sortTable('prodCat')" data-i18n="products.productCategory">Category</th>
                             <th onclick="sortTable('prodPrice')" data-i18n="products.productPrice">Price</th>
-                            <th onclick="sortTable('prodSold')" data-i18n="products.productSold">Units Sold</th>
+                            <th onclick="sortTable('prodSold')" data-i18n="products.productSold">Stock Quantity</th>
                             <th data-i18n="common.action">Action</th>
                         </tr>
                     </thead>
@@ -194,7 +194,7 @@
                 </table>
             </div>
         </div>
-    </div>
+    </main>
 
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>

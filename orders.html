@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width", initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta property="og:title" content="BizTrack Project by Sumayyah"/>
     <meta property="og:description" content="A project born out of real small business challenges, now simplifying product, order, and finance management."/>
     <meta property="og:image:secure_url" content="https://i.imgur.com/0O47fVi.jpg"/>
@@ -21,8 +21,8 @@
     <link rel="icon" type="image/x-icon" href="./assets/favicon.ico">
     <title>Orders - BizTrack</title>
 </head>
-<body>
-    <div id="sidebar" class="sidebar">
+<body class="orders-page">
+    <nav id="sidebar" class="sidebar" aria-label="Main navigation">
         <div class="logo">
             <a href="./index.html">
                 <i class="fas fa-b"></i>
@@ -80,13 +80,13 @@
                 </a>
             </li>
         </ul>
-    </div>
+    </nav>
 
-    <div class="main-content">
+    <main class="main-content">
         <div class="header-wrapper">
-            <div class="menu-icon" onclick="openSidebar()">
+            <button class="menu-icon" onclick="openSidebar()" aria-label="Open sidebar menu">
                 <i class="fa-solid fa-bars"></i>
-            </div>
+            </button>
             <div class="header-title">
                 <!-- <span>Primary</span> -->
                 <h2 data-i18n="sidebar.orders">Orders</h2>
@@ -97,7 +97,7 @@
                     <input type="search" id="searchInput" placeholder="Search" data-i18n-placeholder="common.search">
                 </div>
                 <div class="language-switcher">
-                    <select id="languageSelector">
+                    <select id="languageSelector" aria-label="Select language">
                         <option value="en">English</option>
                         <option value="zh">中文</option>
                     </select>
@@ -107,7 +107,7 @@
 
         <div class="table-wrapper">
             <div class="product-title">
-                <h3 class="main-title" data-i18n="sidebar.orders">Orders</h3>
+                <h1 class="main-title" data-i18n="sidebar.orders">Orders</h1>
                 <div class="order-button">
                     <button class="add-button" onclick="openForm()" data-i18n="orders.addOrder">Add Order</button>
                     <button class="download-button" onclick="exportToCSV()" data-i18n="orders.exportCSV">Export to CSV</button>
@@ -221,7 +221,7 @@
                 </table>
             </div>
         </div>
-    </div>
+    </main>
 
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>

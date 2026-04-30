@@ -3,9 +3,9 @@
     --blue-color: #247BA0;
     --orange-color: #e49273;
     --brown-color: #A37A74;
-    --light-blue: #9AADBF;
-    --light-orange: #FFF5EE;
-    --white-color: #f2f4f7;
+    --light-blue: #6B8A9F;
+    --light-orange: #F9E6D5;
+    --white-color: #ffffff;
     --green-color: #249672;
 }
 * {
@@ -33,7 +33,6 @@ body {
     padding: 0 1rem;
     overflow: hidden;
     overflow-y: auto;
-    /* overflow-x: auto; */
     transition: all 0.5s linear;
     background: var(--black-color);
 }
@@ -95,7 +94,7 @@ body {
 }
 .menu li:hover, 
 .active {
-    background: var(--orange-color);
+    background: #993d24;
 }
 .menu a {
     color: var(--white-color);
@@ -112,13 +111,19 @@ body {
     font-size: 1.5rem;
     cursor: pointer;
 }
+.menu-icon {
+    background: transparent;
+    border: none;
+    padding: 0;
+    margin: 0;
+    cursor: pointer;
+}
 .logout {
     position: absolute;
     bottom: 0;
     left: 0;
     width: 100%;
 }
-
 
 .main-content {
     position: relative;
@@ -204,10 +209,10 @@ body {
 .finance-button button {
     font-size: medium;
     font-weight: 600;
-    background: var(--brown-color);
+    background: #7a524d;
     cursor: pointer;
     transition: all 0.5s;
-    color: var(--light-orange);
+    color: #ffffff;
     padding: 12px 13px;
     border-radius: 5px;
 }
@@ -218,7 +223,7 @@ body {
 .add-button, .download-button {
     font-size: medium;
     font-weight: 600;
-    background: var(--green-color);
+    background: #1a7058;
     cursor: pointer;
     transition: all 0.5s;
     color: var(--white-color);
@@ -230,7 +235,6 @@ body {
     background: #145440;
     border-radius: 19px;
 }
-
 
 .form-popup {
     bottom: 2;
@@ -285,29 +289,32 @@ label {
     gap: 18px;
 }
 .form-container .btn {
-    background-color: var(--green-color);
+    background-color: #174d3e; 
     color: white;
     padding: 16px 20px;
     border: none;
     cursor: pointer;
     width: 30%;
     margin-bottom:10px;
-    opacity: 0.8;
     font-size: 15px;
+    /* 删掉原来 opacity:0.8 根本原因 */
 }
 .form-container .cancel {
-    background-color: var(--orange-color);
+     background-color: #803e28;
 }
-.form-container .btn:hover, .open-button:hover {
+.form-container .btn:hover, 
+.open-button:hover {
     opacity: 1;
+    background-color: #123c30;
 }
-
+.form-container .cancel:hover {
+    background-color: #6a3320;
+}
 
 .card-wrapper {
     display: flex;
     flex-wrap: wrap;
     justify-content: space-evenly;
-    /* justify-content: center; */
     gap: 1rem;
 }
 .card-wrapper a {
@@ -318,7 +325,6 @@ label {
     justify-content: space-between;
     padding: 1.2rem;
     width: 290px;
-    /* height: 150px; */
     border-radius: 10px;
     transition: all 0.5s ease-in-out;
 }
@@ -372,34 +378,101 @@ label {
 }
 .card-detail {
     font-size: 17px;
-    color: #63484460;
+    color: #634844;
     letter-spacing: 2px;
     font-family: 'Courier New', Courier, monospace;
 }
 .dashboard-tools-grid {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 1rem;
+    align-items: stretch;
 }
 .dashboard-tool-card {
     background: #FFF5EE;
     border-radius: 10px;
     padding: 1rem 1.2rem;
     box-shadow: -7px 4px 7px -2px rgba(0, 0, 0, 0.15);
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+.dashboard-inventory-subtitle {
+    color: #7a524d;
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin: 0.35rem 0 0.6rem;
+}
+.low-stock-list {
+    list-style: none;
+    margin: 0 0 0.75rem;
+    padding: 0;
+    flex: 1;
+    min-height: 0;
+}
+.low-stock-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    background: #fff;
+    border: 1px solid #ebd6cc;
+    border-radius: 8px;
+    padding: 0.55rem 0.7rem;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+}
+.low-stock-item:last-child {
+    margin-bottom: 0;
+}
+.low-stock-name {
+    color: var(--black-color);
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.low-stock-qty {
+    flex-shrink: 0;
+    font-family: 'Courier New', Courier, monospace;
+    font-weight: 700;
+    color: #993d24;
+    font-size: 1rem;
+}
+.low-stock-item.low-stock-empty .low-stock-name {
+    font-weight: 500;
+    color: #7a524d;
+    white-space: normal;
+}
+.low-stock-link {
+    margin-top: auto;
+    padding-top: 0.25rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--blue-color);
+    text-decoration: none;
+    align-self: flex-start;
+}
+.low-stock-link:hover {
+    text-decoration: underline;
 }
 .quick-action-buttons {
     display: flex;
-    flex-wrap: wrap;
-    gap: 0.8rem;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
 }
 .quick-action-btn {
     text-decoration: none;
-    background: var(--green-color);
-    color: var(--white-color);
+    text-align: center;
+    background-color: #1a7058;
+    color: #ffffff;
     font-weight: 600;
     border-radius: 6px;
-    padding: 10px 14px;
+    padding: 12px 14px;
     transition: all 0.3s ease;
+    box-sizing: border-box;
 }
 .quick-action-btn:hover {
     background: #145440;
@@ -419,7 +492,7 @@ label {
     gap: 0.3rem;
 }
 .pending-stat-label {
-    color: var(--brown-color);
+    color: #7a524d;
     font-weight: 600;
 }
 .pending-stat-value {
@@ -427,6 +500,12 @@ label {
     font-size: 26px;
     font-family: 'Courier New', Courier, monospace;
     font-weight: 700;
+}
+
+@media (max-width: 1100px) {
+    .dashboard-tools-grid {
+        grid-template-columns: 1fr;
+    }
 }
 
 /* ---- Charts ---- */
@@ -455,7 +534,6 @@ label {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 1.2rem;
 }
-
 .balance-page .charts-card {
     width: 100%;
 }
@@ -513,6 +591,37 @@ label {
     max-width: 100%;
     overflow-x: auto;
 }
+
+/* Products：白色内容区按内容伸缩，避免底部大块留白 */
+.products-page .table-wrapper {
+    height: auto;
+    min-height: 0;
+}
+
+/* Products：表格区域可纵向滚动；高度随视口变化，尽量用满主内容区 */
+.products-page .table-container {
+    max-height: calc(100vh - 220px);
+    min-height: 200px;
+    overflow-y: auto;
+    overflow-x: auto;
+    border-radius: 8px;
+    border: 1px solid #e0dcd8;
+}
+
+.products-page .table-container thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background-color: var(--black-color);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.12);
+}
+
+@media (max-width: 768px) {
+    .products-page .table-container {
+        max-height: calc(100vh - 200px);
+        min-height: 160px;
+    }
+}
 .table-container button {
     color: var(--brown-color);
     background: none;
@@ -535,7 +644,7 @@ th {
     text-align: left;
 }
 th:hover {
-    color: var(--brown-color);
+    color: #ffffff;
 }
 tbody {
     background: rgb(237, 237, 237);
@@ -567,11 +676,11 @@ tfoot td {
     color: #33d8a4;
 }
 .tr-amount {
-    color: #e8754c;
+    color: #b34728;
     font-weight: 700;
 }
 .order-total {
-    color: #38b48d;
+    color: #0d6048;
     font-weight: 700;
 }
 .status {
@@ -592,8 +701,8 @@ tfoot td {
     background: #24967280;
 }
 .delivered {
-    background: #9AADBF30;
-    color: #63484460;
+    background: #9AADBF;
+    color: #262626;
 }
 
 .edit-icon{
@@ -654,10 +763,7 @@ ol {
     color: var(--brown-color);
 }
 
-
-
 /* ---------- SCROLLBARS ---------- */
-
 ::-webkit-scrollbar {
     width: 6px;
     height: 5px;
@@ -667,17 +773,14 @@ ol {
     border-radius: 10px;
 }
 ::-webkit-scrollbar-thumb {
-    background-color: rgb(195, 191, 191);
+    background-color: rgb195, 191, 191;
     border-radius: 10px;
 }
 ::-webkit-scrollbar-thumb:hover {
     background-color: #a5aaad;
 }
 
-
 /* ---------- MEDIA QUERIES ---------- */
-
-/* Default styles for larger screens */
 @media screen and (min-width: 992px) {
     .sidebar {
         display: flex;
@@ -687,10 +790,6 @@ ol {
         margin-left: 0;
     }
 }
-
-
-
-/* Media query for smaller screens */
 @media (max-width: 768px) {
     .sidebar {
         display: none;
@@ -700,7 +799,6 @@ ol {
     .sidebar:hover {
         width: 210px;
     }
-
     .main-content {
         margin-left: 0;
         position: inherit;
@@ -716,67 +814,21 @@ ol {
     }
 }
 
-
-/* Medium <= 992px */
-/* @media screen and (max-width: 992px) {
-    .grid-container {
-      grid-template-columns: 1fr;
-      grid-template-rows: 0.2fr 3fr;
-      grid-template-areas:
-        "header"
-        "main";
-    }
-  
-    #sidebar {
-      display: none;
-    }
-    .menu-icon {
-      display: inline;
-    }
-    .logo > span {
-      display: inline;
-    }
-} */
-  
-  /* Small <= 768px */
-/* @media screen and (max-width: 768px) {
-    .main-cards {
-      grid-template-columns: 1fr;
-      gap: 10px;
-      margin-bottom: 0;
-    }
-  
-    .charts {
-      grid-template-columns: 1fr;
-      margin-top: 30px;
-    }
-} */
-  
-  /* Extra Small <= 576px */
-/* @media screen and (max-width: 576px) {
-    .header-left {
-      display: none;
-    }
-} */
-
-
 .history-cell {
     vertical-align: top;
     min-width: 200px;
 }
-
 .log-data {
     text-align: left;
     line-height: 1.4;
     word-break: break-word;
 }
-
 .log-key {
     font-weight: 700;
-    color: var(--brown-color);
+    color: #262626;
 }
 
-/* Performance: use font-display swap for Font Awesome icon fonts */
+/* Font Awesome 性能优化 */
 @font-face {
     font-family: "Font Awesome 6 Free";
     font-style: normal;
@@ -784,7 +836,6 @@ ol {
     font-display: swap;
     src: url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/webfonts/fa-solid-900.woff2") format("woff2");
 }
-
 @font-face {
     font-family: "Font Awesome 6 Brands";
     font-style: normal;
@@ -792,3 +843,38 @@ ol {
     font-display: swap;
     src: url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/webfonts/fa-brands-400.woff2") format("woff2");
 }
+
+/* 统一焦点样式 无多余重复 */
+button:focus-visible,
+a:focus-visible,
+select:focus-visible,
+input:focus-visible,
+textarea:focus-visible {
+    outline: 3px solid #2563eb;
+    outline-offset: 2px;
+    border-radius: 4px;
+}
+
+select {
+    -webkit-appearance: none;
+    appearance: none;
+    background-color: white;
+    border: 1px solid #ddd;
+    padding: 6px 10px;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+/* 强制恢复原生键盘交互 */
+select:focus {
+    pointer-events: auto;
+}
+
+.edit-btn, .delete-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0 4px;
+}
+
