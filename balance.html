@@ -19,7 +19,7 @@
     <title>Balance - BizTrack</title>
 </head>
 <body class="balance-page">
-    <div id="sidebar" class="sidebar">
+    <nav id="sidebar" class="sidebar" aria-label="Main navigation">
         <div class="logo">
             <a href="./index.html">
                 <i class="fas fa-b"></i>
@@ -77,19 +77,19 @@
                 </a>
             </li>
         </ul>
-    </div>
+    </nav>
 
-    <div class="main-content">
+    <main class="main-content">
         <div class="header-wrapper">
-            <div class="menu-icon" onclick="openSidebar()">
+            <button class="menu-icon" onclick="openSidebar()" aria-label="Open sidebar menu">
                 <i class="fa-solid fa-bars"></i>
-            </div>
+            </button>
             <div class="header-title">
                 <h2 data-i18n="dashboard.balance">Balance</h2>
             </div>
             <div class="user-info">
                 <div class="language-switcher">
-                    <select id="languageSelector">
+                    <select id="languageSelector" aria-label="Select language">
                         <option value="en">English</option>
                         <option value="zh">中文</option>
                     </select>
@@ -98,7 +98,7 @@
         </div>
 
         <div class="charts-container">
-            <h3 class="main-title" id="balance-main-title">Balance Analytics</h3>
+            <h1 class="main-title" id="balance-main-title">Balance Analytics</h1>
             <div class="charts-wrapper">
                 <div class="charts-card">
                     <span class="chart-title formula-trigger" id="balance-trend-title">Monthly Revenue, Expenses & Net Balance</span>
@@ -118,7 +118,7 @@
                 </div>
             </div>
         </div>
-    </div>
+    </main>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/apexcharts/3.45.2/apexcharts.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>

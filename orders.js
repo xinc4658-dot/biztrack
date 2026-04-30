@@ -316,8 +316,8 @@ function renderOrders(orders) {
             <div class="status ${statusMap[order.orderStatus]}"><span>${translatedStatus}</span></div>
         </td>
         <td class="action">
-            <i title="Edit" onclick="editRow('${order.orderID}')" class="edit-icon fa-solid fa-pen-to-square"></i>
-            <i onclick="deleteOrder('${order.orderID}')" class="delete-icon fas fa-trash-alt"></i>
+            <button title="Edit" onclick="editRow('${order.orderID}')" class="edit-icon fa-solid fa-pen-to-square" aria-label="Edit order"></button>
+            <button onclick="deleteOrder('${order.orderID}')" class="delete-icon fas fa-trash-alt" aria-label="Delete order"></button>
           </td> 
       `;
       orderTableBody.appendChild(orderRow);

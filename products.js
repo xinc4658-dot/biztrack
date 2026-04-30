@@ -239,8 +239,8 @@ function renderProducts(products) {
           <td>$${product.prodPrice.toFixed(2)}</td>
           <td>${product.prodSold}</td>
           <td class="action">
-            <i title="Edit" onclick="editRow('${product.prodID}')" class="edit-icon fa-solid fa-pen-to-square"></i>
-            <i onclick="deleteProduct('${product.prodID}')" class="delete-icon fas fa-trash-alt"></i>
+            <button title="Edit" onclick="editRow('${product.prodID}')" class="edit-icon fa-solid fa-pen-to-square" aria-label="Edit order"></button>
+            <button title="Delete" onclick="deleteProduct('${product.prodID}')" class="delete-icon fas fa-trash-alt" aria-label="Delete order"></button>
           </td>
       `;
       prodTableBody.appendChild(prodRow);

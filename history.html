@@ -18,7 +18,7 @@
     <title>History - BizTrack</title>
 </head>
 <body>
-    <div id="sidebar" class="sidebar">
+    <nav id="sidebar" class="sidebar" aria-label="Main navigation">
         <div class="logo">
             <a href="./index.html">
                 <i class="fas fa-b"></i>
@@ -76,19 +76,19 @@
                 </a>
             </li>
         </ul>
-    </div>
+    </nav>
 
-    <div class="main-content">
+    <main class="main-content">
         <div class="header-wrapper">
-            <div class="menu-icon" onclick="openSidebar()">
+            <button class="menu-icon" onclick="openSidebar()" aria-label="Open sidebar menu">
                 <i class="fa-solid fa-bars"></i>
-            </div>
+            </button>
             <div class="header-title">
                 <h2 data-i18n="history.pageTitle">Activity History</h2>
             </div>
             <div class="user-info">
                 <div class="language-switcher">
-                    <select id="languageSelector">
+                    <select id="languageSelector" aria-label="Select language">
                         <option value="en">English</option>
                         <option value="zh">中文</option>
                     </select>
@@ -98,7 +98,7 @@
 
         <div class="table-wrapper">
             <div class="product-title">
-                <h3 class="main-title" data-i18n="history.sectionTitle">Operation Logs</h3>
+                <h1 class="main-title" data-i18n="history.sectionTitle">Operation Logs</h1>
             </div>
             <div class="table-container">
                 <table id="history-table">
@@ -116,7 +116,7 @@
                 </table>
             </div>
         </div>
-    </div>
+    </main>
 
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
