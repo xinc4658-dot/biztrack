@@ -1,3 +1,11 @@
+function debounce(fn, delay = 250) {
+    let timer;
+    return function (...args) {
+        clearTimeout(timer);
+        timer = setTimeout(() => fn.apply(this, args), delay);
+    };
+}
+
 
 function openSidebar() {
     var side = document.getElementById('sidebar');
