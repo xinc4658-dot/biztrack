@@ -11,6 +11,7 @@ const db = window.biztrackDb;
 const logsRef = db ? db.collection("activity_logs") : null;
 
 let historyLogsCache = null;
+const HISTORY_CACHE_KEY = "bizTrackRecentHistoryLogs";
 
 const FIELD_I18N_KEY = {
   prodID: "fieldProdID",
@@ -223,7 +224,7 @@ function formatComparableData(beforeData, afterData, entity) {
 
 function renderLogs(logs) {
   const tbody = document.getElementById("historyTableBody");
-  tbody.innerHTML = "";
+  const fragment = document.createDocumentFragment();
 
   const emptyMsg = window.t("history.noRecords");
   const emptyText = emptyMsg !== "history.noRecords" ? emptyMsg : "No records yet";
@@ -231,7 +232,7 @@ function renderLogs(logs) {
   if (!logs.length) {
     const emptyRow = document.createElement("tr");
     emptyRow.innerHTML = `<td colspan="6" style="text-align:center;">${emptyText}</td>`;
-    tbody.appendChild(emptyRow);
+    tbody.replaceChildren(emptyRow);
     return;
   }
 
@@ -251,8 +252,10 @@ function renderLogs(logs) {
       <td class="history-cell">${comparable.beforeHtml}</td>
       <td class="history-cell">${comparable.afterHtml}</td>
     `;
-    tbody.appendChild(row);
+    fragment.appendChild(row);
   });
+
+  tbody.replaceChildren(fragment);
 }
 
 async function loadHistory() {
@@ -262,12 +265,18 @@ async function loadHistory() {
   const noHistMsg = window.t("history.noHistoryYet");
   const noHistText = noHistMsg !== "history.noHistoryYet" ? noHistMsg : "No history logs yet";
 
+  const cachedLogs = JSON.parse(localStorage.getItem(HISTORY_CACHE_KEY) || "null");
+  if (Array.isArray(cachedLogs) && cachedLogs.length > 0) {
+    historyLogsCache = cachedLogs;
+    renderLogs(cachedLogs);
+  }
+
   try {
     if (!logsRef) {
       throw new Error(errText);
     }
 
-    const snapshot = await logsRef.orderBy("createdAt", "desc").get();
+    const snapshot = await logsRef.orderBy("createdAt", "desc").limit(50).get();
     const logs = snapshot.docs
       .map((doc) => doc.data())
       .filter((log) => {
@@ -275,6 +284,7 @@ async function loadHistory() {
         return action === "create" || action === "update" || action === "delete";
       });
     historyLogsCache = logs;
+    localStorage.setItem(HISTORY_CACHE_KEY, JSON.stringify(logs));
     renderLogs(logs);
   } catch (error) {
     console.error("Failed to load activity logs:", error);

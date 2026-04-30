@@ -194,6 +194,8 @@ const translations = {
     },
     common: {
       search: "Search",
+edit: "Edit",
+delete: "Delete",
       action: "Action",
       productIdExists: "Product ID already exists. Please use a unique ID.",
       categoryMustMatch: "Product category must match the selected product name.",
@@ -464,6 +466,8 @@ const translations = {
     },
     common: {
       search: "搜索",
+edit: "编辑",
+delete: "删除",
       action: "操作",
       productIdExists: "产品ID已存在，请使用唯一的ID。",
       categoryMustMatch: "产品类别必须与所选产品名称匹配。",

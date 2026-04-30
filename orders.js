@@ -1,3 +1,35 @@
+function escapeCSVValue(value) {
+    const text = String(value ?? "");
+    if (/[",\n\r]/.test(text)) {
+        return `"${text.replace(/"/g, '""')}"`;
+    }
+    return text;
+}
+
+function translateOrderStatusForExport(status) {
+    const currentLanguage = localStorage.getItem("bizTrackLanguage") || "en";
+
+    const statuses = {
+        zh: {
+            "Pending": "待处理",
+            "Processing": "处理中",
+            "Shipped": "已发货",
+            "Delivered": "已送达"
+        }
+    };
+
+    return statuses[currentLanguage] && statuses[currentLanguage][status]
+        ? statuses[currentLanguage][status]
+        : status;
+}
+function debounce(fn, delay = 250) {
+    let timer;
+    return function (...args) {
+        clearTimeout(timer);
+        timer = setTimeout(() => fn.apply(this, args), delay);
+    };
+}
+
 
 function openSidebar() {
     var side = document.getElementById('sidebar');
@@ -267,7 +299,7 @@ function translateOrderStatus(status) {
 
 function renderOrders(orders) {
     const orderTableBody = document.getElementById("tableBody");
-    orderTableBody.innerHTML = "";
+    const fragment = document.createDocumentFragment();
 
     const orderToRender = orders;
     const statusMap = {
@@ -316,12 +348,14 @@ function renderOrders(orders) {
             <div class="status ${statusMap[order.orderStatus]}"><span>${translatedStatus}</span></div>
         </td>
         <td class="action">
-            <button title="Edit" onclick="editRow('${order.orderID}')" class="edit-icon fa-solid fa-pen-to-square" aria-label="Edit order"></button>
-            <button onclick="deleteOrder('${order.orderID}')" class="delete-icon fas fa-trash-alt" aria-label="Delete order"></button>
+            <button title="${window.t ? window.t(`common.edit`) : `Edit`}" onclick="editRow('${order.orderID}')" class="edit-icon fa-solid fa-pen-to-square" aria-label="${window.t ? window.t(`common.edit`) : `Edit`}"></button>
+            <button title="${window.t ? window.t(`common.delete`) : `Delete`}" onclick="deleteOrder('${order.orderID}')" class="delete-icon fas fa-trash-alt" aria-label="${window.t ? window.t(`common.delete`) : `Delete`}"></button>
           </td> 
       `;
-      orderTableBody.appendChild(orderRow);
+      fragment.appendChild(orderRow);
   });
+
+  orderTableBody.replaceChildren(fragment);
   displayRevenue();
 }
 
@@ -439,26 +473,45 @@ function sortTable(column) {
         }
     });
 
-    rows.forEach(row => tbody.removeChild(row));
-
-    sortedRows.forEach(row => tbody.appendChild(row));
+    tbody.replaceChildren(...sortedRows);
 }
 
-document.getElementById("searchInput").addEventListener("keyup", function(event) {
-    if (event.key === "Enter") {
-        performSearch();
-    }
-});
+document.getElementById("searchInput").addEventListener("input", debounce(performSearch, 250));
 
 
 function performSearch() {
-    const searchInput = document.getElementById("searchInput").value.toLowerCase();
-    const rows = document.querySelectorAll(".order-row");
+    const keyword = document.getElementById("searchInput").value.trim().toLowerCase();
 
-    rows.forEach(row => {
-        const visible = row.innerText.toLowerCase().includes(searchInput);
-        row.style.display = visible ? "table-row" : "none";
+    if (!keyword) {
+        renderOrders(orders);
+        return;
+    }
+
+    const filteredOrders = orders.filter(order => {
+        const translatedItemName = typeof translateProductName === "function"
+            ? translateProductName(order.itemName)
+            : order.itemName;
+
+        const translatedStatus = typeof window.t === "function"
+            ? window.t(`orders.${String(order.orderStatus).toLowerCase()}`)
+            : order.orderStatus;
+
+        return [
+            order.orderID,
+            order.orderDate,
+            order.itemName,
+            translatedItemName,
+            order.itemPrice,
+            order.qtyBought,
+            order.shipping,
+            order.taxes,
+            order.orderTotal,
+            order.orderStatus,
+            translatedStatus
+        ].some(value => String(value).toLowerCase().includes(keyword));
     });
+
+    renderOrders(filteredOrders);
 }
 
 
@@ -467,13 +520,13 @@ function exportToCSV() {
         return {
             orderID: order.orderID,
             orderDate: order.orderDate,
-            itemName: order.itemName,
+            itemName: localStorage.getItem('bizTrackLanguage') === 'zh' && typeof translateProductName === 'function' ? translateProductName(order.itemName) : order.itemName,
             itemPrice: order.itemPrice.toFixed(2),
             qtyBought: order.qtyBought,
             shipping: order.shipping.toFixed(2),
             taxes: order.taxes.toFixed(2),
             orderTotal: order.orderTotal.toFixed(2),
-            orderStatus: order.orderStatus,
+            orderStatus: translateOrderStatusForExport(order.orderStatus),
         };
     });
   
@@ -530,8 +583,8 @@ function exportToCSV() {
 }
   
 function generateCSV(data, headers) {
-    const headerRow = Object.keys(headers).map(key => headers[key]).join(',');
-    const rows = data.map(order => Object.values(order).join(','));
+    const headerRow = Object.keys(headers).map(key => escapeCSVValue(headers[key])).join(',');
+    const rows = data.map(row => Object.values(row).map(escapeCSVValue).join(','));
 
     return `${headerRow}\n${rows.join('\n')}`;
 }

@@ -1,3 +1,36 @@
+function escapeCSVValue(value) {
+    const text = String(value ?? "");
+    if (/[",\n\r]/.test(text)) {
+        return `"${text.replace(/"/g, '""')}"`;
+    }
+    return text;
+}
+
+function translateExpenseCategoryForExport(category) {
+    const currentLanguage = localStorage.getItem("bizTrackLanguage") || "en";
+
+    const categories = {
+        zh: {
+            "Rent": "租金",
+            "Utilities": "水电费",
+            "Supplies": "用品",
+            "Order Fulfillment": "订单履行",
+            "Miscellaneous": "杂项"
+        }
+    };
+
+    return categories[currentLanguage] && categories[currentLanguage][category]
+        ? categories[currentLanguage][category]
+        : category;
+}
+function debounce(fn, delay = 250) {
+    let timer;
+    return function (...args) {
+        clearTimeout(timer);
+        timer = setTimeout(() => fn.apply(this, args), delay);
+    };
+}
+
 
 function openSidebar() {
     var side = document.getElementById('sidebar');
@@ -326,8 +359,8 @@ function renderTransactions(transactions) {
             <td class="tr-amount">${formattedAmount}</td>
             <td>${safeNotes}</td>
             <td class="action">
-                <button title="Edit" onclick="editRow('${transaction.trID}')" class="edit-icon fa-solid fa-pen-to-square" aria-label="Edit order"></button>
-                <button onclick="deleteTransaction('${transaction.trID}')" class="delete-icon fas fa-trash-alt" aria-label="Delete order"></button>
+                <button title="${window.t ? window.t(`common.edit`) : `Edit`}" onclick="editRow('${transaction.trID}')" class="edit-icon fa-solid fa-pen-to-square" aria-label="${window.t ? window.t(`common.edit`) : `Edit`}"></button>
+                <button title="${window.t ? window.t(`common.delete`) : `Delete`}" onclick="deleteTransaction('${transaction.trID}')" class="delete-icon fas fa-trash-alt" aria-label="${window.t ? window.t(`common.delete`) : `Delete`}"></button>
             </td> 
         `;
         transactionTableBody.appendChild(transactionRow);
@@ -420,9 +453,7 @@ function sortTable(column) {
         }
     });
 
-    rows.forEach(row => tbody.removeChild(row));
-
-    sortedRows.forEach(row => tbody.appendChild(row));
+    tbody.replaceChildren(...sortedRows);
 }
 
 document.getElementById("searchInput").addEventListener("keyup", function(event) {
@@ -433,13 +464,29 @@ document.getElementById("searchInput").addEventListener("keyup", function(event)
 
 
 function performSearch() {
-    const searchInput = document.getElementById("searchInput").value.toLowerCase();
-    const rows = document.querySelectorAll(".transaction-row");
+    const keyword = document.getElementById("searchInput").value.trim().toLowerCase();
 
-    rows.forEach(row => {
-        const visible = row.innerText.toLowerCase().includes(searchInput);
-        row.style.display = visible ? "table-row" : "none";
+    if (!keyword) {
+        renderTransactions(transactions);
+        return;
+    }
+
+    const filteredTransactions = transactions.filter(transaction => {
+        const translatedCategory = typeof translateCategory === "function"
+            ? translateCategory(transaction.trCategory)
+            : transaction.trCategory;
+
+        return [
+            transaction.trID,
+            transaction.trDate,
+            transaction.trCategory,
+            translatedCategory,
+            transaction.trAmount,
+            transaction.trNotes
+        ].some(value => String(value).toLowerCase().includes(keyword));
     });
+
+    renderTransactions(filteredTransactions);
 }
 
 
@@ -448,7 +495,7 @@ function exportToCSV() {
         return {
             trID: transaction.trID,
             trDate: transaction.trDate,
-            trCategory: transaction.trCategory,
+            trCategory: translateExpenseCategoryForExport(transaction.trCategory),
             trAmount: transaction.trAmount.toFixed(2),
             trNotes: transaction.trNotes,
         };
@@ -498,8 +545,8 @@ function exportToCSV() {
 }
   
 function generateCSV(data, headers) {
-    const headerRow = Object.keys(headers).map(key => headers[key]).join(',');
-    const rows = data.map(order => Object.values(order).join(','));
+    const headerRow = Object.keys(headers).map(key => escapeCSVValue(headers[key])).join(',');
+    const rows = data.map(row => Object.values(row).map(escapeCSVValue).join(','));
 
     return `${headerRow}\n${rows.join('\n')}`;
 }
