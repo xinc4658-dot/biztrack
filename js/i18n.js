@@ -55,7 +55,7 @@ const translations = {
       fieldProdDesc: "Description",
       fieldProdCat: "Category",
       fieldProdPrice: "Price",
-      fieldProdSold: "Units Sold",
+      fieldProdSold: "Stock Quantity",
       fieldOrderID: "Order ID",
       fieldOrderDate: "Order Date",
       fieldItemName: "Item Name",
@@ -77,6 +77,10 @@ const translations = {
       quickActions: "Quick Actions",
       pendingOrders: "Pending Orders",
       orderStatusOverview: "Order Status",
+      inventoryAndProducts: "Inventory & Products",
+      lowStockReminder: "Low stock reminder",
+      viewProducts: "View products",
+      noProductData: "No products yet",
       analytics: "Analytics",
       salesByProductCategory: "Sales by Product Category",
       expenses: "Expenses",
@@ -96,7 +100,7 @@ const translations = {
       productCategory: "Product Category",
       chooseCategory: "Choose a category",
       productPrice: "Product Price",
-      productSold: "Number of Units Sold",
+      productSold: "Stock Quantity",
       hats: "Hats",
       baseballCaps: "Baseball caps",
       snapbacks: "Snapbacks",
@@ -293,7 +297,7 @@ const translations = {
       fieldProdDesc: "描述",
       fieldProdCat: "类别",
       fieldProdPrice: "价格",
-      fieldProdSold: "销售数量",
+      fieldProdSold: "库存量",
       fieldOrderID: "订单 ID",
       fieldOrderDate: "订单日期",
       fieldItemName: "商品名称",
@@ -315,6 +319,10 @@ const translations = {
       quickActions: "快捷操作",
       pendingOrders: "待处理订单",
       orderStatusOverview: "订单状态",
+      inventoryAndProducts: "库存与产品",
+      lowStockReminder: "低库存提醒",
+      viewProducts: "查看产品",
+      noProductData: "暂无产品",
       analytics: "分析",
       salesByProductCategory: "按产品类别销售",
       expenses: "支出",
@@ -362,7 +370,7 @@ const translations = {
       productCategory: "产品类别",
       chooseCategory: "选择类别",
       productPrice: "产品价格",
-      productSold: "已售数量",
+      productSold: "库存量",
       hats: "帽子",
       baseballCaps: "棒球帽",
       snapbacks: "平沿帽",
@@ -727,6 +735,10 @@ function changeLanguage(lang) {
     updateCardContent();
   }
 
+  if (document.getElementById('low-stock-list') && typeof loadDashboardSummary === 'function') {
+    loadDashboardSummary();
+  }
+
   // 在Products页面重新渲染表格
   if (window.location.pathname.includes('products.html')) {
     if (typeof renderProducts === 'function') {
@@ -817,15 +829,15 @@ function updateChartTranslations() {
       // 使用i18n.js中的currentLanguage变量
       const currentLang = currentLanguage;
 
-      // 定义图表文本的翻译
+      // 定义图表文本的翻译（按订单累加件数，与 balance 页一致）
       const chartTranslations = {
         en: {
-          totalSales: 'Total Sales',
-          totalSalesYAxis: 'Total Sales ($)',
+          seriesName: 'Units sold',
+          yAxis: 'Cumulative units sold',
         },
         zh: {
-          totalSales: '总销售额',
-          totalSalesYAxis: '总销售额 ($)',
+          seriesName: '销售件数',
+          yAxis: '累计销售件数',
         }
       };
 
@@ -851,32 +863,41 @@ function updateChartTranslations() {
         }
       };
 
-      // 获取原始类别数据
+      const ordersData = JSON.parse(localStorage.getItem('bizTrackOrders')) || [];
       const items = JSON.parse(localStorage.getItem('bizTrackProducts')) || [];
-      const categorySalesData = typeof calculateCategorySales === 'function' ? calculateCategorySales(items) : {};
-      const sortedCategorySales = Object.entries(categorySalesData)
-        .sort(([, a], [, b]) => b - a)
-        .reduce((acc, [key, value]) => ({ ...acc, [key]: value }), {});
-
-      // 翻译类别名称
-      const translatedCategories = Object.keys(sortedCategorySales).map(category =>
-        categoryTranslations[currentLang][category] || category
-      );
+      const categoryOrder = window.PRODUCT_CATEGORY_ORDER || ['Hats', 'Drinkware', 'Clothing', 'Accessories', 'Home decor'];
+      let translatedCategories;
+      let seriesData;
+      if (typeof window.calculateCategoryUnitsSoldFromOrders === 'function') {
+        const unitMap = window.calculateCategoryUnitsSoldFromOrders(ordersData, items);
+        translatedCategories = categoryOrder.map(category =>
+          (categoryTranslations[currentLang] && categoryTranslations[currentLang][category]) || category
+        );
+        seriesData = categoryOrder.map(c => (unitMap[c] != null ? unitMap[c] : 0));
+      } else {
+        translatedCategories = [];
+        seriesData = [];
+      }
 
       // 合并所有更新到一个updateOptions调用中
       window.chart.updateOptions({
         yaxis: {
           title: {
-            text: chartTranslations[currentLang].totalSalesYAxis,
+            text: chartTranslations[currentLang].yAxis,
           }
         },
         xaxis: {
           categories: translatedCategories
         },
         series: [{
-          name: chartTranslations[currentLang].totalSales,
-          data: Object.values(sortedCategorySales)
-        }]
+          name: chartTranslations[currentLang].seriesName,
+          data: seriesData
+        }],
+        tooltip: {
+          y: {
+            formatter: (val) => String(Math.round(Number(val)))
+          }
+        }
       }, false); // 添加false参数，避免重新渲染整个图表
     }
 

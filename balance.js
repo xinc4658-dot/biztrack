@@ -25,16 +25,30 @@ const DEFAULT_ORDERS = [
 
 const DEFAULT_PRODUCTS = [
   { prodID: "PD001", prodName: "Baseball caps", prodDesc: "Peace embroidered cap", prodCat: "Hats", prodPrice: 25.0, prodSold: 20 },
-  { prodID: "PD002", prodName: "Water bottles", prodDesc: "Floral lotus printed bottle", prodCat: "Drinkware", prodPrice: 48.5, prodSold: 10 },
-  { prodID: "PD003", prodName: "Sweatshirt", prodDesc: "Palestine sweater", prodCat: "Clothing", prodPrice: 17.5, prodSold: 70 },
-  { prodID: "PD004", prodName: "Posters", prodDesc: "Vibes printed poster", prodCat: "Home decor", prodPrice: 12.0, prodSold: 60 },
-  { prodID: "PD005", prodName: "Pillow cases", prodDesc: "Morrocan print pillow case", prodCat: "Accessories", prodPrice: 17.0, prodSold: 40 },
+  { prodID: "PD002", prodName: "Snapbacks", prodDesc: "Classic snapback fit", prodCat: "Hats", prodPrice: 28.0, prodSold: 15 },
+  { prodID: "PD003", prodName: "Beanies", prodDesc: "Warm knit beanie", prodCat: "Hats", prodPrice: 18.5, prodSold: 32 },
+  { prodID: "PD004", prodName: "Bucket hats", prodDesc: "Summer bucket style", prodCat: "Hats", prodPrice: 22.0, prodSold: 12 },
+  { prodID: "PD005", prodName: "Mugs", prodDesc: "Ceramic travel mug", prodCat: "Drinkware", prodPrice: 14.0, prodSold: 45 },
+  { prodID: "PD006", prodName: "Water bottles", prodDesc: "Floral lotus printed bottle", prodCat: "Drinkware", prodPrice: 48.5, prodSold: 10 },
+  { prodID: "PD007", prodName: "Tumblers", prodDesc: "Insulated tumbler", prodCat: "Drinkware", prodPrice: 32.0, prodSold: 28 },
+  { prodID: "PD008", prodName: "T-shirts", prodDesc: "Soft cotton tee", prodCat: "Clothing", prodPrice: 19.99, prodSold: 55 },
+  { prodID: "PD009", prodName: "Sweatshirts", prodDesc: "Palestine sweater", prodCat: "Clothing", prodPrice: 17.5, prodSold: 70 },
+  { prodID: "PD010", prodName: "Hoodies", prodDesc: "Fleece-lined hoodie", prodCat: "Clothing", prodPrice: 42.0, prodSold: 35 },
+  { prodID: "PD011", prodName: "Pillow cases", prodDesc: "Morrocan print pillow case", prodCat: "Accessories", prodPrice: 17.0, prodSold: 40 },
+  { prodID: "PD012", prodName: "Tote bags", prodDesc: "Canvas tote", prodCat: "Accessories", prodPrice: 24.0, prodSold: 22 },
+  { prodID: "PD013", prodName: "Stickers", prodDesc: "Vinyl sticker pack", prodCat: "Accessories", prodPrice: 6.5, prodSold: 100 },
+  { prodID: "PD014", prodName: "Posters", prodDesc: "Vibes printed poster", prodCat: "Home decor", prodPrice: 12.0, prodSold: 60 },
+  { prodID: "PD015", prodName: "Framed posters", prodDesc: "Ready-to-hang frame", prodCat: "Home decor", prodPrice: 35.0, prodSold: 18 },
+  { prodID: "PD016", prodName: "Canvas prints", prodDesc: "Gallery canvas wrap", prodCat: "Home decor", prodPrice: 55.0, prodSold: 14 },
 ];
 
 let trendChart = null;
 let marginChart = null;
 let salesCategoryChart = null;
 let expenseCategoryChart = null;
+
+/** 与产品目录一致，用于 X 轴固定显示（无订单的类别为 0） */
+const PRODUCT_CATEGORY_ORDER = ["Hats", "Drinkware", "Clothing", "Accessories", "Home decor"];
 
 function toNumber(value) {
   const n = Number(value);
@@ -118,16 +132,40 @@ function aggregateByMonth(orders, expenses) {
   });
 }
 
-function calculateCategorySales(products) {
-  const categorySales = {};
-  products.forEach(function (product) {
-    const category = product.prodCat;
-    if (!categorySales[category]) {
-      categorySales[category] = 0;
-    }
-    categorySales[category] += toNumber(product.prodPrice) * toNumber(product.prodSold);
+function findCategoryForItemName(itemName, products) {
+  if (!itemName || typeof itemName !== "string") return null;
+  const trimmed = itemName.trim();
+  for (let i = 0; i < products.length; i++) {
+    const p = products[i];
+    if (!p || !p.prodName) continue;
+    if (p.prodName === trimmed) return p.prodCat;
+  }
+  const lower = trimmed.toLowerCase();
+  for (let j = 0; j < products.length; j++) {
+    const q = products[j];
+    if (!q || !q.prodName) continue;
+    if (q.prodName.trim().toLowerCase() === lower) return q.prodCat;
+  }
+  return null;
+}
+
+/**
+ * 按订单中每条行的购买数量，累加到商品名对应的产品类别上（不再用库存×单价）。
+ * 所有目录中的类别均返回，无销量为 0。
+ */
+function calculateCategoryUnitsSoldFromOrders(orders, products) {
+  const totals = {};
+  PRODUCT_CATEGORY_ORDER.forEach(function (c) {
+    totals[c] = 0;
   });
-  return categorySales;
+
+  (orders || []).forEach(function (order) {
+    const cat = findCategoryForItemName(order.itemName, products);
+    if (!cat || totals[cat] === undefined) return;
+    totals[cat] += toNumber(order.qtyBought);
+  });
+
+  return totals;
 }
 
 function calculateCategoryExpenses(expenses) {
@@ -152,7 +190,7 @@ function setPageTexts(lang) {
       mainTitle: "Balance Analytics",
       trendTitle: "Monthly Revenue, Expenses & Net Balance",
       marginTitle: "Monthly Net Margin (%)",
-      salesCategoryTitle: "Sales by Product Category",
+      salesCategoryTitle: "Units sold by product category",
       expensesTitle: "Expenses",
       trendFormula: "Formula:\nNet Balance = Revenue - Expenses",
       marginFormula:
@@ -162,7 +200,7 @@ function setPageTexts(lang) {
       mainTitle: "余额分析",
       trendTitle: "月度收入、支出与净余额",
       marginTitle: "月度净收益率（%）",
-      salesCategoryTitle: "按产品类别销售",
+      salesCategoryTitle: "按产品类别销售件数",
       expensesTitle: "支出",
       trendFormula: "公式：\n净余额 = 收入 - 支出",
       marginFormula:
@@ -341,7 +379,7 @@ function renderMarginChart(monthlyData, lang) {
   marginChart.render();
 }
 
-function renderSalesCategoryChart(products, lang) {
+function renderSalesCategoryChart(orders, products, lang) {
   const categoryTranslations = {
     en: {
       "Home decor": "Home decor",
@@ -364,31 +402,27 @@ function renderSalesCategoryChart(products, lang) {
   };
 
   const chartNames = {
-    en: "Total Sales",
-    zh: "总销售额",
+    en: "Units sold",
+    zh: "销售件数",
   };
 
   const axisTitle = {
-    en: "Total Sales ($)",
-    zh: "总销售额 ($)",
+    en: "Cumulative units sold",
+    zh: "累计销售件数",
   };
 
-  const raw = calculateCategorySales(products);
-  const sorted = Object.entries(raw)
-    .sort(function (a, b) { return b[1] - a[1]; })
-    .reduce(function (acc, pair) {
-      acc[pair[0]] = pair[1];
-      return acc;
-    }, {});
-
-  const labels = Object.keys(sorted).map(function (key) {
+  const raw = calculateCategoryUnitsSoldFromOrders(orders, products);
+  const labels = PRODUCT_CATEGORY_ORDER.map(function (key) {
     return (categoryTranslations[lang] && categoryTranslations[lang][key]) || key;
+  });
+  const data = PRODUCT_CATEGORY_ORDER.map(function (key) {
+    return raw[key] != null ? raw[key] : 0;
   });
 
   const options = {
     series: [{
       name: chartNames[lang] || chartNames.en,
-      data: Object.values(sorted),
+      data: data,
     }],
     chart: {
       type: "bar",
@@ -418,7 +452,7 @@ function renderSalesCategoryChart(products, lang) {
     tooltip: {
       y: {
         formatter: function (val) {
-          return "$" + Number(val).toFixed(2);
+          return String(Math.round(Number(val)));
         },
       },
     },
@@ -512,7 +546,7 @@ async function renderBalanceCharts() {
   setPageTexts(lang);
   renderTrendChart(monthlyData, lang);
   renderMarginChart(monthlyData, lang);
-  renderSalesCategoryChart(products, lang);
+  renderSalesCategoryChart(orders, products, lang);
   renderExpenseCategoryChart(expenses, lang);
 }
 
@@ -532,3 +566,6 @@ window.addEventListener("storage", function (event) {
     renderBalanceCharts();
   }
 });
+
+window.calculateCategoryUnitsSoldFromOrders = calculateCategoryUnitsSoldFromOrders;
+window.PRODUCT_CATEGORY_ORDER = PRODUCT_CATEGORY_ORDER;

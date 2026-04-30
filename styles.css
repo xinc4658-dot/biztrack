@@ -384,28 +384,95 @@ label {
 }
 .dashboard-tools-grid {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 1rem;
+    align-items: stretch;
 }
 .dashboard-tool-card {
     background: #FFF5EE;
     border-radius: 10px;
     padding: 1rem 1.2rem;
     box-shadow: -7px 4px 7px -2px rgba(0, 0, 0, 0.15);
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+.dashboard-inventory-subtitle {
+    color: #7a524d;
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin: 0.35rem 0 0.6rem;
+}
+.low-stock-list {
+    list-style: none;
+    margin: 0 0 0.75rem;
+    padding: 0;
+    flex: 1;
+    min-height: 0;
+}
+.low-stock-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    background: #fff;
+    border: 1px solid #ebd6cc;
+    border-radius: 8px;
+    padding: 0.55rem 0.7rem;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+}
+.low-stock-item:last-child {
+    margin-bottom: 0;
+}
+.low-stock-name {
+    color: var(--black-color);
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.low-stock-qty {
+    flex-shrink: 0;
+    font-family: 'Courier New', Courier, monospace;
+    font-weight: 700;
+    color: #993d24;
+    font-size: 1rem;
+}
+.low-stock-item.low-stock-empty .low-stock-name {
+    font-weight: 500;
+    color: #7a524d;
+    white-space: normal;
+}
+.low-stock-link {
+    margin-top: auto;
+    padding-top: 0.25rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--blue-color);
+    text-decoration: none;
+    align-self: flex-start;
+}
+.low-stock-link:hover {
+    text-decoration: underline;
 }
 .quick-action-buttons {
     display: flex;
-    flex-wrap: wrap;
-    gap: 0.8rem;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
 }
 .quick-action-btn {
     text-decoration: none;
+    text-align: center;
     background-color: #1a7058;
     color: #ffffff;
     font-weight: 600;
     border-radius: 6px;
-    padding: 10px 14px;
+    padding: 12px 14px;
     transition: all 0.3s ease;
+    box-sizing: border-box;
 }
 .quick-action-btn:hover {
     background: #145440;
@@ -433,6 +500,12 @@ label {
     font-size: 26px;
     font-family: 'Courier New', Courier, monospace;
     font-weight: 700;
+}
+
+@media (max-width: 1100px) {
+    .dashboard-tools-grid {
+        grid-template-columns: 1fr;
+    }
 }
 
 /* ---- Charts ---- */
@@ -517,6 +590,37 @@ label {
     margin-top: 5px;
     max-width: 100%;
     overflow-x: auto;
+}
+
+/* Products：白色内容区按内容伸缩，避免底部大块留白 */
+.products-page .table-wrapper {
+    height: auto;
+    min-height: 0;
+}
+
+/* Products：表格区域可纵向滚动；高度随视口变化，尽量用满主内容区 */
+.products-page .table-container {
+    max-height: calc(100vh - 220px);
+    min-height: 200px;
+    overflow-y: auto;
+    overflow-x: auto;
+    border-radius: 8px;
+    border: 1px solid #e0dcd8;
+}
+
+.products-page .table-container thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background-color: var(--black-color);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.12);
+}
+
+@media (max-width: 768px) {
+    .products-page .table-container {
+        max-height: calc(100vh - 200px);
+        min-height: 160px;
+    }
 }
 .table-container button {
     color: var(--brown-color);
