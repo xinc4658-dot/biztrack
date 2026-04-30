@@ -360,8 +360,7 @@ function sortTable(column) {
         }
     });
 
-    rows.forEach(row => tbody.removeChild(row));
-    sortedRows.forEach(row => tbody.appendChild(row));
+    tbody.replaceChildren(...sortedRows);
 }
 
 document.getElementById("searchInput").addEventListener("keyup", function(event) {
