@@ -11,6 +11,7 @@ const db = window.biztrackDb;
 const logsRef = db ? db.collection("activity_logs") : null;
 
 let historyLogsCache = null;
+const HISTORY_CACHE_KEY = "bizTrackRecentHistoryLogs";
 
 const FIELD_I18N_KEY = {
   prodID: "fieldProdID",
@@ -264,6 +265,12 @@ async function loadHistory() {
   const noHistMsg = window.t("history.noHistoryYet");
   const noHistText = noHistMsg !== "history.noHistoryYet" ? noHistMsg : "No history logs yet";
 
+  const cachedLogs = JSON.parse(localStorage.getItem(HISTORY_CACHE_KEY) || "null");
+  if (Array.isArray(cachedLogs) && cachedLogs.length > 0) {
+    historyLogsCache = cachedLogs;
+    renderLogs(cachedLogs);
+  }
+
   try {
     if (!logsRef) {
       throw new Error(errText);
@@ -277,6 +284,7 @@ async function loadHistory() {
         return action === "create" || action === "update" || action === "delete";
       });
     historyLogsCache = logs;
+    localStorage.setItem(HISTORY_CACHE_KEY, JSON.stringify(logs));
     renderLogs(logs);
   } catch (error) {
     console.error("Failed to load activity logs:", error);
