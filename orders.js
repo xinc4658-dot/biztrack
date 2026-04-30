@@ -1,3 +1,11 @@
+function debounce(fn, delay = 250) {
+    let timer;
+    return function (...args) {
+        clearTimeout(timer);
+        timer = setTimeout(() => fn.apply(this, args), delay);
+    };
+}
+
 
 function openSidebar() {
     var side = document.getElementById('sidebar');
@@ -444,21 +452,32 @@ function sortTable(column) {
     tbody.replaceChildren(...sortedRows);
 }
 
-document.getElementById("searchInput").addEventListener("keyup", function(event) {
-    if (event.key === "Enter") {
-        performSearch();
-    }
-});
+document.getElementById("searchInput").addEventListener("input", debounce(performSearch, 250));
 
 
 function performSearch() {
-    const searchInput = document.getElementById("searchInput").value.toLowerCase();
-    const rows = document.querySelectorAll(".order-row");
+    const keyword = document.getElementById("searchInput").value.trim().toLowerCase();
 
-    rows.forEach(row => {
-        const visible = row.innerText.toLowerCase().includes(searchInput);
-        row.style.display = visible ? "table-row" : "none";
-    });
+    if (!keyword) {
+        renderOrders(orders);
+        return;
+    }
+
+    const filteredOrders = orders.filter(order =>
+        [
+            order.orderID,
+            order.orderDate,
+            order.itemName,
+            order.itemPrice,
+            order.qtyBought,
+            order.shipping,
+            order.taxes,
+            order.orderTotal,
+            order.orderStatus
+        ].some(value => String(value).toLowerCase().includes(keyword))
+    );
+
+    renderOrders(filteredOrders);
 }
 
 

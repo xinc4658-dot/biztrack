@@ -1,3 +1,11 @@
+function debounce(fn, delay = 250) {
+    let timer;
+    return function (...args) {
+        clearTimeout(timer);
+        timer = setTimeout(() => fn.apply(this, args), delay);
+    };
+}
+
 function openSidebar() {
   var side = document.getElementById('sidebar');
   side.style.display = (side.style.display === "block") ? "none" : "block";
@@ -363,19 +371,28 @@ function sortTable(column) {
     tbody.replaceChildren(...sortedRows);
 }
 
-document.getElementById("searchInput").addEventListener("keyup", function(event) {
-    if (event.key === "Enter") {
-        performSearch();
-    }
-});
+document.getElementById("searchInput").addEventListener("input", debounce(performSearch, 250));
 
 function performSearch() {
-    const searchInput = document.getElementById("searchInput").value.toLowerCase();
-    const rows = document.querySelectorAll(".product-row");
-    rows.forEach(row => {
-        const visible = row.innerText.toLowerCase().includes(searchInput);
-        row.style.display = visible ? "table-row" : "none";
-    });
+    const keyword = document.getElementById("searchInput").value.trim().toLowerCase();
+
+    if (!keyword) {
+        renderProducts(products);
+        return;
+    }
+
+    const filteredProducts = products.filter(product =>
+        [
+            product.prodID,
+            product.prodName,
+            product.prodDesc,
+            product.prodCat,
+            product.prodPrice,
+            product.prodSold
+        ].some(value => String(value).toLowerCase().includes(keyword))
+    );
+
+    renderProducts(filteredProducts);
 }
 
 function exportToCSV() {
