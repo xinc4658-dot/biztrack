@@ -100,6 +100,7 @@
                     <select id="languageSelector" aria-label="Select language">
                         <option value="en">English</option>
                         <option value="zh">中文</option>
+                        <option value="zhTW">繁體中文</option>
                     </select>
                 </div>
             </div>
@@ -174,9 +175,9 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
     <script src="./firebase.js"></script>
-    <script src="./js/i18n.js"></script>
+    <script type="module" src="./i18n/index.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/zh.js"></script>
-    <script src="./finances.js"></script>
+    <script src="./finances.js" defer></script>
 </body>
 </html>

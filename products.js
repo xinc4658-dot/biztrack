@@ -1,49 +1,16 @@
+// products.js
+// 产品描述翻译（整合至i18n模块化，替换原有独立函数）
+
+
 function translateProductDescription(description) {
-  const currentLanguage = localStorage.getItem("bizTrackLanguage") || "en";
-
-  const descriptions = {
-    zh: {
-      "Peace embroidered cap": "和平刺绣帽",
-      "Classic snapback fit": "经典平沿帽版型",
-      "Warm knit beanie": "保暖针织帽",
-      "Summer bucket style": "夏季渔夫帽款式",
-      "Ceramic travel mug": "陶瓷旅行杯",
-      "Floral lotus printed bottle": "花卉莲花印刷水瓶",
-      "Insulated tumbler": "保温平底杯",
-      "Soft cotton tee": "柔软棉质T恤",
-      "Palestine sweater": "巴勒斯坦图案运动衫",
-      "Fleece-lined hoodie": "加绒连帽衫",
-      "Morrocan print pillow case": "摩洛哥印花枕套",
-      "Canvas tote": "帆布托特包",
-      "Vinyl sticker pack": "乙烯基贴纸套装",
-      "Vibes printed poster": "氛围印花海报",
-      "Ready-to-hang frame": "即挂式相框",
-      "Gallery canvas wrap": "画廊风格帆布画"
-    }
-  };
-
-  return descriptions[currentLanguage] && descriptions[currentLanguage][description]
-    ? descriptions[currentLanguage][description]
-    : description;
+  return window.t(`product.desc.${description}`) || description;
 }
 
+// 产品分类翻译（整合至i18n模块化，替换原有独立函数）
 function translateProductCategory(category) {
-  const currentLanguage = localStorage.getItem("bizTrackLanguage") || "en";
-
-  const categories = {
-    zh: {
-      "Hats": "帽子",
-      "Drinkware": "饮具",
-      "Clothing": "服装",
-      "Accessories": "配饰",
-      "Home decor": "家居装饰"
-    }
-  };
-
-  return categories[currentLanguage] && categories[currentLanguage][category]
-    ? categories[currentLanguage][category]
-    : category;
+  return window.t(`product.category.${category}`) || category;
 }
+
 function escapeCSVValue(value) {
   const text = String(value ?? "");
   if (/[",\n\r]/.test(text)) {
@@ -176,6 +143,9 @@ function init() {
   renderProducts(products);
   syncProductsToDb("sync", { prodID: "all-products" });
   handleQuickAddOpen();
+  if (typeof window.addGuideButton === 'function') {
+    window.addGuideButton('products');
+  }
 }
 
 function handleQuickAddOpen() {
@@ -278,12 +248,12 @@ function renderProducts(products) {
       prodRow.dataset.prodPrice = product.prodPrice;
       prodRow.dataset.prodSold = product.prodSold;
 
-      const translatedName = typeof translateProductName === 'function' ? translateProductName(product.prodName) : product.prodName;
-      const translatedCat = window.t(`products.${product.prodCat.toLowerCase()}`) || product.prodCat;
+      // ✅ 超强容错：函数不存在就直接用英文，绝不报错
+      const translatedName = window.translateProductName ? window.translateProductName(product.prodName) : product.prodName;
+      const translatedCat = window.t ? window.t(`products.${product.prodCat.toLowerCase()}`) : product.prodCat;
       
-      // 【新增】对可能包含恶意代码的用户输入进行 XSS 转义
-      const safeName = window.escapeHTML(translatedName);
-      const safeDesc = window.escapeHTML(product.prodDesc);
+      const safeName = window.escapeHTML ? window.escapeHTML(translatedName) : translatedName;
+      const safeDesc = window.escapeHTML ? window.escapeHTML(product.prodDesc) : product.prodDesc;
 
       prodRow.innerHTML = `
           <td>${product.prodID}</td>
@@ -293,8 +263,8 @@ function renderProducts(products) {
           <td>$${product.prodPrice.toFixed(2)}</td>
           <td>${product.prodSold}</td>
           <td class="action">
-            <button title="${window.t ? window.t(`common.edit`) : `Edit`}" onclick="editRow('${product.prodID}')" class="edit-icon fa-solid fa-pen-to-square" aria-label="${window.t ? window.t(`common.edit`) : `Edit`}"></button>
-            <button title="${window.t ? window.t(`common.delete`) : `Delete`}" onclick="deleteProduct('${product.prodID}')" class="delete-icon fas fa-trash-alt" aria-label="${window.t ? window.t(`common.delete`) : `Delete`}"></button>
+            <button title="${window.t ? window.t(`common.edit`) : `Edit`}" onclick="editRow('${product.prodID}')" class="edit-icon fa-solid fa-pen-to-square"></button>
+            <button title="${window.t ? window.t(`common.delete`) : `Delete`}" onclick="deleteProduct('${product.prodID}')" class="delete-icon fas fa-trash-alt"></button>
           </td>
       `;
       prodTableBody.appendChild(prodRow);
@@ -457,24 +427,22 @@ function performSearch() {
 }
 
 function exportToCSV() {
-  const currentLanguage = localStorage.getItem('bizTrackLanguage') || 'en';
-  const headerTranslations = {
-    en: { prodID: 'Product ID', prodName: 'Product Name', prodDesc: 'Product Description', prodCategory: 'Product Category', prodPrice: 'Product Price', QtySold: 'Stock Quantity' },
-    zh: { prodID: '产品ID', prodName: '产品名称', prodDesc: '产品描述', prodCategory: '产品类别', prodPrice: '产品价格', QtySold: '库存量' }
-  };
+  const currentLanguage = window.getCurrentLanguage ? window.getCurrentLanguage() : localStorage.getItem('bizTrackLanguage') || 'en';
+  const translate = (key, fallback) => (window.t ? window.t(key) : fallback);
 
-  const headers = headerTranslations[currentLanguage];
+  const headers = {
+    prodID: translate('products.exportHeaders.prodID', 'Product ID'),
+    prodName: translate('products.exportHeaders.prodName', 'Product Name'),
+    prodDesc: translate('products.exportHeaders.prodDesc', 'Product Description'),
+    prodCategory: translate('products.exportHeaders.prodCategory', 'Product Category'),
+    prodPrice: translate('products.exportHeaders.prodPrice', 'Product Price'),
+    QtySold: translate('products.exportHeaders.QtySold', 'Stock Quantity'),
+  };
   const productsToExport = products.map(product => ({
         prodID: product.prodID,
-        prodName: currentLanguage === "zh" && typeof translateProductName === "function"
-          ? translateProductName(product.prodName)
-          : product.prodName,
-        prodDesc: currentLanguage === "zh"
-          ? translateProductDescription(product.prodDesc)
-          : product.prodDesc,
-        prodCategory: currentLanguage === "zh"
-          ? translateProductCategory(product.prodCat)
-          : product.prodCat,
+        prodName: translateProductName(product.prodName),
+        prodDesc: translateProductDescription(product.prodDesc),
+        prodCategory: translateProductCategory(product.prodCat),
         prodPrice: product.prodPrice.toFixed(2),
         QtySold: product.prodSold,
   }));
@@ -490,7 +458,8 @@ function exportToCSV() {
 
   const link = document.createElement('a');
   link.href = window.URL.createObjectURL(blob);
-  link.download = currentLanguage === 'zh' ? 'biztrack_产品表.csv' : 'biztrack_product_table.csv';
+  const filenameKey = currentLanguage === 'zh' ? 'products.exportFilenameZh' : 'products.exportFilenameEn';
+  link.download = window.t ? window.t(filenameKey, currentLanguage === 'zh' ? 'biztrack_产品表.csv' : 'biztrack_product_table.csv') : (currentLanguage === 'zh' ? 'biztrack_产品表.csv' : 'biztrack_product_table.csv');
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
@@ -510,3 +479,4 @@ if (document.readyState === 'loading') {
 } else {
   setTimeout(init, 100);
 }
+

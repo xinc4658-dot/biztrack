@@ -139,10 +139,7 @@ function translateCellValue(fieldKey, raw) {
 }
 
 function formatTimestamp(timestamp, fallback) {
-  const lang =
-    typeof currentLanguage !== "undefined"
-      ? currentLanguage
-      : localStorage.getItem("bizTrackLanguage") || "en";
+  const lang = window.getCurrentLanguage ? window.getCurrentLanguage() : localStorage.getItem("bizTrackLanguage") || "en";
   const locale = lang === "zh" ? "zh-CN" : "en-US";
 
   if (timestamp && typeof timestamp.toDate === "function") {
@@ -303,5 +300,9 @@ window.refreshHistoryLogs = function () {
 };
 
 window.addEventListener("load", function () {
-  loadHistory();
+  loadHistory().then(() => {
+    if (typeof window.addGuideButton === 'function') {
+      window.addGuideButton('history');
+    }
+  });
 });

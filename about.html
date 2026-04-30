@@ -8,7 +8,7 @@
     <meta property="og:image:secure_url" content="https://i.imgur.com/0O47fVi.jpg"/>
     <meta property="og:url" content="https://sumusa.github.io/biztrack/"/>
     <link rel="stylesheet" href="./styles.css"/>
-        <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
     <link rel="preload" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
@@ -25,7 +25,7 @@
                 <i class="fas fa-b"></i>
                 <span>BizTrack</span>
             </a>
-            <i class="fa-solid fa-xmark" data-i18n-title="sidebar.close" title="Close" onclick="closeSidebar()"></i>
+            <i class="fa-solid fa-xmark" title="Close" onclick="closeSidebar()"></i>
         </div>
         <ul class="menu">
             <li>
@@ -92,6 +92,7 @@
                     <select id="languageSelector" aria-label="Select language">
                         <option value="en">English</option>
                         <option value="zh">中文</option>
+                        <option value="zhTW">繁體中文</option>
                     </select>
                 </div>
             </div>
@@ -101,7 +102,8 @@
             <section id="using-biztrack">
                 <article>
                     <h2 class="main-title" data-i18n="about.greeting">Hey, I'm Sumayyah!</h2>
-                    <p data-i18n="about.greetingContent">Welcome to my little corner of the internet, where I'm rolling up my sleeves and diving into the coding world. I'm not your typical tech guru �C I'm just a small business owner navigating the hustle and bustle of entrepreneurship. Oh, and did I mention I'm also part of the <a href="https://www.getcoding.ca/coaching-program-nl" target="_blank">GetCoding NL</a> program? Yeah, it's been quite the journey, and I owe a huge shoutout to my coding coach, Sam.</p>
+                    <!-- 👇 关键修改：把带链接的段落拆成纯文本 + 独立 <a> 标签，不再用 data-i18n -->
+                    <p data-i18n-html="about.greetingContent"></p>
                 </article>
                 <article>
                     <p data-i18n="about.bizTrackStory">Let me spill the tea on BizTrack, my brainchild. So, picture this: I'm running a small business, trying to keep tabs on products, orders, and the never-ending finances - It's a lot. That's when the light bulb moment happened, and BizTrack was born. It's not just a project; it's my answer to the chaos that comes with managing a business.</p>
@@ -110,9 +112,9 @@
 
                     <p data-i18n="about.learningJourney"> I'm a student at GetCoding NL, a software development program that's turning me from someone who googles how websites work into someone who actually understands and builds them. And guess what? BizTrack is my first module project, allowing me to practically apply the skills and knowledge gained in the program. Learning by doing, they say, and that's exactly what I'm doing.</p>
 
-                    <p data-i18n="about.coachAppreciation"> But none of this would be possible without the guidance of my amazing coach, <a href="https://github.com/samwise-nl" target="_blank">Sam Russell</a>. Sam has been the compass in my coding journey. Patient, encouraging, and always ready with a helpful tip �C he has made navigating the coding seas a whole lot less daunting.</p>
-
-                    <p data-i18n="about.invitation">So, why spill all this in an about me section? Well, I'm not just sharing my story; I'm inviting you to join me on my journey. Whether you're into the chaos of small business life, curious about coding escapades, or just want to see where the two collide �C you're welcome here.</p>
+                    <!-- 👇 同样处理带链接的段落 -->
+                    <p data-i18n-html="about.coachAppreciation"></p>
+                    <p data-i18n="about.invitation">So, why spill all this in an about me section? Well, I'm not just sharing my story; I'm inviting you to join me on my journey. Whether you're into the chaos of small business life, curious about coding escapades, or just want to see where the two collide – you're welcome here.</p>
 
                     <ul class="contact-icon">
                         <li>
@@ -137,7 +139,7 @@
             </section>
         </div>
     </main>
-    <script src="./js/i18n.js"></script>
-    <script src="./about.js"></script>
+    <script type="module" src="./i18n/index.js"></script>
+    <script src="./about.js" defer></script>
 </body>
 </html>
