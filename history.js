@@ -161,9 +161,11 @@ function formatData(data) {
   }
 
   const lines = Object.entries(data).map(([key, value]) => {
-    const formattedValue =
+     const rawStringValue =
       typeof value === "object" && value !== null ? JSON.stringify(value) : translateCellValue(key, value);
-    return `<div><span class="log-key">${translateFieldKey(key)}</span>: ${formattedValue}</div>`;
+      // 2. 【新增】进行 XSS 转义包装
+    const safeValue = window.escapeHTML(rawStringValue);
+    return `<div><span class="log-key">${translateFieldKey(key)}</span>: ${safeValue}</div>`;
   });
 
   return `<div class="log-data">${lines.join("")}</div>`;
@@ -196,16 +198,21 @@ function formatComparableData(beforeData, afterData, entity) {
 
   const beforeLines = orderedKeys.map((key) => {
     const value = key in beforeObj ? beforeObj[key] : "-";
-    const formattedValue =
-      typeof value === "object" && value !== null ? JSON.stringify(value) : translateCellValue(key, value);
-    return `<div><span class="log-key">${translateFieldKey(key)}</span>: ${formattedValue}</div>`;
+    // 先转换为字符串
+    const rawStringValue = typeof value === "object" && value !== null ? JSON.stringify(value) : translateCellValue(key, value);
+    // 【新增】再进行转义
+    const safeValue = window.escapeHTML(rawStringValue);
+    return `<div><span class="log-key">${translateFieldKey(key)}</span>: ${safeValue}</div>`;
   });
 
   const afterLines = orderedKeys.map((key) => {
     const value = key in afterObj ? afterObj[key] : "-";
-    const formattedValue =
-      typeof value === "object" && value !== null ? JSON.stringify(value) : translateCellValue(key, value);
-    return `<div><span class="log-key">${translateFieldKey(key)}</span>: ${formattedValue}</div>`;
+
+    // 先转换为字符串
+    const rawStringValue = typeof value === "object" && value !== null ? JSON.stringify(value) : translateCellValue(key, value);
+    // 【新增】再进行转义
+    const safeValue = window.escapeHTML(rawStringValue);
+    return `<div><span class="log-key">${translateFieldKey(key)}</span>: ${safeValue}</div>`;
   });
 
   return {

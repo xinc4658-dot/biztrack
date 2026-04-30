@@ -300,10 +300,13 @@ function renderOrders(orders) {
       const translatedName = typeof translateProductName === 'function' ? translateProductName(order.itemName) : order.itemName;
       const translatedStatus = translateOrderStatus(order.orderStatus);
 
+      // 【新增】对 itemName 进行转义
+      const safeName = window.escapeHTML(translatedName);
+
       orderRow.innerHTML = `
         <td>${order.orderID}</td>
         <td>${order.orderDate}</td>
-        <td>${translatedName}</td>
+        <td>${safeName}</td>
         <td>${formattedPrice}</td>
         <td>${order.qtyBought}</td>
         <td>${formattedShipping}</td>
@@ -313,8 +316,8 @@ function renderOrders(orders) {
             <div class="status ${statusMap[order.orderStatus]}"><span>${translatedStatus}</span></div>
         </td>
         <td class="action">
-            <i title="Edit" onclick="editRow('${order.orderID}')" class="edit-icon fa-solid fa-pen-to-square"></i>
-            <i onclick="deleteOrder('${order.orderID}')" class="delete-icon fas fa-trash-alt"></i>
+            <button title="Edit" onclick="editRow('${order.orderID}')" class="edit-icon fa-solid fa-pen-to-square" aria-label="Edit order"></button>
+            <button onclick="deleteOrder('${order.orderID}')" class="delete-icon fas fa-trash-alt" aria-label="Delete order"></button>
           </td> 
       `;
       orderTableBody.appendChild(orderRow);
