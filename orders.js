@@ -1,3 +1,27 @@
+function escapeCSVValue(value) {
+    const text = String(value ?? "");
+    if (/[",\n\r]/.test(text)) {
+        return `"${text.replace(/"/g, '""')}"`;
+    }
+    return text;
+}
+
+function translateOrderStatusForExport(status) {
+    const currentLanguage = localStorage.getItem("bizTrackLanguage") || "en";
+
+    const statuses = {
+        zh: {
+            "Pending": "待处理",
+            "Processing": "处理中",
+            "Shipped": "已发货",
+            "Delivered": "已送达"
+        }
+    };
+
+    return statuses[currentLanguage] && statuses[currentLanguage][status]
+        ? statuses[currentLanguage][status]
+        : status;
+}
 function debounce(fn, delay = 250) {
     let timer;
     return function (...args) {
@@ -496,13 +520,13 @@ function exportToCSV() {
         return {
             orderID: order.orderID,
             orderDate: order.orderDate,
-            itemName: order.itemName,
+            itemName: localStorage.getItem('bizTrackLanguage') === 'zh' && typeof translateProductName === 'function' ? translateProductName(order.itemName) : order.itemName,
             itemPrice: order.itemPrice.toFixed(2),
             qtyBought: order.qtyBought,
             shipping: order.shipping.toFixed(2),
             taxes: order.taxes.toFixed(2),
             orderTotal: order.orderTotal.toFixed(2),
-            orderStatus: order.orderStatus,
+            orderStatus: translateOrderStatusForExport(order.orderStatus),
         };
     });
   
@@ -559,8 +583,8 @@ function exportToCSV() {
 }
   
 function generateCSV(data, headers) {
-    const headerRow = Object.keys(headers).map(key => headers[key]).join(',');
-    const rows = data.map(order => Object.values(order).join(','));
+    const headerRow = Object.keys(headers).map(key => escapeCSVValue(headers[key])).join(',');
+    const rows = data.map(row => Object.values(row).map(escapeCSVValue).join(','));
 
     return `${headerRow}\n${rows.join('\n')}`;
 }

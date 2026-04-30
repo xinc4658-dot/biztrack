@@ -1,3 +1,28 @@
+function escapeCSVValue(value) {
+    const text = String(value ?? "");
+    if (/[",\n\r]/.test(text)) {
+        return `"${text.replace(/"/g, '""')}"`;
+    }
+    return text;
+}
+
+function translateExpenseCategoryForExport(category) {
+    const currentLanguage = localStorage.getItem("bizTrackLanguage") || "en";
+
+    const categories = {
+        zh: {
+            "Rent": "租金",
+            "Utilities": "水电费",
+            "Supplies": "用品",
+            "Order Fulfillment": "订单履行",
+            "Miscellaneous": "杂项"
+        }
+    };
+
+    return categories[currentLanguage] && categories[currentLanguage][category]
+        ? categories[currentLanguage][category]
+        : category;
+}
 function debounce(fn, delay = 250) {
     let timer;
     return function (...args) {
@@ -470,7 +495,7 @@ function exportToCSV() {
         return {
             trID: transaction.trID,
             trDate: transaction.trDate,
-            trCategory: transaction.trCategory,
+            trCategory: translateExpenseCategoryForExport(transaction.trCategory),
             trAmount: transaction.trAmount.toFixed(2),
             trNotes: transaction.trNotes,
         };
@@ -520,8 +545,8 @@ function exportToCSV() {
 }
   
 function generateCSV(data, headers) {
-    const headerRow = Object.keys(headers).map(key => headers[key]).join(',');
-    const rows = data.map(order => Object.values(order).join(','));
+    const headerRow = Object.keys(headers).map(key => escapeCSVValue(headers[key])).join(',');
+    const rows = data.map(row => Object.values(row).map(escapeCSVValue).join(','));
 
     return `${headerRow}\n${rows.join('\n')}`;
 }
