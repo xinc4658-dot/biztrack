@@ -752,7 +752,7 @@ function initCookieBanner() {
   banner.style.cssText = `
     position: fixed; bottom: 0; left: 0; width: 100%;
     background: linear-gradient(135deg, #1976d2 0%, #2196f3 100%); color: white;
-    padding: 25px 30px; display: flex; flex-direction: row; justify-content: space-between;
+    padding: 25px 30px 25px 30px; display: flex; flex-direction: column; justify-content: center;
     align-items: center; flex-wrap: wrap; gap: 18px; z-index: 10001;
     box-shadow: 0 -8px 25px rgba(0,0,0,0.3);
     font-family: 'Lato', sans-serif; font-size: 16px; font-weight: 500; box-sizing: border-box;
@@ -765,16 +765,22 @@ function initCookieBanner() {
   const rejectAll = window.t('privacy.rejectAll') || 'Reject All';
   const necessary = window.t('privacy.necessaryOnly') || 'Necessary Only';
   const acceptAll = window.t('privacy.acceptAll') || 'Accept All';
+  const close = window.t('privacy.close') || 'Close';
 
   banner.innerHTML = `
-    <div style="flex-grow: 1; text-align: left; min-width: 250px;">
-      <span data-i18n="privacy.cookieMessage">${escapeHTML(msg)}</span>
-      <button id="privacy-policy-btn" style="background: rgba(255,255,255,0.2); border: none; color: white; text-decoration: underline; margin-left: 5px; font-weight: bold; padding: 4px 8px; cursor: pointer; border-radius: 4px; transition: background 0.2s;" data-i18n="privacy.policyLink">${escapeHTML(policy)}</button>
+    <div style="width: 100%; display: flex; justify-content: flex-end; padding-bottom: 10px;">
+      <button id="close-banner-btn" style="background: none; border: none; color: white; font-size: 14px; cursor: pointer; padding: 5px 10px; opacity: 0.8; transition: opacity 0.2s;" data-i18n="privacy.close" aria-label="${escapeHTML(close)}">${escapeHTML(close)}</button>
     </div>
-    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-      <button id="reject-all-btn" style="background-color: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.5); color: white; padding: 8px 16px; border-radius: 6px; cursor: pointer; white-space: nowrap; font-weight: 500; transition: all 0.2s;" data-i18n="privacy.rejectAll">${escapeHTML(rejectAll)}</button>
-      <button id="necessary-only-btn" style="background-color: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.5); color: white; padding: 8px 16px; border-radius: 6px; cursor: pointer; white-space: nowrap; font-weight: 500; transition: all 0.2s;" data-i18n="privacy.necessaryOnly">${escapeHTML(necessary)}</button>
-      <button id="accept-all-btn" style="background-color: white; color: #1976d2; border: none; padding: 8px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; white-space: nowrap; box-shadow: 0 2px 8px rgba(0,0,0,0.15); transition: all 0.2s;" data-i18n="privacy.acceptAll">${escapeHTML(acceptAll)}</button>
+    <div style="width: 100%; display: flex; flex-direction: row; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 18px;">
+      <div style="flex-grow: 1; text-align: left; min-width: 250px;">
+        <span data-i18n="privacy.cookieMessage">${escapeHTML(msg)}</span>
+        <button id="privacy-policy-btn" style="background: rgba(255,255,255,0.2); border: none; color: white; text-decoration: underline; margin-left: 5px; font-weight: bold; padding: 4px 8px; cursor: pointer; border-radius: 4px; transition: background 0.2s;" data-i18n="privacy.policyLink">${escapeHTML(policy)}</button>
+      </div>
+      <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+        <button id="reject-all-btn" style="background-color: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.5); color: white; padding: 8px 16px; border-radius: 6px; cursor: pointer; white-space: nowrap; font-weight: 500; transition: all 0.2s;" data-i18n="privacy.rejectAll">${escapeHTML(rejectAll)}</button>
+        <button id="necessary-only-btn" style="background-color: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.5); color: white; padding: 8px 16px; border-radius: 6px; cursor: pointer; white-space: nowrap; font-weight: 500; transition: all 0.2s;" data-i18n="privacy.necessaryOnly">${escapeHTML(necessary)}</button>
+        <button id="accept-all-btn" style="background-color: white; color: #1976d2; border: none; padding: 8px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; white-space: nowrap; box-shadow: 0 2px 8px rgba(0,0,0,0.15); transition: all 0.2s;" data-i18n="privacy.acceptAll">${escapeHTML(acceptAll)}</button>
+      </div>
     </div>
   `;
   document.body.appendChild(banner);
@@ -853,13 +859,23 @@ function initCookieBanner() {
     closeBanner();
   });
 
-  // 键盘支持（不允许使用ESC关闭，必须强制用户做出选择）
+  document.getElementById('close-banner-btn').addEventListener('click', () => {
+    // 关闭弹窗时默认选择"仅必要"选项
+    localStorage.setItem('bizTrack_cookieChoice', 'necessary_only');
+    closeBanner();
+  });
+
+  // 键盘支持
   banner.addEventListener('keydown', (e) => {
     const focusableElements = getFocusableElements();
     const first = focusableElements[0];
     const last = focusableElements[focusableElements.length - 1];
 
-    if (e.key === 'Tab') {
+    if (e.key === 'Escape') {
+      // ESC键关闭时默认选择"仅必要"选项
+      localStorage.setItem('bizTrack_cookieChoice', 'necessary_only');
+      closeBanner();
+    } else if (e.key === 'Tab') {
       if (e.shiftKey && document.activeElement === first) {
         last.focus(); e.preventDefault();
       } else if (!e.shiftKey && document.activeElement === last) {

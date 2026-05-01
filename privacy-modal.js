@@ -26,6 +26,7 @@ window.showPrivacyModal = function() {
     const howWeUseItDesc = window.t('privacy.howWeUseItDesc') || 'Your data is strictly used to power the Dashboard analytics, generate tables, and provide you with business tracking functionalities.';
     const cookieChoices = window.t('privacy.cookieChoices') || '3. Cookie choices';
     const cookieChoicesDesc = window.t('privacy.cookieChoicesDesc') || 'We only use Local Storage to save your language preference and temporary session data. No tracking cookies are used.';
+    const cookieDefaultNote = window.t('privacy.cookieDefaultNote') || 'If you do not make a selection or close the cookie banner, we will use only necessary cookies by default.';
     const thirdParties = window.t('privacy.thirdParties') || '4. Third parties';
     const thirdPartiesDesc = window.t('privacy.thirdPartiesDesc') || 'Your data is stored securely via Google Firebase. We do not sell or share your data with any advertising agencies.';
     const contact = window.t('privacy.contact') || '5. Contact';
@@ -49,6 +50,7 @@ window.showPrivacyModal = function() {
                 <article>
                     <h3>${cookieChoices}</h3>
                     <p>${cookieChoicesDesc}</p>
+                    <p style="font-size: 0.9em; color: #666; margin-top: 10px; padding: 10px; background-color: #f8f9fa; border-radius: 4px;">${cookieDefaultNote}</p>
                 </article>
                 <article>
                     <h3>${thirdParties}</h3>
