@@ -117,7 +117,7 @@
             </div>
 
             <div class="form-popup">
-                <form class="form-container" id="order-form" onsubmit="addOrUpdate(event)">
+                <form class="form-container" id="order-form" onsubmit="addOrUpdate(event)" novalidate>
                     <div class="form-columns">
 
                         <div class="order-first-col">
@@ -233,6 +233,6 @@
     <script type="module" src="./i18n/index.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/zh.js"></script>
-    <script src="./orders.js" defer></script>
+    <script type="module" src="./orders.js"></script>
 </body>
 </html>

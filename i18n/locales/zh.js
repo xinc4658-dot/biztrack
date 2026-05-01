@@ -228,6 +228,8 @@ export const zh = {
     orderIdExists: "订单ID已存在，请使用唯一的ID。",
     selectDate: "请选择日期",
     required: "请填写{field}",
+    requiredField: "请填写此字段",
+    fillAllFields: "请填写所有必填项。",
     invalidNumber: "请为{field}输入有效的数字",
     invalidDate: "请输入有效日期",
     invalidPositive: "请为{field}输入正数",
@@ -357,6 +359,7 @@ export const zh = {
     manageCookies: "管理 Cookie", // 【新增这一行】
     cookieMessage: "我们使用必要的 Cookie 和本地存储来确保 BizTrack 的核心功能。",
     policyLink: "隐私政策",
+    close: "关闭",
     acceptAll: "全部接受",
     rejectAll: "全部拒绝",
     necessaryOnly: "仅必要",

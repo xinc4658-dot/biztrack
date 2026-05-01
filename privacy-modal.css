@@ -1,0 +1,194 @@
+/* 隐私政策弹窗样式 */
+.privacy-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10002;
+    animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.privacy-modal-content {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 24px;
+    max-width: 600px;
+    width: 90%;
+    max-height: calc(100vh - 40px);
+    overflow-y: auto;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.privacy-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.privacy-modal-header h2 {
+    margin: 0;
+    color: #1976d2;
+    font-size: 24px;
+}
+
+.privacy-modal-close {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+    color: #333;
+    padding: 8px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.privacy-modal-close:hover {
+    background-color: #f5f5f5;
+}
+
+.privacy-modal-close:focus {
+    outline: 2px solid #64b5f6;
+    outline-offset: 2px;
+}
+
+.privacy-modal-body article {
+    margin-bottom: 20px;
+}
+
+.privacy-modal-body article:last-child {
+    margin-bottom: 0;
+}
+
+.privacy-modal-body h3 {
+    margin: 0 0 10px;
+    color: #333;
+    font-size: 18px;
+}
+
+.privacy-modal-body p {
+    margin: 0;
+    color: #424242;
+    line-height: 1.6;
+    font-size: 14px;
+}
+
+/* Cookie 弹窗改进样式 */
+#cookie-compliance-banner {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background-color: #f8f9fa;
+    color: #333;
+    padding: 15px 20px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+    z-index: 10001;
+    box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.1);
+    font-family: 'Lato', sans-serif;
+    font-size: 14px;
+    box-sizing: border-box;
+}
+
+#cookie-compliance-banner button {
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+#cookie-compliance-banner button:focus {
+    outline: 2px solid #007bff;
+    outline-offset: 2px;
+}
+
+#cookie-compliance-banner button:hover {
+    opacity: 0.8;
+}
+
+#privacy-policy-btn {
+    background: none;
+    border: none;
+    color: #247BA0;
+    text-decoration: underline;
+    margin-left: 5px;
+    font-weight: bold;
+    padding: 0;
+    cursor: pointer;
+}
+
+#privacy-policy-btn:focus {
+    outline: 2px solid #007bff;
+    outline-offset: 2px;
+}
+
+/* 当 cookie 弹窗显示时，背景不可选中 */
+body.cookie-banner-open {
+    overflow: hidden;
+}
+
+/* 禁用整个页面的交互，除了cookie弹窗和隐私政策弹窗 */
+body.cookie-banner-open > *:not(#cookie-compliance-banner):not(#privacy-modal) {
+    pointer-events: none !important;
+    user-select: none !important;
+}
+
+/* 确保背景元素无法获得焦点 */
+body.cookie-banner-open > *:not(#cookie-compliance-banner):not(#privacy-modal) * {
+    pointer-events: none !important;
+    user-select: none !important;
+}
+
+/* 确保 cookie 弹窗本身可以交互 */
+body.cookie-banner-open #cookie-compliance-banner {
+    pointer-events: auto !important;
+    user-select: auto !important;
+}
+
+/* 确保隐私政策弹窗可以交互 */
+body.cookie-banner-open #privacy-modal {
+    pointer-events: auto !important;
+    user-select: auto !important;
+}
+
+/* 确保隐私政策弹窗内的所有元素都可以交互 */
+body.cookie-banner-open #privacy-modal * {
+    pointer-events: auto !important;
+    user-select: auto !important;
+}
+
+/* 确保隐私政策弹窗内的按钮元素显示正确的光标 */
+body.cookie-banner-open #privacy-modal button {
+    cursor: pointer !important;
+}

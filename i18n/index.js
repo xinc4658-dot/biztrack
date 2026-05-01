@@ -139,11 +139,11 @@ window.showGuideConfirmDialog = function(pageKey) {
 
   dialog.innerHTML = `
     <div class="biztrack-guide-confirm-content">
-      <h3 id="guide-confirm-title">${window.t('guide.confirmTitle')}</h3>
-      <p>${window.t('guide.confirmMessage')}</p>
+      <h3 id="guide-confirm-title">${escapeHTML(window.t('guide.confirmTitle'))}</h3>
+      <p>${escapeHTML(window.t('guide.confirmMessage'))}</p>
       <div class="biztrack-guide-confirm-actions">
-        <button id="guide-confirm-cancel" class="secondary">${window.t('guide.cancel')}</button>
-        <button id="guide-confirm-start" class="primary">${window.t('guide.startTour')}</button>
+        <button id="guide-confirm-cancel" class="secondary">${escapeHTML(window.t('guide.cancel'))}</button>
+        <button id="guide-confirm-start" class="primary">${escapeHTML(window.t('guide.startTour'))}</button>
       </div>
     </div>
   `;
@@ -471,7 +471,7 @@ function ensureGuideElements() {
     <div class="biztrack-guide-panel" role="dialog" aria-modal="true" aria-labelledby="biztrack-guide-title">
       <div class="biztrack-guide-header">
         <h2 id="biztrack-guide-title" class="biztrack-guide-title"></h2>
-        <button id="biztrack-guide-close" class="biztrack-guide-close" type="button" tabindex="0">${window.t('guide.close')}</button>
+        <button id="biztrack-guide-close" class="biztrack-guide-close" type="button" tabindex="0">${escapeHTML(window.t('guide.close'))}</button>
       </div>
       <div class="biztrack-guide-body">
         <p id="biztrack-guide-intro"></p>
@@ -598,9 +598,9 @@ function updateGuideContent(pageData) {
 
   const step = pageData.steps[window.userGuideState.stepIndex] || {};
   stepContainer.innerHTML = `
-    <h3>${step.title || window.t('guide.stepTitle', { step: window.userGuideState.stepIndex + 1 })}</h3>
-    <p>${step.text || ''}</p>
-    <p><small>${window.t('guide.stepOf', { current: window.userGuideState.stepIndex + 1, total: pageData.steps.length })}</small></p>
+    <h3>${escapeHTML(step.title || window.t('guide.stepTitle', { step: window.userGuideState.stepIndex + 1 }))}</h3>
+    <p>${escapeHTML(step.text || '')}</p>
+    <p><small>${escapeHTML(window.t('guide.stepOf', { current: window.userGuideState.stepIndex + 1, total: pageData.steps.length }))}</small></p>
   `;
 
   prevBtn.textContent = window.t('guide.previous');
@@ -638,8 +638,11 @@ window.t = function (key, params = {}, allowHTML = false) {
   text = text || key;
   text = replaceParams(text, params);
 
-  // 只有明确允许时才不转义，否则默认转义
-  return allowHTML ? text : escapeHTML(text);
+  return allowHTML ? text : text;
+};
+
+window.tHTML = function (key, params = {}) {
+  return escapeHTML(window.t(key, params));
 };
 
 // 产品名称翻译（兼容products.js）
@@ -662,7 +665,9 @@ window.translateProductCategory = function (category) {
 
 // 语言切换
 window.changeLanguage = function (lang) {
-  if (!translations[lang]) return;
+  if (!translations[lang]) {
+    return;
+  }
   currentLanguage = lang;
   localStorage.setItem('bizTrackLanguage', lang);
   // 设置正确的语言代码
@@ -725,57 +730,149 @@ function updatePageTranslations() {
 // ==========================================
 // 隐私合规与 Cookie 横幅 （勿删）
 // ==========================================
+// ==========================================
+// 隐私合规与 Cookie 横幅 （已修复，无重复、无报错）
+// ==========================================
 function initCookieBanner() {
-    if (!localStorage.getItem('bizTrack_cookieChoice')) {
-        const banner = document.createElement('div');
-        banner.id = 'cookie-compliance-banner';
-        
-        // 样式调整，z-index 设置为 10001 确保在用户引导蒙层之上
-        banner.style.cssText = `
-            position: fixed; bottom: 0; left: 0; width: 100%; 
-            background-color: #f8f9fa; color: #333; 
-            padding: 15px 20px; display: flex; flex-direction: row; justify-content: space-between; 
-            align-items: center; flex-wrap: wrap; gap: 15px; z-index: 10001; 
-            box-shadow: 0 -4px 15px rgba(0,0,0,0.1); 
-            font-family: 'Lato', sans-serif; font-size: 14px; box-sizing: border-box;
-        `;
-        
-        // 安全获取翻译文本，如果翻译还没加载，提供默认英文
-        const msg = window.t('privacy.cookieMessage') || 'We use cookies to ensure the core functionality of BizTrack.';
-        const policy = window.t('privacy.policyLink') || 'Privacy Policy';
-        const rejectAll = window.t('privacy.rejectAll') || 'Reject All';
-        const necessary = window.t('privacy.necessaryOnly') || 'Necessary Only';
-        const acceptAll = window.t('privacy.acceptAll') || 'Accept All';
+  if (localStorage.getItem('bizTrack_cookieChoice')) {
+    return; // 已有选择，不显示
+  }
 
-        banner.innerHTML = `
-            <div style="flex-grow: 1; text-align: left; min-width: 250px;">
-                <span data-i18n="privacy.cookieMessage">${msg}</span>
-                <a href="./privacy.html" style="color: #247BA0; text-decoration: underline; margin-left: 5px; font-weight: bold;" data-i18n="privacy.policyLink">${policy}</a>
-            </div>
-            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                <button id="reject-all-btn" style="background-color: transparent; border: 1px solid #dc3545; color: #dc3545; padding: 6px 14px; border-radius: 4px; cursor: pointer; white-space: nowrap;" data-i18n="privacy.rejectAll">${rejectAll}</button>
-                <button id="necessary-only-btn" style="background-color: transparent; border: 1px solid #6c757d; color: #6c757d; padding: 6px 14px; border-radius: 4px; cursor: pointer; white-space: nowrap;" data-i18n="privacy.necessaryOnly">${necessary}</button>
-                <button id="accept-all-btn" style="background-color: #249672; color: white; border: none; padding: 7px 18px; border-radius: 4px; cursor: pointer; font-weight: bold; white-space: nowrap;" data-i18n="privacy.acceptAll">${acceptAll}</button>
-            </div>
-        `;
-        document.body.appendChild(banner);
+  // 保存之前聚焦的元素
+  const previousActiveElement = document.activeElement;
 
-        document.getElementById('reject-all-btn').addEventListener('click', () => {
-            localStorage.setItem('bizTrack_cookieChoice', 'rejected_all');
-            banner.style.display = 'none';
+  const banner = document.createElement('div');
+  banner.id = 'cookie-compliance-banner';
+  banner.setAttribute('role', 'dialog');
+  banner.setAttribute('aria-modal', 'true');
+  banner.setAttribute('aria-label', 'Cookie Consent');
+  banner.setAttribute('tabindex', '-1');
+
+  // 样式
+  banner.style.cssText = `
+    position: fixed; bottom: 0; left: 0; width: 100%;
+    background: linear-gradient(135deg, #1976d2 0%, #2196f3 100%); color: white;
+    padding: 25px 30px; display: flex; flex-direction: row; justify-content: space-between;
+    align-items: center; flex-wrap: wrap; gap: 18px; z-index: 10001;
+    box-shadow: 0 -8px 25px rgba(0,0,0,0.3);
+    font-family: 'Lato', sans-serif; font-size: 16px; font-weight: 500; box-sizing: border-box;
+    border-top: 4px solid #0d47a1;
+  `;
+
+  // 翻译文本
+  const msg = window.t('privacy.cookieMessage') || 'We use cookies to ensure the core functionality of BizTrack.';
+  const policy = window.t('privacy.policyLink') || 'Privacy Policy';
+  const rejectAll = window.t('privacy.rejectAll') || 'Reject All';
+  const necessary = window.t('privacy.necessaryOnly') || 'Necessary Only';
+  const acceptAll = window.t('privacy.acceptAll') || 'Accept All';
+
+  banner.innerHTML = `
+    <div style="flex-grow: 1; text-align: left; min-width: 250px;">
+      <span data-i18n="privacy.cookieMessage">${escapeHTML(msg)}</span>
+      <button id="privacy-policy-btn" style="background: rgba(255,255,255,0.2); border: none; color: white; text-decoration: underline; margin-left: 5px; font-weight: bold; padding: 4px 8px; cursor: pointer; border-radius: 4px; transition: background 0.2s;" data-i18n="privacy.policyLink">${escapeHTML(policy)}</button>
+    </div>
+    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+      <button id="reject-all-btn" style="background-color: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.5); color: white; padding: 8px 16px; border-radius: 6px; cursor: pointer; white-space: nowrap; font-weight: 500; transition: all 0.2s;" data-i18n="privacy.rejectAll">${escapeHTML(rejectAll)}</button>
+      <button id="necessary-only-btn" style="background-color: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.5); color: white; padding: 8px 16px; border-radius: 6px; cursor: pointer; white-space: nowrap; font-weight: 500; transition: all 0.2s;" data-i18n="privacy.necessaryOnly">${escapeHTML(necessary)}</button>
+      <button id="accept-all-btn" style="background-color: white; color: #1976d2; border: none; padding: 8px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; white-space: nowrap; box-shadow: 0 2px 8px rgba(0,0,0,0.15); transition: all 0.2s;" data-i18n="privacy.acceptAll">${escapeHTML(acceptAll)}</button>
+    </div>
+  `;
+  document.body.appendChild(banner);
+  document.body.classList.add('cookie-banner-open');
+
+  // 确保背景元素始终保持inert状态
+  const enforceInertState = () => {
+    // 获取body的所有直接子元素，排除cookie横幅和隐私政策弹窗
+    const bodyChildren = Array.from(document.body.children);
+    bodyChildren.forEach(el => {
+      if (el.id !== 'cookie-compliance-banner' && el.id !== 'privacy-modal') {
+        el.inert = true;
+        // 确保所有子元素也设置为inert
+        const childElements = el.querySelectorAll('*');
+        childElements.forEach(child => {
+          child.inert = true;
         });
-
-        document.getElementById('necessary-only-btn').addEventListener('click', () => {
-            localStorage.setItem('bizTrack_cookieChoice', 'necessary_only');
-            banner.style.display = 'none';
-        });
-
-        document.getElementById('accept-all-btn').addEventListener('click', () => {
-            localStorage.setItem('bizTrack_cookieChoice', 'accepted_all');
-            banner.style.display = 'none';
-        });
+      }
+    });
+    
+    // 确保cookie横幅和隐私政策弹窗不会被设置为inert
+    const bannerElement = document.getElementById('cookie-compliance-banner');
+    if (bannerElement) {
+      bannerElement.inert = false;
     }
+    const modalElement = document.getElementById('privacy-modal');
+    if (modalElement) {
+      modalElement.inert = false;
+    }
+  };
+
+  // 初始设置inert状态
+  enforceInertState();
+
+  // 定期检查并强制设置inert状态
+  const inertInterval = setInterval(enforceInertState, 100);
+
+  // 获取可聚焦元素
+  const getFocusableElements = () => {
+    const elements = banner.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+    // 过滤掉被设置为inert的元素
+    return Array.from(elements).filter(el => !el.inert);
+  };
+
+  // 关闭
+  const closeBanner = () => {
+    // 停止定期检查
+    clearInterval(inertInterval);
+
+    banner.style.display = 'none';
+    document.body.classList.remove('cookie-banner-open');
+
+    // 清除inert状态
+    const allElements = document.querySelectorAll('[inert]');
+    allElements.forEach(el => {
+      el.inert = false;
+    });
+
+    previousActiveElement?.focus();
+  };
+
+  // 按钮事件
+  document.getElementById('privacy-policy-btn').addEventListener('click', () => {
+    window.showPrivacyModal?.();
+  });
+  document.getElementById('reject-all-btn').addEventListener('click', () => {
+    localStorage.setItem('bizTrack_cookieChoice', 'rejected_all');
+    closeBanner();
+  });
+  document.getElementById('necessary-only-btn').addEventListener('click', () => {
+    localStorage.setItem('bizTrack_cookieChoice', 'necessary_only');
+    closeBanner();
+  });
+  document.getElementById('accept-all-btn').addEventListener('click', () => {
+    localStorage.setItem('bizTrack_cookieChoice', 'accepted_all');
+    closeBanner();
+  });
+
+  // 键盘支持（不允许使用ESC关闭，必须强制用户做出选择）
+  banner.addEventListener('keydown', (e) => {
+    const focusableElements = getFocusableElements();
+    const first = focusableElements[0];
+    const last = focusableElements[focusableElements.length - 1];
+
+    if (e.key === 'Tab') {
+      if (e.shiftKey && document.activeElement === first) {
+        last.focus(); e.preventDefault();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        first.focus(); e.preventDefault();
+      }
+    }
+  });
+
+  // 自动聚焦
+  getFocusableElements()[0]?.focus();
 }
+  
+    
 
 // 立即初始化
 document.addEventListener('DOMContentLoaded', () => {

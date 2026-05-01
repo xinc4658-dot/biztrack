@@ -1,0 +1,30 @@
+
+/* Cookie横幅弹窗样式 */
+
+/* 确保Cookie横幅弹窗内的按钮在获得焦点时有清晰的框选样式 */
+#cookie-compliance-banner button:focus {
+    outline: 3px solid #FFD700 !important; /* 金黄色，符合WCAG AAA标准 */
+    outline-offset: 2px !important;
+    box-shadow: 0 0 8px rgba(255, 215, 0, 0.5) !important;
+}
+
+/* 确保Cookie横幅弹窗内的按钮在获得焦点时有清晰的框选样式 */
+#cookie-compliance-banner button:focus-visible {
+    outline: 3px solid #FFD700 !important; /* 金黄色，符合WCAG AAA标准 */
+    outline-offset: 2px !important;
+    box-shadow: 0 0 8px rgba(255, 215, 0, 0.5) !important;
+}
+
+/* 确保Cookie横幅弹窗内的链接在获得焦点时有清晰的框选样式 */
+#cookie-compliance-banner a:focus {
+    outline: 3px solid #FFD700 !important; /* 金黄色，符合WCAG AAA标准 */
+    outline-offset: 2px !important;
+    box-shadow: 0 0 8px rgba(255, 215, 0, 0.5) !important;
+}
+
+/* 确保Cookie横幅弹窗内的链接在获得焦点时有清晰的框选样式 */
+#cookie-compliance-banner a:focus-visible {
+    outline: 3px solid #FFD700 !important; /* 金黄色，符合WCAG AAA标准 */
+    outline-offset: 2px !important;
+    box-shadow: 0 0 8px rgba(255, 215, 0, 0.5) !important;
+}

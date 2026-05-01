@@ -1,9 +1,9 @@
-function openSidebar() {
+window.openSidebar = function() {
   var side = document.getElementById("sidebar");
   side.style.display = side.style.display === "block" ? "none" : "block";
 }
 
-function closeSidebar() {
+window.closeSidebar = function() {
   document.getElementById("sidebar").style.display = "none";
 }
 
@@ -379,7 +379,7 @@ function renderSalesCategoryChart(orders, products, lang) {
 
   const options = {
     series: [{
-      name: chartNames[lang] || chartNames.en,
+      name: chartName,
       data: data,
     }],
     chart: {
@@ -405,7 +405,7 @@ function renderSalesCategoryChart(orders, products, lang) {
       axisTicks: { show: false },
     },
     yaxis: {
-      title: { text: axisTitle[lang] || axisTitle.en },
+      title: { text: axisTitle },
       axisTicks: { show: false },
     },
     tooltip: {
@@ -506,7 +506,7 @@ async function renderBalanceCharts() {
   renderExpenseCategoryChart(expenses, lang);
 }
 
-window.addEventListener("load", function () {
+document.addEventListener("DOMContentLoaded", function () {
   renderBalanceCharts();
 
   const selector = document.getElementById("languageSelector");

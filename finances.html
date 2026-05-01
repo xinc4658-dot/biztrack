@@ -117,7 +117,7 @@
             </div>
 
             <div class="form-popup">
-                <form class="form-container" id="transaction-form">
+                <form class="form-container" id="transaction-form" novalidate>
                     <div class="form-columns">
                             <input type="hidden" id="tr-id">
                             <label for="tr-date"><b data-i18n="expenses.date">Date: </b></label>
@@ -141,7 +141,7 @@
                     </div>
                     
                     <div class="button-col">
-                        <button type="submit" class="btn" id="submitBtn" data-i18n="expenses.add">Add</button>
+                        <button type="button" class="btn" id="submitBtn" data-i18n="expenses.add" onclick="addOrUpdate(event)">Add</button>
                         <button type="button" class="btn cancel" onclick="closeForm()" data-i18n="expenses.cancel">Cancel</button>
                     </div>
                 </form>
@@ -179,6 +179,6 @@
     <script type="module" src="./i18n/index.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/zh.js"></script>
-    <script src="./finances.js" defer></script>
+    <script type="module" src="./finances.js"></script>
 </body>
 </html>
