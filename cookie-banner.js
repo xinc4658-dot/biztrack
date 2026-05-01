@@ -42,6 +42,7 @@ function initCookieBanner() {
     const rejectAll = window.t('privacy.rejectAll') || 'Reject All';
     const necessary = window.t('privacy.necessaryOnly') || 'Necessary Only';
     const acceptAll = window.t('privacy.acceptAll') || 'Accept All';
+    const close = window.t('privacy.close') || 'Close';
 
     banner.innerHTML = `
         <div style="flex-grow: 1; text-align: left; min-width: 250px;">
@@ -52,6 +53,7 @@ function initCookieBanner() {
             <button id="reject-all-btn" style="background-color: transparent; border: 1px solid #dc3545; color: #dc3545; padding: 6px 14px; border-radius: 4px; cursor: pointer; white-space: nowrap;" data-i18n="privacy.rejectAll">${escapeHTML(rejectAll)}</button>
             <button id="necessary-only-btn" style="background-color: transparent; border: 1px solid #6c757d; color: #6c757d; padding: 6px 14px; border-radius: 4px; cursor: pointer; white-space: nowrap;" data-i18n="privacy.necessaryOnly">${escapeHTML(necessary)}</button>
             <button id="accept-all-btn" style="background-color: #249672; color: white; border: none; padding: 7px 18px; border-radius: 4px; cursor: pointer; font-weight: bold; white-space: nowrap;" data-i18n="privacy.acceptAll">${escapeHTML(acceptAll)}</button>
+            <button id="close-banner-btn" style="background-color: transparent; border: 1px solid #6c757d; color: #6c757d; padding: 6px 14px; border-radius: 4px; cursor: pointer; white-space: nowrap;" data-i18n="privacy.close" aria-label="${escapeHTML(close)}">${escapeHTML(close)}</button>
         </div>
     `;
 
@@ -142,6 +144,12 @@ function initCookieBanner() {
         closeBanner();
     });
 
+    document.getElementById('close-banner-btn').addEventListener('click', () => {
+        // 关闭弹窗时默认选择"仅必要"选项
+        localStorage.setItem('bizTrack_cookieChoice', 'necessary_only');
+        closeBanner();
+    });
+
     // 键盘支持
     banner.addEventListener('keydown', (e) => {
         const focusableElements = getFocusableElements();
@@ -149,6 +157,8 @@ function initCookieBanner() {
         const lastFocusable = focusableElements[focusableElements.length - 1];
 
         if (e.key === 'Escape') {
+            // ESC键关闭时默认选择"仅必要"选项
+            localStorage.setItem('bizTrack_cookieChoice', 'necessary_only');
             closeBanner();
         } else if (e.key === 'Enter' || e.key === ' ') {
             // 当焦点在按钮上时，按下 Enter 或 Space 键触发按钮点击事件

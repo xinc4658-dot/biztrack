@@ -370,6 +370,7 @@ export const zh = {
     howWeUseItDesc: "您的数据严格用于驱动仪表盘分析、生成表格以及为您提供业务跟踪功能。",
     cookieChoices: "3. Cookie 选择",
     cookieChoicesDesc: "我们仅使用“本地存储”来保存您的语言偏好和临时会话数据。不使用任何追踪型 Cookie。",
+    cookieDefaultNote: "如果您不进行选择或关闭Cookie弹窗，我们将默认仅使用必要的Cookie。",
     thirdParties: "4. 第三方",
     thirdPartiesDesc: "您的数据通过 Google Firebase 安全存储。我们绝不会将您的数据出售或分享给广告机构。",
     contact: "5. 联系方式",

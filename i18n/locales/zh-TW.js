@@ -369,6 +369,7 @@ export const zhTW = {
     howWeUseItDesc: "您的資料嚴格用於驅動儀表板分析、生成表格以及為您提供業務追蹤功能。",
     cookieChoices: "3. Cookie 選擇",
     cookieChoicesDesc: "我們僅使用「本地儲存」來儲存您的語言偏好和臨時會話資料。不使用任何追蹤型 Cookie。",
+    cookieDefaultNote: "如果您不進行選擇或關閉Cookie彈窗，我們將預設僅使用必要的Cookie。",
     thirdParties: "4. 第三方",
     thirdPartiesDesc: "您的資料通過 Google Firebase 安全儲存。我們絕不會將您的資料出售或分享給廣告機構。",
     contact: "5. 聯繫方式",

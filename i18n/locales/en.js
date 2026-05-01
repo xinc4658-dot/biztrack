@@ -356,6 +356,7 @@ export const en = {
     howWeUseItDesc: "Your data is strictly used to power the Dashboard analytics, generate tables, and provide you with business tracking functionalities.",
     cookieChoices: "3. Cookie choices",
     cookieChoicesDesc: "We only use 'Local Storage' to save your language preference and temporary session data. No tracking cookies are used.",
+    cookieDefaultNote: "If you do not make a selection or close the cookie banner, we will use only necessary cookies by default.",
     thirdParties: "4. Third parties",
     thirdPartiesDesc: "Your data is stored securely via Google Firebase. We do not sell or share your data with any advertising agencies.",
     contact: "5. Contact",
