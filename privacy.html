@@ -8,36 +8,71 @@
     <title>Privacy Policy - BizTrack</title>
 </head>
 <body>
-    <nav id="sidebar" class="sidebar" aria-label="Main navigation">
-        <div class="sidebar-brand">
-            <h2>BizTrack</h2>
-            <div class="close-icon" onclick="closeSidebar()"><i class="fa-solid fa-xmark"></i></div>
+    <div id="sidebar" class="sidebar">
+        <div class="logo">
+            <a href="./index.html">
+                <i class="fas fa-b"></i>
+                <span>BizTrack</span>
+            </a>
+            <i class="fa-solid fa-xmark" data-i18n-title="sidebar.close" title="Close" onclick="closeSidebar()"></i>
         </div>
-        <ul class="sidebar-nav">
-            <li><a href="./index.html"><i class="fa-solid fa-chart-line"></i> <span data-i18n="sidebar.dashboard">Dashboard</span></a></li>
-            <li><a href="./products.html"><i class="fa-solid fa-box"></i> <span data-i18n="sidebar.products">Products</span></a></li>
-            <li><a href="./orders.html"><i class="fa-solid fa-cart-shopping"></i> <span data-i18n="sidebar.orders">Orders</span></a></li>
-            <li><a href="./finances.html"><i class="fa-solid fa-wallet"></i> <span data-i18n="sidebar.finances">Finances</span></a></li>
-            <li><a href="./history.html"><i class="fa-solid fa-history"></i> <span data-i18n="sidebar.history">History</span></a></li>
-            <li><a href="./help.html"><i class="fa-solid fa-question-circle"></i> <span data-i18n="sidebar.help">Help</span></a></li>
-            <li><a href="./about.html"><i class="fa-solid fa-info-circle"></i> <span data-i18n="sidebar.about">About</span></a></li>
+        <ul class="menu">
+            <li>
+                <a href="./index.html">
+                    <i class="fa-solid fa-gauge-high"></i>
+                    <span data-i18n="sidebar.dashboard">Dashboard</span>
+                </a>
+            </li>
+            <li>
+                <a href="./products.html">
+                    <i class="fas fa-dolly"></i>
+                    <span data-i18n="sidebar.products">Products</span>
+                </a>
+            </li>
+            <li>
+                <a href="./orders.html">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span data-i18n="sidebar.orders">Orders</span>
+                </a>
+            </li>
+            <li>
+                <a href="./finances.html">
+                    <i class="fas fa-sack-dollar"></i>
+                    <span data-i18n="sidebar.expenses">Expenses</span>
+                </a>
+            </li>
+            <li>
+                <a href="./history.html">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                    <span data-i18n="sidebar.history">History</span>
+                </a>
+            </li>
+            <li>
+                <a href="./help.html">
+                    <i class="fas fa-question-circle"></i>
+                    <span data-i18n="sidebar.help">Help</span>
+                </a>
+            </li>
+            <li class="logout">
+                <a href="./about.html">
+                    <i class="fa-solid fa-users-line"></i>
+                    <span data-i18n="sidebar.meetDeveloper">Meet the Developer</span>
+                </a>
+            </li>
         </ul>
-    </nav>
+    </div>
 
-    <main class="main-content">
+    <div class="main-content">
         <div class="header-wrapper">
-            <button class="menu-icon" onclick="openSidebar()" aria-label="Open sidebar menu">
-                <i class="fa-solid fa-bars"></i>
-            </button>
+            <div class="menu-icon" onclick="openSidebar()"><i class="fa-solid fa-bars"></i></div>
             <div class="header-title">
                 <h2 data-i18n="privacy.pageTitle">Privacy Policy</h2>
             </div>
             <div class="user-info">
                 <div class="language-switcher">
-                    <select id="languageSelector" aria-label="Select language">
+                    <select id="languageSelector">
                         <option value="en">English</option>
                         <option value="zh">中文</option>
-                        <option value="zhTW">繁體中文</option>
                     </select>
                 </div>
             </div>
@@ -67,11 +102,10 @@
                 </article>
             </section>
         </div>
-    </main>
+    </div>
 
-    <script type="module" src="./i18n/index.js"></script>
+    <script src="./js/i18n.js"></script>
     <script>
-        // 修复后的侧边栏开关逻辑
         function openSidebar() {
             const side = document.getElementById('sidebar');
             if (side) {

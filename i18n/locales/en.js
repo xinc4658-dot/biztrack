@@ -306,6 +306,7 @@ export const en = {
     thanks: "Here's to coding, chaos, everything in between and heartfelt thanks to Sam!"
   },
   privacy: {
+    manageCookies: "Manage Cookies", // 【新增这一行】
     cookieMessage: "We use essential cookies and local storage to ensure the core functionality of BizTrack.",
     policyLink: "Privacy Policy",
     acceptAll: "Accept All",

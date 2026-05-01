@@ -596,9 +596,36 @@ function exportToCSV() {
     document.body.removeChild(link);
 }
   
+// 新增一个专门用来净化 CSV 字段的辅助函数
+function sanitizeCSVField(value) {
+    // 将 null、undefined 等转为空字符串，其他转为字符串
+    let strValue = value === null || value === undefined ? "" : String(value);
+
+    // 1. 防御 CSV 注入攻击 (Macro Injection)
+    // 如果内容是以 =、+、- 或 @ 开头，在其前面追加一个单引号，迫使 Excel 将其识别为纯文本
+    if (/^[=+\-@]/.test(strValue)) {
+        strValue = "'" + strValue;
+    }
+
+    // 2. 修复 CSV 格式错乱问题
+    // 如果内容本身包含逗号（,）、换行符（\n）或双引号（"），必须用双引号把它包起来，
+    // 并且将内部原有的双引号转义（替换为两个双引号 ""）
+    if (strValue.includes(',') || strValue.includes('\n') || strValue.includes('"')) {
+        strValue = '"' + strValue.replace(/"/g, '""') + '"';
+    }
+
+    return strValue;
+}
+
+// 替换原有的 generateCSV 函数
 function generateCSV(data, headers) {
-    const headerRow = Object.keys(headers).map(key => escapeCSVValue(headers[key])).join(',');
-    const rows = data.map(row => Object.values(row).map(escapeCSVValue).join(','));
+    // 对表头进行处理
+    const headerRow = Object.keys(headers).map(key => sanitizeCSVField(headers[key])).join(',');
+    
+    // 对每一行数据的每一个字段进行安全净化处理
+    const rows = data.map(item => {
+        return Object.values(item).map(val => sanitizeCSVField(val)).join(',');
+    });
 
     return `${headerRow}\n${rows.join('\n')}`;
 }

@@ -148,7 +148,23 @@ body {
 .user-info {
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: 12px; /* 控制按钮和下拉框之间的间距 */
+}
+/* 管理 Cookie 按钮样式 */
+.manage-cookies-btn {
+    background-color: transparent;
+    border: 1px solid #a0a0a0;
+    color: var(--black-color); /* 适配你系统的主题色 */
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+.manage-cookies-btn:hover {
+    background-color: rgba(0, 0, 0, 0.05); /* 鼠标悬停时的微弱反馈 */
+    border-color: #333;
 }
 .fa-user-alt {
     color: var(--brown-color);

@@ -8,7 +8,7 @@ function closeSidebar() {
     document.getElementById('sidebar').style.display = 'none';
 }
 
-// 🔥 终极修复：解决单引号 &#39; 显示异常（标题+文本全部正常）
+// 终极修复：解决单引号 &#39; 显示异常（标题+文本全部正常）
 function fixAboutQuotes() {
   setTimeout(() => {
     document.querySelectorAll('[data-i18n]').forEach(el => {

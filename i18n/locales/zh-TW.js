@@ -353,6 +353,7 @@ export const zhTW = {
     thanks: "為了編程、混亂以及介於兩者之間的一切，以及對Sam的衷心感謝！"
   },
   privacy: {
+    manageCookies: "管理 Cookie", // 【新增这一行】
     cookieMessage: "我們使用必要的 Cookie 和本地儲存來確保 BizTrack 的核心功能。",
     policyLink: "隱私權政策",
     acceptAll: "全部接受",
