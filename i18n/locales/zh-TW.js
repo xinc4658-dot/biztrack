@@ -227,6 +227,8 @@ export const zhTW = {
     orderIdExists: "訂單ID已存在，請使用唯一的ID。",
     selectDate: "請選擇日期",
     required: "請填寫{field}",
+    requiredField: "請填寫此欄位",
+    fillAllFields: "請填寫所有必填項。",
     invalidNumber: "請為{field}輸入有效的數字",
     invalidDate: "請輸入有效日期",
     invalidPositive: "請為{field}輸入正數",
@@ -353,9 +355,10 @@ export const zhTW = {
     thanks: "為了編程、混亂以及介於兩者之間的一切，以及對Sam的衷心感謝！"
   },
   privacy: {
-    manageCookies: "管理 Cookie", // 【新增这一行】
+    manageCookies: "管理 Cookie", // 【新增這一行】
     cookieMessage: "我們使用必要的 Cookie 和本地儲存來確保 BizTrack 的核心功能。",
     policyLink: "隱私權政策",
+    close: "關閉",
     acceptAll: "全部接受",
     rejectAll: "全部拒絕",
     necessaryOnly: "僅必要",

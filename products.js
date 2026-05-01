@@ -1,67 +1,45 @@
-// products.js
-// 产品描述翻译（整合至i18n模块化，替换原有独立函数）
+// products.js（纯净版，无重复、无冲突）
+import { escapeHTML, replaceParams } from './i18n/utils.js';
 
+// ========== 全局函数（必须挂到 window，给 onclick 用） ==========
+window.translateProductDescription = function(description) {
+  if (!description) return description;
+  const key = `product.desc.${description}`;
+  const translated = window.t ? window.t(key) : description;
+  return translated === key ? description : translated;
+};
 
-function translateProductDescription(description) {
-  return window.t(`product.desc.${description}`) || description;
-}
+window.openSidebar = function() {
+  const side = document.getElementById('sidebar');
+  side.style.display = side.style.display === 'block' ? 'none' : 'block';
+};
 
-// 产品分类翻译（整合至i18n模块化，替换原有独立函数）
-function translateProductCategory(category) {
-  return window.t(`product.category.${category}`) || category;
-}
-
-function escapeCSVValue(value) {
-  const text = String(value ?? "");
-  if (/[",\n\r]/.test(text)) {
-    return `"${text.replace(/"/g, '""')}"`;
-  }
-  return text;
-}
-function debounce(fn, delay = 250) {
-    let timer;
-    return function (...args) {
-        clearTimeout(timer);
-        timer = setTimeout(() => fn.apply(this, args), delay);
-    };
-}
-
-function openSidebar() {
-  var side = document.getElementById('sidebar');
-  side.style.display = (side.style.display === "block") ? "none" : "block";
-}
-
-function closeSidebar() {
+window.closeSidebar = function() {
   document.getElementById('sidebar').style.display = 'none';
-}
+};
 
-function openForm() {
-    var form = document.getElementById("product-form")
-    form.style.display = (form.style.display === "block") ? "none" : "block";
-}
+window.openForm = function() {
+  const form = document.getElementById("product-form");
+  form.style.display = form.style.display === "block" ? "none" : "block";
+};
 
-function closeForm() {
-    document.getElementById("product-form").style.display = "none";
-}
+window.closeForm = function() {
+  document.getElementById("product-form").style.display = "none";
+};
 
+// ========== 数据 ==========
 let products = [];
 
-async function syncProductsToDb(action, record, beforeRecord) {
-  if (!window.biztrackDbHelpers || !window.biztrackDbHelpers.isReady()) {
-    return;
-  }
-
+window.syncProductsToDb = async function(action, record, beforeRecord) {
+  if (!window.biztrackDbHelpers?.isReady()) return;
   try {
     await window.biztrackDbHelpers.syncCollection("products", products, "prodID");
-    if (action) {
-      await window.biztrackDbHelpers.logActivity("products", action, record.prodID, record, beforeRecord);
-    }
-  } catch (error) {
-    console.error("Products database sync failed:", error);
+    if (action) await window.biztrackDbHelpers.logActivity("products", action, record.prodID, record, beforeRecord);
+  } catch (e) {
+    console.error("syncProductsToDb", e);
   }
-}
+};
 
-// 产品名称 -> 类别的映射 (用于自动填充；与存储的 prodCat 英文值一致)
 let productCategoryMap = {
   'Baseball caps': 'Hats',
   'Snapbacks': 'Hats',
@@ -81,23 +59,33 @@ let productCategoryMap = {
   'Canvas prints': 'Home decor'
 };
 
-// 当选择产品名称时，自动填充类别
-function syncCategoryWithSelectedName() {
+const productCategoryTranslationKey = {
+  'Hats': 'products.hats',
+  'Drinkware': 'products.drinkware',
+  'Clothing': 'products.clothing',
+  'Accessories': 'products.accessories',
+  'Home decor': 'products.homeDecor'
+};
+
+window.syncCategoryWithSelectedName = function() {
   const prodName = document.getElementById("product-name").value;
   const prodCat = productCategoryMap[prodName];
-  if (prodCat) {
-    document.getElementById("product-cat").value = prodCat;
-  }
-}
+  if (prodCat) document.getElementById("product-cat").value = prodCat;
+};
+
+window.translateProductCategory = function(category) {
+  const key = productCategoryTranslationKey[category];
+  if (!key) return category;
+  const translated = window.t ? window.t(key) : category;
+  return translated === key ? category : translated;
+};
 
 function isNameCategoryPairValid(prodName, prodCat) {
-  const expectedCategory = productCategoryMap[prodName];
-  return expectedCategory && expectedCategory === prodCat;
+  return productCategoryMap[prodName] === prodCat;
 }
 
-// 默认商品：顺序与表单下拉一致 — Hats → Drinkware → Clothing → Accessories → Home decor
-var PRODUCTS_CATALOG_VERSION = "full-16-v1";
-var DEFAULT_PRODUCTS_FULL = [
+const PRODUCTS_CATALOG_VERSION = "full-16-v1";
+const DEFAULT_PRODUCTS_FULL = [
   { prodID: "PD001", prodName: "Baseball caps", prodDesc: "Peace embroidered cap", prodCat: "Hats", prodPrice: 25.0, prodSold: 20 },
   { prodID: "PD002", prodName: "Snapbacks", prodDesc: "Classic snapback fit", prodCat: "Hats", prodPrice: 28.0, prodSold: 15 },
   { prodID: "PD003", prodName: "Beanies", prodDesc: "Warm knit beanie", prodCat: "Hats", prodPrice: 18.5, prodSold: 32 },
@@ -117,394 +105,251 @@ var DEFAULT_PRODUCTS_FULL = [
 ];
 
 function loadProductsFromStorage() {
-  var storedProducts = localStorage.getItem("bizTrackProducts");
-  var catalogVersion = localStorage.getItem("bizTrackProductsCatalogVersion");
-  var needsFullCatalog =
-    !storedProducts ||
-    catalogVersion !== PRODUCTS_CATALOG_VERSION;
-
-  if (needsFullCatalog) {
-    products = DEFAULT_PRODUCTS_FULL.map(function (row) {
-      return Object.assign({}, row);
-    });
+  const stored = localStorage.getItem("bizTrackProducts");
+  const ver = localStorage.getItem("bizTrackProductsCatalogVersion");
+  if (!stored || ver !== PRODUCTS_CATALOG_VERSION) {
+    products = DEFAULT_PRODUCTS_FULL.map(x => ({...x}));
     localStorage.setItem("bizTrackProducts", JSON.stringify(products));
     localStorage.setItem("bizTrackProductsCatalogVersion", PRODUCTS_CATALOG_VERSION);
     return;
   }
-
-  products = JSON.parse(storedProducts);
+  products = JSON.parse(stored);
 }
 
-function init() {
-  // 绑定事件：选择名称后自动填类别
-  document.getElementById("product-name").addEventListener("change", syncCategoryWithSelectedName);
+// ========== 渲染 & 按钮逻辑（全部挂 window） ==========
+window.renderProducts = function(products) {
+  const tbody = document.getElementById("tableBody");
+  tbody.innerHTML = "";
+  products.forEach(p => {
+    const tr = document.createElement("tr");
+    tr.className = "product-row";
+    tr.dataset.prodID = p.prodID;
+    tr.dataset.prodName = p.prodName;
+    tr.dataset.prodDesc = p.prodDesc;
+    tr.dataset.prodCat = p.prodCat;
+    tr.dataset.prodPrice = p.prodPrice;
+    tr.dataset.prodSold = p.prodSold;
+    tr.innerHTML = `
+      <td>${escapeHTML(p.prodID)}</td>
+      <td>${escapeHTML(window.translateProductName ? window.translateProductName(p.prodName) : p.prodName)}</td>
+      <td>${escapeHTML(window.translateProductDescription ? window.translateProductDescription(p.prodDesc) : p.prodDesc)}</td>
+      <td>${escapeHTML(window.translateProductCategory ? window.translateProductCategory(p.prodCat) : p.prodCat)}</td>
+      <td>$${p.prodPrice.toFixed(2)}</td>
+      <td>${escapeHTML(String(p.prodSold))}</td>
+      <td class="action">
+        <button title="${window.t?.('common.edit')||'Edit'}" onclick="editRow('${escapeHTML(p.prodID)}')" class="edit-icon fa-solid fa-pen-to-square"></button>
+        <button title="${window.t?.('common.delete')||'Delete'}" onclick="deleteProduct('${escapeHTML(p.prodID)}')" class="delete-icon fas fa-trash-alt"></button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+};
 
-  loadProductsFromStorage();
-  renderProducts(products);
-  syncProductsToDb("sync", { prodID: "all-products" });
-  handleQuickAddOpen();
-  if (typeof window.addGuideButton === 'function') {
-    window.addGuideButton('products');
-  }
-}
+window.editRow = function(prodID) {
+  const p = products.find(x => x.prodID === prodID);
+  if (!p) return;
+  document.getElementById("product-id").value = p.prodID;
+  document.getElementById("product-name").value = p.prodName;
+  document.getElementById("product-desc").value = p.prodDesc;
+  document.getElementById("product-cat").value = p.prodCat;
+  document.getElementById("product-price").value = p.prodPrice;
+  document.getElementById("product-sold").value = p.prodSold;
+  document.getElementById("submitBtn").dataset.isEdit = "true";
+  document.getElementById("product-form").style.display = "block";
+  window.syncCategoryWithSelectedName();
+};
 
-function handleQuickAddOpen() {
-  const params = new URLSearchParams(window.location.search);
-  if (params.get("quickAdd") !== "1") return;
+window.deleteProduct = function(prodID) {
+  const idx = products.findIndex(x => x.prodID === prodID);
+  if (idx === -1) return;
+  const deleted = {...products[idx]};
+  products.splice(idx,1);
+  localStorage.setItem("bizTrackProducts", JSON.stringify(products));
+  window.renderProducts(products);
+  window.syncProductsToDb("delete", {prodID}, deleted);
+};
 
-  const form = document.getElementById("product-form");
-  if (!form) return;
-
-  form.style.display = "block";
-  form.scrollIntoView({ behavior: "smooth", block: "start" });
-}
-
-function addOrUpdate(event) {
-  event.preventDefault();
+window.addOrUpdate = function(e) {
+  e.preventDefault();
   const submitBtn = document.getElementById("submitBtn");
-  const i18nKey = submitBtn.getAttribute('data-i18n');
-  if (i18nKey === 'products.save' && !submitBtn.dataset.isEdit) {
-      newProduct(event);
-  } else {
-      const prodID = document.getElementById("product-id").value;
-      updateProduct(prodID);
-  }
-}
+  const isEdit = submitBtn.dataset.isEdit === "true";
+  isEdit ? window.updateProduct() : window.newProduct(e);
+};
 
-function newProduct(event) {
-  event.preventDefault();
+window.newProduct = function(e) {
+  e.preventDefault();
   const prodID = document.getElementById("product-id").value.trim();
   const prodName = document.getElementById("product-name").value.trim();
   const prodDesc = document.getElementById("product-desc").value.trim();
   const prodCat = document.getElementById("product-cat").value.trim();
-  const prodPriceInput = document.getElementById("product-price").value.trim();
-  const prodSoldInput = document.getElementById("product-sold").value.trim();
+  const prodPrice = parseFloat(document.getElementById("product-price").value.trim());
+  const prodSold = parseInt(document.getElementById("product-sold").value.trim());
+  const priceLabel = (window.t?.('products.productPrice') || 'Product Price').replace(/[:：]\s*$/, '');
+  const soldLabel = (window.t?.('products.productSold') || 'Stock Quantity').replace(/[:：]\s*$/, '');
 
-  // 空输入校验
-  if (!prodID) {
-    alert(window.t("common.required", { field: window.t("products.productId") }));
+  if (!prodID || !prodName || !prodCat || isNaN(prodPrice) || isNaN(prodSold)) {
+    alert(window.t?.("common.fillAllFields")||"Please fill in all required fields.");
     return;
   }
-  if (!prodName) {
-    alert(window.t("common.required", { field: window.t("products.productName") }));
+  if (isNaN(prodPrice) || isNaN(prodSold)) {
+    const invalidField = isNaN(prodPrice) ? priceLabel : soldLabel;
+    alert(window.t?.("common.invalidNumber", { field: invalidField }) || `Please enter a valid number for ${invalidField}`);
     return;
   }
-  if (!prodCat) {
-    alert(window.t("common.required", { field: window.t("products.productCategory") }));
+  if (prodPrice < 0 || prodSold < 0) {
+    const invalidField = prodPrice < 0 ? priceLabel : soldLabel;
+    alert(window.t?.("common.invalidPositive", { field: invalidField }) || `Please enter a positive number for ${invalidField}`);
     return;
   }
-  if (!prodPriceInput) {
-    alert(window.t("common.required", { field: window.t("products.productPrice") }));
+  if (products.some(x => x.prodID === prodID)) {
+    alert(window.t?.("common.productIdExists")||"Product ID exists");
     return;
   }
-  if (!prodSoldInput) {
-    alert(window.t("common.required", { field: window.t("products.productSold") }));
-    return;
-  }
-
-  // 数字类型校验
-  const prodPrice = parseFloat(prodPriceInput);
-  const prodSold = parseInt(prodSoldInput);
-  if (isNaN(prodPrice)) {
-    alert(window.t("common.invalidNumber", { field: window.t("products.productPrice") }));
-    return;
-  }
-  if (isNaN(prodSold)) {
-    alert(window.t("common.invalidNumber", { field: window.t("products.productSold") }));
-    return;
-  }
-
-  if (isDuplicateID(prodID, null)) {
-    alert(window.t("common.productIdExists"));
-    return;
-  }
-
   if (!isNameCategoryPairValid(prodName, prodCat)) {
-    alert(window.t("common.categoryMustMatch"));
+    alert(window.t?.("common.categoryMustMatch")||"Category must match name");
     return;
   }
 
-  const product = { prodID, prodName, prodDesc, prodCat, prodPrice, prodSold };
-  products.push(product);
-
-  renderProducts(products);
+  const p = {prodID, prodName, prodDesc, prodCat, prodPrice, prodSold};
+  products.push(p);
   localStorage.setItem("bizTrackProducts", JSON.stringify(products));
-  syncProductsToDb("create", product);
-
+  window.renderProducts(products);
+  window.syncProductsToDb("create", p);
   document.getElementById("product-form").reset();
-}
+};
 
-function renderProducts(products) {
-  const prodTableBody = document.getElementById("tableBody");
-  prodTableBody.innerHTML = "";
+window.updateProduct = function() {
+  const prodID = document.getElementById("product-id").value.trim();
+  const idx = products.findIndex(x => x.prodID === prodID);
+  if (idx === -1) return;
 
-  products.forEach(product => {
-      const prodRow = document.createElement("tr");
-      prodRow.className = "product-row";
-      prodRow.dataset.prodID = product.prodID;
-      prodRow.dataset.prodName = product.prodName;
-      prodRow.dataset.prodDesc = product.prodDesc;
-      prodRow.dataset.prodCat = product.prodCat;
-      prodRow.dataset.prodPrice = product.prodPrice;
-      prodRow.dataset.prodSold = product.prodSold;
+  const prodName = document.getElementById("product-name").value.trim();
+  const prodDesc = document.getElementById("product-desc").value.trim();
+  const prodCat = document.getElementById("product-cat").value.trim();
+  const prodPrice = parseFloat(document.getElementById("product-price").value.trim());
+  const prodSold = parseInt(document.getElementById("product-sold").value.trim());
+  const priceLabel = (window.t?.('products.productPrice') || 'Product Price').replace(/[:：]\s*$/, '');
+  const soldLabel = (window.t?.('products.productSold') || 'Stock Quantity').replace(/[:：]\s*$/, '');
 
-      // ✅ 超强容错：函数不存在就直接用英文，绝不报错
-      const translatedName = window.translateProductName ? window.translateProductName(product.prodName) : product.prodName;
-      const translatedCat = window.t ? window.t(`products.${product.prodCat.toLowerCase()}`) : product.prodCat;
-      
-      const safeName = window.escapeHTML ? window.escapeHTML(translatedName) : translatedName;
-      const safeDesc = window.escapeHTML ? window.escapeHTML(product.prodDesc) : product.prodDesc;
-
-      prodRow.innerHTML = `
-          <td>${product.prodID}</td>
-          <td>${safeName}</td>
-          <td>${safeDesc}</td>
-          <td>${translatedCat}</td>
-          <td>$${product.prodPrice.toFixed(2)}</td>
-          <td>${product.prodSold}</td>
-          <td class="action">
-            <button title="${window.t ? window.t(`common.edit`) : `Edit`}" onclick="editRow('${product.prodID}')" class="edit-icon fa-solid fa-pen-to-square"></button>
-            <button title="${window.t ? window.t(`common.delete`) : `Delete`}" onclick="deleteProduct('${product.prodID}')" class="delete-icon fas fa-trash-alt"></button>
-          </td>
-      `;
-      prodTableBody.appendChild(prodRow);
-  });
-}
-
-function editRow(prodID) {
-  const productToEdit = products.find(product => product.prodID === prodID);
-  document.getElementById("product-id").value = productToEdit.prodID;
-  document.getElementById("product-name").value = productToEdit.prodName;
-  document.getElementById("product-desc").value = productToEdit.prodDesc;
-  document.getElementById("product-cat").value = productToEdit.prodCat;
-  document.getElementById("product-price").value = productToEdit.prodPrice;
-  document.getElementById("product-sold").value = productToEdit.prodSold;
-
-  document.getElementById("submitBtn").dataset.isEdit = true;
-  document.getElementById("product-form").style.display = "block";
-
-  syncCategoryWithSelectedName(); // 编辑时也确保类别对应
-
-}
-
-function deleteProduct(prodID) {
-  const indexToDelete = products.findIndex(product => product.prodID === prodID);
-  if (indexToDelete !== -1) {
-      const deletedProduct = { ...products[indexToDelete] };
-      products.splice(indexToDelete, 1);
-      localStorage.setItem("bizTrackProducts", JSON.stringify(products));
-      renderProducts(products);
-      syncProductsToDb("delete", { prodID }, deletedProduct);
+  if (!prodID || !prodName || !prodCat || isNaN(prodPrice) || isNaN(prodSold)) {
+    alert(window.t?.("common.fillAllFields")||"Please fill in all required fields.");
+    return;
   }
+  if (isNaN(prodPrice) || isNaN(prodSold)) {
+    const invalidField = isNaN(prodPrice) ? priceLabel : soldLabel;
+    alert(window.t?.("common.invalidNumber", { field: invalidField }) || `Please enter a valid number for ${invalidField}`);
+    return;
+  }
+  if (prodPrice < 0 || prodSold < 0) {
+    const invalidField = prodPrice < 0 ? priceLabel : soldLabel;
+    alert(window.t?.("common.invalidPositive", { field: invalidField }) || `Please enter a positive number for ${invalidField}`);
+    return;
+  }
+  if (!isNameCategoryPairValid(prodName, prodCat)) {
+    alert(window.t?.("common.categoryMustMatch")||"Category must match name");
+    return;
+  }
+
+  const before = {...products[idx]};
+  const updated = {prodID, prodName, prodDesc, prodCat, prodPrice, prodSold};
+  products[idx] = updated;
+  localStorage.setItem("bizTrackProducts", JSON.stringify(products));
+  window.renderProducts(products);
+  window.syncProductsToDb("update", updated, before);
+  document.getElementById("product-form").reset();
+  document.getElementById("submitBtn").dataset.isEdit = "";
+};
+
+// ========== 导出CSV ==========
+function sanitizeCSVField(v) {
+  let s = v == null ? "" : String(v);
+  if (/^[=+\-@]/.test(s)) s = "'" + s;
+  if (s.includes(',') || s.includes('\n') || s.includes('"')) s = '"' + s.replace(/"/g,'""') + '"';
+  return s;
 }
 
-function updateProduct(prodID) {
-    const indexToUpdate = products.findIndex(product => product.prodID === prodID);
-    if (indexToUpdate !== -1) {
-        const beforeProduct = { ...products[indexToUpdate] };
-        const updatedId = document.getElementById("product-id").value.trim();
-        const updatedName = document.getElementById("product-name").value.trim();
-        const updatedDesc = document.getElementById("product-desc").value.trim();
-        const updatedCat = document.getElementById("product-cat").value.trim();
-        const updatedPriceInput = document.getElementById("product-price").value.trim();
-        const updatedSoldInput = document.getElementById("product-sold").value.trim();
-
-        if (!updatedId) {
-            alert(window.t("common.required", { field: window.t("products.productId") }));
-            return;
-        }
-        if (!updatedName) {
-            alert(window.t("common.required", { field: window.t("products.productName") }));
-            return;
-        }
-        if (!updatedCat) {
-            alert(window.t("common.required", { field: window.t("products.productCategory") }));
-            return;
-        }
-        if (!updatedPriceInput) {
-            alert(window.t("common.required", { field: window.t("products.productPrice") }));
-            return;
-        }
-        if (!updatedSoldInput) {
-            alert(window.t("common.required", { field: window.t("products.productSold") }));
-            return;
-        }
-
-        const updatedPrice = parseFloat(updatedPriceInput);
-        const updatedSold = parseInt(updatedSoldInput);
-        if (isNaN(updatedPrice)) {
-            alert(window.t("common.invalidNumber", { field: window.t("products.productPrice") }));
-            return;
-        }
-        if (isNaN(updatedSold)) {
-            alert(window.t("common.invalidNumber", { field: window.t("products.productSold") }));
-            return;
-        }
-
-        const updatedProduct = {
-            prodID: updatedId,
-            prodName: updatedName,
-            prodDesc: updatedDesc,
-            prodCat: updatedCat,
-            prodPrice: updatedPrice,
-            prodSold: updatedSold,
-        };
-
-        if (isDuplicateID(updatedProduct.prodID, prodID)) {
-            alert(window.t("common.productIdExists"));
-            return;
-        }
-
-        if (!isNameCategoryPairValid(updatedProduct.prodName, updatedProduct.prodCat)) {
-            alert(window.t("common.categoryMustMatch"));
-            return;
-        }
-
-        products[indexToUpdate] = updatedProduct;
-        localStorage.setItem("bizTrackProducts", JSON.stringify(products));
-        renderProducts(products);
-        syncProductsToDb("update", updatedProduct, beforeProduct);
-
-        document.getElementById("product-form").reset();
-        document.getElementById("submitBtn").dataset.isEdit = false;
-    }
-}
-
-function isDuplicateID(prodID, currentID) {
-    return products.some(product => product.prodID === prodID && product.prodID !== currentID);
-}
-
-function sortTable(column) {
-    const tbody = document.getElementById("tableBody");
-    const rows = Array.from(tbody.querySelectorAll("tr"));
-    const isNumeric = column === "prodPrice" || column === "prodSold";
-
-    const sortedRows = rows.sort((a, b) => {
-        const aValue = isNumeric ? parseFloat(a.dataset[column]) : a.dataset[column];
-        const bValue = isNumeric ? parseFloat(b.dataset[column]) : b.dataset[column];
-        if (typeof aValue === "string" && typeof bValue === "string") {
-            return aValue.localeCompare(bValue, undefined, { sensitivity: "base" });
-        } else {
-            return aValue - bValue;
-        }
-    });
-
-    tbody.replaceChildren(...sortedRows);
-}
-
-document.getElementById("searchInput").addEventListener("input", debounce(performSearch, 250));
-
-function performSearch() {
-    const keyword = document.getElementById("searchInput").value.trim().toLowerCase();
-
-    if (!keyword) {
-        renderProducts(products);
-        return;
-    }
-
-    const filteredProducts = products.filter(product => {
-        const translatedName = typeof translateProductName === "function"
-            ? translateProductName(product.prodName)
-            : product.prodName;
-
-        const translatedCategory = typeof window.t === "function"
-            ? window.t(`products.${String(product.prodCat).toLowerCase()}`)
-            : product.prodCat;
-
-        return [
-            product.prodID,
-            product.prodName,
-            translatedName,
-            product.prodDesc,
-            product.prodCat,
-            translatedCategory,
-            product.prodPrice,
-            product.prodSold
-        ].some(value => String(value).toLowerCase().includes(keyword));
-    });
-
-    renderProducts(filteredProducts);
-}
-
-function exportToCSV() {
-  const currentLanguage = window.getCurrentLanguage ? window.getCurrentLanguage() : localStorage.getItem('bizTrackLanguage') || 'en';
-  const translate = (key, fallback) => (window.t ? window.t(key) : fallback);
-
-  const headers = {
-    prodID: translate('products.exportHeaders.prodID', 'Product ID'),
-    prodName: translate('products.exportHeaders.prodName', 'Product Name'),
-    prodDesc: translate('products.exportHeaders.prodDesc', 'Product Description'),
-    prodCategory: translate('products.exportHeaders.prodCategory', 'Product Category'),
-    prodPrice: translate('products.exportHeaders.prodPrice', 'Product Price'),
-    QtySold: translate('products.exportHeaders.QtySold', 'Stock Quantity'),
-  };
-  const productsToExport = products.map(product => ({
-        prodID: product.prodID,
-        prodName: translateProductName(product.prodName),
-        prodDesc: translateProductDescription(product.prodDesc),
-        prodCategory: translateProductCategory(product.prodCat),
-        prodPrice: product.prodPrice.toFixed(2),
-        QtySold: product.prodSold,
-  }));
-
-  const csvContent = generateCSV(productsToExport, headers);
-  const encoder = new TextEncoder();
-  const BOM = new Uint8Array([0xEF, 0xBB, 0xBF]);
-  const csvBytes = encoder.encode(csvContent);
-  const csvWithBOM = new Uint8Array(BOM.length + csvBytes.length);
-  csvWithBOM.set(BOM, 0);
-  csvWithBOM.set(csvBytes, BOM.length);
-  const blob = new Blob([csvWithBOM], { type: 'text/csv;charset=utf-8' });
-
-  const link = document.createElement('a');
-  link.href = window.URL.createObjectURL(blob);
-  const filenameKey = currentLanguage === 'zh' ? 'products.exportFilenameZh' : 'products.exportFilenameEn';
-  link.download = window.t ? window.t(filenameKey, currentLanguage === 'zh' ? 'biztrack_产品表.csv' : 'biztrack_product_table.csv') : (currentLanguage === 'zh' ? 'biztrack_产品表.csv' : 'biztrack_product_table.csv');
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-}
-
-// 新增一个专门用来净化 CSV 字段的辅助函数
-function sanitizeCSVField(value) {
-    // 将 null、undefined 等转为空字符串，其他转为字符串
-    let strValue = value === null || value === undefined ? "" : String(value);
-
-    // 1. 防御 CSV 注入攻击 (Macro Injection)
-    // 如果内容是以 =、+、- 或 @ 开头，在其前面追加一个单引号，迫使 Excel 将其识别为纯文本
-    if (/^[=+\-@]/.test(strValue)) {
-        strValue = "'" + strValue;
-    }
-
-    // 2. 修复 CSV 格式错乱问题
-    // 如果内容本身包含逗号（,）、换行符（\n）或双引号（"），必须用双引号把它包起来，
-    // 并且将内部原有的双引号转义（替换为两个双引号 ""）
-    if (strValue.includes(',') || strValue.includes('\n') || strValue.includes('"')) {
-        strValue = '"' + strValue.replace(/"/g, '""') + '"';
-    }
-
-    return strValue;
-}
-
-// 替换原有的 generateCSV 函数
 function generateCSV(data, headers) {
-    // 对表头进行处理
-    const headerRow = Object.keys(headers).map(key => sanitizeCSVField(headers[key])).join(',');
-    
-    // 对每一行数据的每一个字段进行安全净化处理
-    const rows = data.map(item => {
-        return Object.values(item).map(val => sanitizeCSVField(val)).join(',');
-    });
-
-    return `${headerRow}\n${rows.join('\n')}`;
+  const header = Object.values(headers).map(sanitizeCSVField).join(',');
+  const rows = data.map(row => Object.values(row).map(sanitizeCSVField).join(','));
+  return [header, ...rows].join('\n');
 }
 
-// 初始化
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', function() {
-    setTimeout(init, 100);
+window.exportToCSV = function() {
+  const currentLang = window.getCurrentLanguage?.() || 'en';
+  const translate = (k, f) => window.t?.(k) || f;
+  const headers = {
+    prodID: translate('products.exportHeaders.prodID','Product ID'),
+    prodName: translate('products.exportHeaders.prodName','Product Name'),
+    prodDesc: translate('products.exportHeaders.prodDesc','Description'),
+    prodCat: translate('products.exportHeaders.prodCategory','Category'),
+    prodPrice: translate('products.exportHeaders.prodPrice','Price'),
+    prodSold: translate('products.exportHeaders.QtySold','Stock')
+  };
+  const data = products.map(p => ({
+    prodID: p.prodID,
+    prodName: window.translateProductName?.(p.prodName)||p.prodName,
+    prodDesc: window.translateProductDescription?.(p.prodDesc)||p.prodDesc,
+    prodCat: window.translateProductCategory?.(p.prodCat)||p.prodCat,
+    prodPrice: p.prodPrice.toFixed(2),
+    prodSold: p.prodSold
+  }));
+  const csv = generateCSV(data, headers);
+  const BOM = new Uint8Array([0xEF,0xBB,0xBF]);
+  const blob = new Blob([BOM, csv], {type:'text/csv;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = currentLang === 'zh' || currentLang === 'zhTW' ? 'biztrack_产品表.csv' : 'biztrack_product_table.csv';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+};
+
+// ========== 搜索 & 排序 ==========
+function debounce(fn, d=250) { let t; return (...a)=>{clearTimeout(t);t=setTimeout(()=>fn(...a),d);}; }
+
+window.performSearch = function() {
+  const kw = document.getElementById("searchInput").value.trim().toLowerCase();
+  if (!kw) return window.renderProducts(products);
+  const filtered = products.filter(p =>
+    [p.prodID, p.prodName, p.prodDesc, p.prodCat, String(p.prodPrice), String(p.prodSold)]
+      .some(x => x.toLowerCase().includes(kw))
+  );
+  window.renderProducts(filtered);
+};
+
+window.sortTable = function(col) {
+  const tbody = document.getElementById("tableBody");
+  const rows = Array.from(tbody.querySelectorAll("tr"));
+  const num = col === "prodPrice" || col === "prodSold";
+  rows.sort((a, b) => {
+    const av = a.dataset[col] ?? '';
+    const bv = b.dataset[col] ?? '';
+    if (num) {
+      return parseFloat(av) - parseFloat(bv);
+    }
+    return String(av).localeCompare(String(bv), undefined, { numeric: true, sensitivity: 'base' });
   });
-} else {
-  setTimeout(init, 100);
+  tbody.replaceChildren(...rows);
+};
+
+// ========== 初始化（只执行一次，时序正确） ==========
+function init() {
+  document.getElementById("product-name")?.addEventListener("change", window.syncCategoryWithSelectedName);
+  loadProductsFromStorage();
+  window.renderProducts(products);
+  window.addEventListener('languageChanged', () => window.renderProducts(products));
+  window.syncProductsToDb("sync", {prodID:"all-products"});
+  if (typeof window.addGuideButton === 'function') {
+    window.addGuideButton('products');
+  }
+  document.getElementById("searchInput")?.addEventListener("input", debounce(window.performSearch));
 }
 
+// 只在 DOM 就绪执行一次
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", init);
+} else {
+  init();
+}

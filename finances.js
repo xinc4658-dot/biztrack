@@ -1,4 +1,6 @@
 // finances.js
+import { escapeHTML, replaceParams } from './i18n/utils.js';
+
 function escapeCSVValue(value) {
     const text = String(value ?? "");
     if (/[",\n\r]/.test(text)) {
@@ -7,8 +9,8 @@ function escapeCSVValue(value) {
     return text;
 }
 
-function translate(key, fallback) {
-    return window.t ? window.t(key) : fallback;
+function translate(key, fallback, params = {}) {
+    return window.t ? window.t(key, params) : fallback;
 }
 
 function translateExpenseCategoryForExport(category) {
@@ -31,24 +33,24 @@ function debounce(fn, delay = 250) {
 }
 
 
-function openSidebar() {
+window.openSidebar = function() {
     var side = document.getElementById('sidebar');
     side.style.display = (side.style.display === "block") ? "none" : "block";
 }
 
-function closeSidebar() {
+window.closeSidebar = function() {
     document.getElementById('sidebar').style.display = 'none';
 }
 
 
-function openForm() {
+window.openForm = function() {
     var form = document.getElementById("transaction-form")
     console.log('Form display before toggle:', form.style.display);
     form.style.display = (form.style.display === "block") ? "none" : "block";
     console.log('Form display after toggle:', form.style.display);
 }
 
-function closeForm() {
+window.closeForm = function() {
     document.getElementById("transaction-form").style.display = "none";
 }
 
@@ -139,7 +141,7 @@ function initTransactionDatePicker() {
     });
 }
 
-window.onload = function () {
+document.addEventListener('DOMContentLoaded', function() {
     console.log('finances.js loaded');
     console.log('addOrUpdate function:', typeof addOrUpdate);
     console.log('newTransaction function:', typeof newTransaction);
@@ -221,7 +223,7 @@ window.onload = function () {
     if (typeof window.addGuideButton === 'function') {
         window.addGuideButton('expenses');
     }
-}
+});
 
 function handleQuickAddOpen() {
     const params = new URLSearchParams(window.location.search);
@@ -234,15 +236,14 @@ function handleQuickAddOpen() {
     form.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
-function addOrUpdate(event) {
-    event.preventDefault();
+window.addOrUpdate = function(event) {
     const type = document.getElementById("submitBtn").textContent.trim();
     const addText = translate('expenses.add', 'Add');
     const updateText = translate('common.update', 'Update');
     const saveText = translate('expenses.save', 'Save');
 
     if (type === addText || type === saveText) {
-        newTransaction(event);
+        newTransaction();
     } else if (type === updateText) {
         const trId = document.getElementById("tr-id").value;
         updateTransaction(+trId);
@@ -266,13 +267,12 @@ function updateSubmitButtonText() {
 }
 
 
-function newTransaction(event) {
-    event.preventDefault();
+window.newTransaction = function() {
     const trDateInput = document.getElementById("tr-date");
-    const trDate = trDateInput.value;
-    const trCategory = document.getElementById("tr-category").value;
-    const trAmount = parseFloat(document.getElementById("tr-amount").value);
-    const trNotes = document.getElementById("tr-notes").value;
+    const trDate = trDateInput.value.trim();
+    const trCategory = document.getElementById("tr-category").value.trim();
+    const trAmount = parseFloat(document.getElementById("tr-amount").value.trim());
+    const trNotes = document.getElementById("tr-notes").value.trim();
 
     // 调试信息
     console.log('trDate:', trDate);
@@ -280,9 +280,21 @@ function newTransaction(event) {
     console.log('trAmount:', trAmount);
     console.log('trNotes:', trNotes);
 
-    // 检查日期是否为空
-    if (!trDate) {
-        alert(window.t("common.selectDate"));
+    const trDateLabel = (translate('history.fieldTrDate', 'Date')).replace(/[:：]\s*$/, '');
+    const trCategoryLabel = (translate('history.fieldTrCategory', 'Category')).replace(/[:：]\s*$/, '');
+    const trAmountLabel = (translate('history.fieldTrAmount', 'Amount')).replace(/[:：]\s*$/, '');
+    const trNotesLabel = (translate('history.fieldTrNotes', 'Notes')).replace(/[:：]\s*$/, '');
+
+    if (!trDate || !trCategory || !trNotes || isNaN(trAmount)) {
+        alert(translate("common.fillAllFields", "Please fill in all required fields.") || "Please fill in all required fields.");
+        return;
+    }
+    if (isNaN(trAmount)) {
+        alert(translate("common.invalidNumber", `Please enter a valid number for ${trAmountLabel}`, {field: trAmountLabel}) || `Please enter a valid number for ${trAmountLabel}`);
+        return;
+    }
+    if (trAmount < 0) {
+        alert(translate("common.invalidPositive", `Please enter a positive number for ${trAmountLabel}`, {field: trAmountLabel}) || `Please enter a positive number for ${trAmountLabel}`);
         return;
     }
 
@@ -371,8 +383,8 @@ function renderTransactions(transactions) {
             <td class="tr-amount">${formattedAmount}</td>
             <td>${safeNotes}</td>
             <td class="action">
-                <button title="${window.t ? window.t(`common.edit`) : `Edit`}" onclick="editRow('${transaction.trID}')" class="edit-icon fa-solid fa-pen-to-square" aria-label="${window.t ? window.t(`common.edit`) : `Edit`}"></button>
-                <button title="${window.t ? window.t(`common.delete`) : `Delete`}" onclick="deleteTransaction('${transaction.trID}')" class="delete-icon fas fa-trash-alt" aria-label="${window.t ? window.t(`common.delete`) : `Delete`}"></button>
+                <button title="${window.t?.(`common.edit`) || `Edit`}" onclick="editRow('${transaction.trID}')" class="edit-icon fa-solid fa-pen-to-square" aria-label="${window.t?.(`common.edit`) || `Edit`}"></button>
+                <button title="${window.t?.(`common.delete`) || `Delete`}" onclick="deleteTransaction('${transaction.trID}')" class="delete-icon fas fa-trash-alt" aria-label="${window.t?.(`common.delete`) || `Delete`}"></button>
             </td> 
         `;
         transactionTableBody.appendChild(transactionRow);
@@ -392,7 +404,7 @@ function displayExpenses() {
     `;
 }
 
-function editRow(trID) {
+window.editRow = function(trID) {
     const trToEdit = transactions.find(transaction => transaction.trID == trID);
     
     document.getElementById("tr-id").value = trToEdit.trID;      
@@ -407,7 +419,7 @@ function editRow(trID) {
     document.getElementById("transaction-form").style.display = "block";
   }
   
-function deleteTransaction(trID) {
+window.deleteTransaction = function(trID) {
     const indexToDelete = transactions.findIndex(transaction => transaction.trID == trID);
 
     if (indexToDelete !== -1) {
@@ -421,17 +433,42 @@ function deleteTransaction(trID) {
     }
 }
 
-  function updateTransaction(trID) {
+  window.updateTransaction = function(trID) {
     const indexToUpdate = transactions.findIndex(transaction => transaction.trID === trID);
 
     if (indexToUpdate !== -1) {
         const beforeTransaction = { ...transactions[indexToUpdate] };
+        
+        // 获取表单数据
+        const trDate = document.getElementById("tr-date").value.trim();
+        const trCategory = document.getElementById("tr-category").value.trim();
+        const trAmount = parseFloat(document.getElementById("tr-amount").value.trim());
+        const trNotes = document.getElementById("tr-notes").value.trim();
+
+        const trDateLabel = (translate('history.fieldTrDate', 'Date')).replace(/[:：]\s*$/, '');
+        const trCategoryLabel = (translate('history.fieldTrCategory', 'Category')).replace(/[:：]\s*$/, '');
+        const trAmountLabel = (translate('history.fieldTrAmount', 'Amount')).replace(/[:：]\s*$/, '');
+        const trNotesLabel = (translate('history.fieldTrNotes', 'Notes')).replace(/[:：]\s*$/, '');
+
+        if (!trDate || !trCategory || !trNotes || isNaN(trAmount)) {
+            alert(translate("common.fillAllFields", "Please fill in all required fields.") || "Please fill in all required fields.");
+            return;
+        }
+        if (isNaN(trAmount)) {
+            alert(translate("common.invalidNumber", `Please enter a valid number for ${trAmountLabel}`, {field: trAmountLabel}) || `Please enter a valid number for ${trAmountLabel}`);
+            return;
+        }
+        if (trAmount < 0) {
+            alert(translate("common.invalidPositive", `Please enter a positive number for ${trAmountLabel}`, {field: trAmountLabel}) || `Please enter a positive number for ${trAmountLabel}`);
+            return;
+        }
+
         const updatedTransaction = {
             trID: trID,
-            trDate: document.getElementById("tr-date").value,
-            trCategory: document.getElementById("tr-category").value,
-            trAmount: parseFloat(document.getElementById("tr-amount").value),
-            trNotes: document.getElementById("tr-notes").value,
+            trDate: trDate,
+            trCategory: trCategory,
+            trAmount: trAmount,
+            trNotes: trNotes,
         };
 
         transactions[indexToUpdate] = updatedTransaction;
@@ -447,7 +484,7 @@ function deleteTransaction(trID) {
     }
 }
 
-function sortTable(column) {
+window.sortTable = function(column) {
     const tbody = document.getElementById("tableBody");
     const rows = Array.from(tbody.querySelectorAll("tr"));
 
@@ -502,7 +539,7 @@ function performSearch() {
 }
 
 
-function exportToCSV() {
+window.exportToCSV = function() {
     const transactionsToExport = transactions.map(transaction => {
         return {
             trID: transaction.trID,
@@ -535,8 +572,9 @@ function exportToCSV() {
   
     const link = document.createElement('a');
     link.href = window.URL.createObjectURL(blob);
-    const filenameKey = currentLanguage === 'zh' ? 'expenses.exportFilenameZh' : 'expenses.exportFilenameEn';
-    link.download = translate(filenameKey, currentLanguage === 'zh' ? 'biztrack_支出表.csv' : 'biztrack_expense_table.csv');
+    // 直接根据当前语言设置文件名，不使用translate函数
+    const filename = currentLanguage === 'zh' ? 'biztrack_支出表.csv' : 'biztrack_expense_table.csv';
+    link.download = filename;
   
     document.body.appendChild(link);
     link.click();
@@ -545,7 +583,7 @@ function exportToCSV() {
 }
   
 // 新增一个专门用来净化 CSV 字段的辅助函数
-function sanitizeCSVField(value) {
+window.sanitizeCSVField = function(value) {
     // 将 null、undefined 等转为空字符串，其他转为字符串
     let strValue = value === null || value === undefined ? "" : String(value);
 
@@ -566,7 +604,7 @@ function sanitizeCSVField(value) {
 }
 
 // 替换原有的 generateCSV 函数
-function generateCSV(data, headers) {
+window.generateCSV = function(data, headers) {
     // 对表头进行处理
     const headerRow = Object.keys(headers).map(key => sanitizeCSVField(headers[key])).join(',');
     

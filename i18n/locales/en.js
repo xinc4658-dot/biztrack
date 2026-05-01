@@ -73,6 +73,27 @@ export const en = {
       yAxis: "Cumulative Units Sold"
     }
   },
+  balance: {
+    mainTitle: "Balance Analytics",
+    trendTitle: "Monthly Revenue, Expenses & Net Balance",
+    marginTitle: "Monthly Net Margin (%)",
+    salesCategoryTitle: "Units sold by product category",
+    expensesTitle: "Expenses",
+    trendFormula: "Formula:\nNet Balance = Revenue - Expenses",
+    marginFormula: "Formula:\nNet Margin (%) = ((Revenue - Expenses) / Revenue) x 100\nIf Revenue = 0, Net Margin is set to 0%.",
+    chart: {
+      revenue: "Revenue",
+      expenses: "Expenses",
+      net: "Net Balance",
+      xAxis: "Month",
+      yAxis: "Amount ($)",
+      margin: "Net Margin %",
+      marginXAxis: "Month",
+      marginYAxis: "Margin (%)",
+      salesSeriesName: "Units sold",
+      salesAxisTitle: "Cumulative units sold"
+    }
+  },
   products: {
     addProduct: "Add Product",
     downloadCSV: "Download CSV",
@@ -135,6 +156,7 @@ export const en = {
     exportCSV: "Export to CSV",
     orderId: "Order ID:",
     orderDate: "Order Date:",
+    orderDatePlaceholder: "YYYY-MM-DD",
     itemName: "Item Name:",
     chooseItem: "Choose an item",
     itemPrice: "Item Price:",
@@ -174,7 +196,13 @@ export const en = {
     delete: "Delete",
     save: "Save",
     cancel: "Cancel",
-    totalExpenses: "Total Expenses:"
+    totalExpenses: "Total Expenses:",
+    datePlaceholder: "YYYY-MM-DD",
+    exportId: "Transaction ID",
+    exportDate: "Transaction Date",
+    exportCategory: "Category",
+    exportAmount: "Amount",
+    exportNotes: "Notes"
   },
   common: {
     search: "Search",
@@ -186,7 +214,15 @@ export const en = {
     orderIdExists: "Order ID already exists. Please use a unique ID.",
     selectDate: "Please select a date",
     required: "Please fill in {field}",
-    invalidNumber: "Please enter a valid number for {field}"
+    requiredField: "Please fill in this field",
+    fillAllFields: "Please fill in all required fields.",
+    invalidNumber: "Please enter a valid number for {field}",
+    invalidDate: "Please enter a valid date",
+    invalidPositive: "Please enter a positive number for {field}",
+    today: "Today",
+    clear: "Clear",
+    update: "Update",
+    save: "Save"
   },
   help: {
     title: "Using BizTrack: A Quick Guide",
@@ -309,6 +345,7 @@ export const en = {
     manageCookies: "Manage Cookies", // 【新增这一行】
     cookieMessage: "We use essential cookies and local storage to ensure the core functionality of BizTrack.",
     policyLink: "Privacy Policy",
+    close: "Close",
     acceptAll: "Accept All",
     rejectAll: "Reject All",
     necessaryOnly: "Necessary Only",

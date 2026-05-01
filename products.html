@@ -113,7 +113,7 @@
                 </div>
             </div>
             <div class="form-popup">
-                <form class="form-container" id="product-form" onsubmit="addOrUpdate(event)">
+                <form class="form-container" id="product-form" onsubmit="addOrUpdate(event)" novalidate>
                     <div class="form-columns">
                         <div class="first-col">
                             <label for="product-id"><b data-i18n="products.productId">Product ID: </b></label>
@@ -204,6 +204,6 @@
     <script src="./firebase.js"></script>
     <!-- 替换为新模块化i18n -->
     <script type="module" src="./i18n/index.js"></script>
-    <script src="./products.js" defer></script>
+    <script type="module" src="./products.js"></script>
 </body>
 </html>

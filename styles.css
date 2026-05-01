@@ -465,7 +465,7 @@ label {
     padding-top: 0.25rem;
     font-size: 0.9rem;
     font-weight: 600;
-    color: var(--blue-color);
+    color: #1a5a7a;
     text-decoration: none;
     align-self: flex-start;
 }
