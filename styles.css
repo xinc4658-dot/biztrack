@@ -1037,3 +1037,22 @@ select:focus {
 .sidebar .sidebar-nav li a span {
     pointer-events: none;
 }
+
+/* ———— 输入框/下拉框 选中高亮样式（修复Tab蓝色标记） ———— */
+input:focus,
+select:focus,
+textarea:focus {
+  /* 核心：蓝色高亮边框（标准网页色） */
+  outline: none;
+  border: 2px solid #007bff !important;
+  /* 柔和阴影，提升质感 */
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25) !important;
+  /* 平滑过渡动画 */
+  transition: all 0.2s ease;
+}
+
+/* 按钮键盘选中高亮 */
+button:focus-visible {
+  outline: 2px solid #007bff !important;
+  outline-offset: 2px;
+}

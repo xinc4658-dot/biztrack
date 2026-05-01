@@ -181,34 +181,23 @@ function calculateCategoryExpenses(expenses) {
 }
 
 function getLanguage() {
-  return localStorage.getItem("bizTrackLanguage") || "en";
+  return window.getCurrentLanguage ? window.getCurrentLanguage() : localStorage.getItem("bizTrackLanguage") || "en";
+}
+
+function translate(key, fallback) {
+  return window.t ? window.t(key) : fallback;
 }
 
 function setPageTexts(lang) {
-  const labels = {
-    en: {
-      mainTitle: "Balance Analytics",
-      trendTitle: "Monthly Revenue, Expenses & Net Balance",
-      marginTitle: "Monthly Net Margin (%)",
-      salesCategoryTitle: "Units sold by product category",
-      expensesTitle: "Expenses",
-      trendFormula: "Formula:\nNet Balance = Revenue - Expenses",
-      marginFormula:
-        "Formula:\nNet Margin (%) = ((Revenue - Expenses) / Revenue) x 100\nIf Revenue = 0, Net Margin is set to 0%.",
-    },
-    zh: {
-      mainTitle: "余额分析",
-      trendTitle: "月度收入、支出与净余额",
-      marginTitle: "月度净收益率（%）",
-      salesCategoryTitle: "按产品类别销售件数",
-      expensesTitle: "支出",
-      trendFormula: "公式：\n净余额 = 收入 - 支出",
-      marginFormula:
-        "公式：\n净收益率（%）= ((收入 - 支出) / 收入) x 100\n当收入为 0 时，净收益率按 0% 处理。",
-    },
+  const chosen = {
+    mainTitle: translate('balance.mainTitle', 'Balance Analytics'),
+    trendTitle: translate('balance.trendTitle', 'Monthly Revenue, Expenses & Net Balance'),
+    marginTitle: translate('balance.marginTitle', 'Monthly Net Margin (%)'),
+    salesCategoryTitle: translate('balance.salesCategoryTitle', 'Units sold by product category'),
+    expensesTitle: translate('balance.expensesTitle', 'Expenses'),
+    trendFormula: translate('balance.trendFormula', 'Formula:\nNet Balance = Revenue - Expenses'),
+    marginFormula: translate('balance.marginFormula', 'Formula:\nNet Margin (%) = ((Revenue - Expenses) / Revenue) x 100\nIf Revenue = 0, Net Margin is set to 0%.'),
   };
-
-  const chosen = labels[lang] || labels.en;
   const mainTitle = document.getElementById("balance-main-title");
   const trendTitle = document.getElementById("balance-trend-title");
   const marginTitle = document.getElementById("balance-margin-title");
@@ -229,24 +218,13 @@ function setPageTexts(lang) {
 }
 
 function renderTrendChart(monthlyData, lang) {
-  const textMap = {
-    en: {
-      revenue: "Revenue",
-      expenses: "Expenses",
-      net: "Net Balance",
-      xAxis: "Month",
-      yAxis: "Amount ($)",
-    },
-    zh: {
-      revenue: "收入",
-      expenses: "支出",
-      net: "净余额",
-      xAxis: "月份",
-      yAxis: "金额 ($)",
-    },
+  const t = {
+    revenue: translate('balance.chart.revenue', 'Revenue'),
+    expenses: translate('balance.chart.expenses', 'Expenses'),
+    net: translate('balance.chart.net', 'Net Balance'),
+    xAxis: translate('balance.chart.xAxis', 'Month'),
+    yAxis: translate('balance.chart.yAxis', 'Amount ($)'),
   };
-
-  const t = textMap[lang] || textMap.en;
   const categories = monthlyData.map(function (item) {
     return localMonthLabel(item.month, lang);
   });
@@ -302,20 +280,11 @@ function renderTrendChart(monthlyData, lang) {
 }
 
 function renderMarginChart(monthlyData, lang) {
-  const textMap = {
-    en: {
-      margin: "Net Margin %",
-      xAxis: "Month",
-      yAxis: "Margin (%)",
-    },
-    zh: {
-      margin: "净收益率 %",
-      xAxis: "月份",
-      yAxis: "收益率 (%)",
-    },
+  const t = {
+    margin: translate('balance.chart.margin', 'Net Margin %'),
+    xAxis: translate('balance.chart.marginXAxis', 'Month'),
+    yAxis: translate('balance.chart.marginYAxis', 'Margin (%)'),
   };
-
-  const t = textMap[lang] || textMap.en;
   const categories = monthlyData.map(function (item) {
     return localMonthLabel(item.month, lang);
   });
@@ -386,40 +355,23 @@ function renderMarginChart(monthlyData, lang) {
 }
 
 function renderSalesCategoryChart(orders, products, lang) {
-  const categoryTranslations = {
-    en: {
-      "Home decor": "Home decor",
-      Accessories: "Accessories",
-      Apparel: "Apparel",
-      Clothing: "Clothing",
-      Hats: "Hats",
-      Drinkware: "Drinkware",
-      Bags: "Bags",
-    },
-    zh: {
-      "Home decor": "家居装饰",
-      Accessories: "配饰",
-      Apparel: "服装",
-      Clothing: "服装",
-      Hats: "帽子",
-      Drinkware: "饮具",
-      Bags: "包袋",
-    },
+  const categoryKeyMap = {
+    'Home decor': 'homeDecor',
+    Accessories: 'accessories',
+    Apparel: 'apparel',
+    Clothing: 'clothing',
+    Hats: 'hats',
+    Drinkware: 'drinkware',
+    Bags: 'bags',
   };
 
-  const chartNames = {
-    en: "Units sold",
-    zh: "销售件数",
-  };
-
-  const axisTitle = {
-    en: "Cumulative units sold",
-    zh: "累计销售件数",
-  };
+  const chartName = translate('balance.chart.salesSeriesName', 'Units sold');
+  const axisTitle = translate('balance.chart.salesAxisTitle', 'Cumulative units sold');
 
   const raw = calculateCategoryUnitsSoldFromOrders(orders, products);
   const labels = PRODUCT_CATEGORY_ORDER.map(function (key) {
-    return (categoryTranslations[lang] && categoryTranslations[lang][key]) || key;
+    const transKey = categoryKeyMap[key] || key.toLowerCase().replace(/\s+/g, '');
+    return translate(`products.${transKey}`, key);
   });
   const data = PRODUCT_CATEGORY_ORDER.map(function (key) {
     return raw[key] != null ? raw[key] : 0;
@@ -475,26 +427,18 @@ function renderSalesCategoryChart(orders, products, lang) {
 }
 
 function renderExpenseCategoryChart(expenses, lang) {
-  const expCategoryTranslations = {
-    en: {
-      Rent: "Rent",
-      "Order Fulfillment": "Order Fulfillment",
-      Utilities: "Utilities",
-      Supplies: "Supplies",
-      Miscellaneous: "Miscellaneous",
-    },
-    zh: {
-      Rent: "租金",
-      "Order Fulfillment": "订单履行",
-      Utilities: "公用事业",
-      Supplies: "用品",
-      Miscellaneous: "杂项",
-    },
+  const categoryKeyMap = {
+    Rent: 'rent',
+    'Order Fulfillment': 'orderFulfillment',
+    Utilities: 'utilities',
+    Supplies: 'supplies',
+    Miscellaneous: 'miscellaneous',
   };
 
   const raw = calculateCategoryExpenses(expenses);
   const labels = Object.keys(raw).map(function (key) {
-    return (expCategoryTranslations[lang] && expCategoryTranslations[lang][key]) || key;
+    const transKey = categoryKeyMap[key] || key.toLowerCase().replace(/\s+/g, '');
+    return translate(`expenses.${transKey}`, key);
   });
 
   const options = {
@@ -577,6 +521,10 @@ window.addEventListener("storage", function (event) {
   if (event.key === "bizTrackLanguage") {
     renderBalanceCharts();
   }
+});
+
+window.addEventListener("languageChanged", function () {
+  renderBalanceCharts();
 });
 
 window.calculateCategoryUnitsSoldFromOrders = calculateCategoryUnitsSoldFromOrders;

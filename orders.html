@@ -100,6 +100,7 @@
                     <select id="languageSelector" aria-label="Select language">
                         <option value="en">English</option>
                         <option value="zh">中文</option>
+                        <option value="zhTW">繁體中文</option>
                     </select>
                 </div>
             </div>
@@ -123,7 +124,8 @@
                             <input type="text" id="order-id" placeholder="1001" required>
 
                             <label for="order-date"><b data-i18n="orders.orderDate">Order Date: </b></label>
-                            <input type="text" id="order-date" placeholder="YYYY-MM-DD" required>
+                            <!-- 【修改】添加 data-i18n-placeholder -->
+                            <input type="text" id="order-date" placeholder="YYYY-MM-DD" data-i18n-placeholder="orders.orderDatePlaceholder" required>
 
                             <label for="item-name"><b data-i18n="orders.itemName">Item Name: </b></label>
                             <select name="item-name" id="item-name" required>
@@ -226,9 +228,10 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
     <script src="./firebase.js"></script>
-    <script src="./js/i18n.js"></script>
+    <!-- 【修改】确保 i18n 先加载 -->
+    <script type="module" src="./i18n/index.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/zh.js"></script>
-    <script src="./orders.js"></script>
+    <script src="./orders.js" defer></script>
 </body>
 </html>

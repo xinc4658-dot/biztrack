@@ -1,4 +1,4 @@
-// SIDEBAR TOGGLE
+// Script.js
 
 function openSidebar() {
   var side = document.getElementById('sidebar');
@@ -47,7 +47,7 @@ function renderLowStockList(products) {
     .map(
       (item) => `
     <li class="low-stock-item">
-      <span class="low-stock-name">${escapeHtmlForText(item.name)}</span>
+      <span class="low-stock-name">${escapeHtmlForText(typeof window.translateProductName === 'function' ? window.translateProductName(item.name) : item.name)}</span>
       <span class="low-stock-qty" title="${escapeHtmlForText(t('products.productSold'))}">${item.stock}</span>
     </li>`
     )
@@ -233,21 +233,14 @@ function calculateCategoryExp(transactions) {
 }
 
 function updateCardContent() {
-  const currentLang = typeof currentLanguage !== 'undefined' ? currentLanguage : localStorage.getItem('bizTrackLanguage') || 'en';
+  const currentLang = window.getCurrentLanguage ? window.getCurrentLanguage() : localStorage.getItem('bizTrackLanguage') || 'en';
 
-  const cardTitleTranslations = {
-    en: {
-      revenue: 'Revenue',
-      expenses: 'Expenses',
-      balance: 'Balance',
-      orders: 'Orders',
-    },
-    zh: {
-      revenue: '收入',
-      expenses: '支出',
-      balance: '余额',
-      orders: '订单',
-    }
+  const translate = (key, fallback) => (window.t ? window.t(key) : fallback);
+  const cardTitles = {
+    revenue: translate('dashboard.revenue', 'Revenue'),
+    expenses: translate('dashboard.expenses', 'Expenses'),
+    balance: translate('dashboard.balance', 'Balance'),
+    orders: translate('dashboard.orders', 'Orders'),
   };
 
   const revDiv = document.getElementById('rev-amount');
@@ -259,7 +252,7 @@ function updateCardContent() {
     const titleElement = revDiv.querySelector('.title');
     const amountValueElement = revDiv.querySelector('.amount-value');
     if (titleElement) {
-      titleElement.textContent = cardTitleTranslations[currentLang].revenue;
+      titleElement.textContent = cardTitles.revenue;
     }
     if (!amountValueElement) {
       return;
@@ -269,21 +262,21 @@ function updateCardContent() {
   if (expDiv) {
     const titleElement = expDiv.querySelector('.title');
     if (titleElement) {
-      titleElement.textContent = cardTitleTranslations[currentLang].expenses;
+      titleElement.textContent = cardTitles.expenses;
     }
   }
 
   if (balDiv) {
     const titleElement = balDiv.querySelector('.title');
     if (titleElement) {
-      titleElement.textContent = cardTitleTranslations[currentLang].balance;
+      titleElement.textContent = cardTitles.balance;
     }
   }
 
   if (ordDiv) {
     const titleElement = ordDiv.querySelector('.title');
     if (titleElement) {
-      titleElement.textContent = cardTitleTranslations[currentLang].orders;
+      titleElement.textContent = cardTitles.orders;
     }
   }
 }
@@ -322,21 +315,14 @@ async function loadDashboardSummary() {
   const shippedOrders = revenues.filter((order) => order.orderStatus === "Shipped").length;
   const deliveredOrders = revenues.filter((order) => order.orderStatus === "Delivered").length;
 
-  const currentLang = localStorage.getItem('bizTrackLanguage') || 'en';
+  const currentLang = window.getCurrentLanguage ? window.getCurrentLanguage() : localStorage.getItem('bizTrackLanguage') || 'en';
+  const translate = (key, fallback) => (window.t ? window.t(key) : fallback);
 
   const cardTitleTranslations = {
-    en: {
-      revenue: 'Revenue',
-      expenses: 'Expenses',
-      balance: 'Balance',
-      orders: 'Orders',
-    },
-    zh: {
-      revenue: '收入',
-      expenses: '支出',
-      balance: '余额',
-      orders: '订单',
-    }
+    revenue: translate('dashboard.revenue', 'Revenue'),
+    expenses: translate('dashboard.expenses', 'Expenses'),
+    balance: translate('dashboard.balance', 'Balance'),
+    orders: translate('dashboard.orders', 'Orders'),
   };
 
   const revDiv = document.getElementById('rev-amount');
@@ -351,28 +337,28 @@ async function loadDashboardSummary() {
 
   if (revDiv) {
     revDiv.innerHTML = `
-      <span class="title">${cardTitleTranslations[currentLang].revenue}</span>
+      <span class="title">${cardTitleTranslations.revenue}</span>
       <span class="amount-value">$${totalRevenues.toFixed(2)}</span>
   `;
   }
 
   if (expDiv) {
     expDiv.innerHTML = `
-    <span class="title">${cardTitleTranslations[currentLang].expenses}</span>
+    <span class="title">${cardTitleTranslations.expenses}</span>
     <span class="amount-value">$${totalExpenses.toFixed(2)}</span>
   `;
   }
 
   if (balDiv) {
     balDiv.innerHTML = `
-    <span class="title">${cardTitleTranslations[currentLang].balance}</span>
+    <span class="title">${cardTitleTranslations.balance}</span>
     <span class="amount-value">$${totalBalance.toFixed(2)}</span>
   `;
   }
 
   if (ordDiv) {
     ordDiv.innerHTML = `
-    <span class="title">${cardTitleTranslations[currentLang].orders}</span>
+    <span class="title">${cardTitleTranslations.orders}</span>
     <span class="amount-value">${numOrders}</span>
   `;
   }
@@ -388,54 +374,48 @@ async function loadDashboardSummary() {
 
   const products = await getDataWithFallback('products', 'bizTrackProducts', DEFAULT_PRODUCTS);
   renderLowStockList(products);
+  if (typeof window.addGuideButton === 'function') {
+    window.addGuideButton('dashboard');
+  }
 }
 
 async function initializeChart() {
-  const currentLang = localStorage.getItem('bizTrackLanguage') || 'en';
-
-  const chartTranslations = {
-    en: {
-      seriesName: 'Units sold',
-      yAxis: 'Cumulative units sold',
-    },
-    zh: {
-      seriesName: '销售件数',
-      yAxis: '累计销售件数',
-    }
+  const currentLang = window.getCurrentLanguage ? window.getCurrentLanguage() : localStorage.getItem('bizTrackLanguage') || 'en';
+  const translate = (key, fallback) => (window.t ? window.t(key) : fallback);
+  const categoryKeyMap = {
+    'Home decor': 'homeDecor',
+    'Accessories': 'accessories',
+    'Apparel': 'apparel',
+    'Clothing': 'clothing',
+    'Hats': 'hats',
+    'Drinkware': 'drinkware',
+    'Bags': 'bags',
+  };
+  const expenseCategoryKeyMap = {
+    Rent: 'rent',
+    'Order Fulfillment': 'orderFulfillment',
+    Utilities: 'utilities',
+    Supplies: 'supplies',
+    Miscellaneous: 'miscellaneous',
   };
 
-  const categoryTranslations = {
-    en: {
-      'Home decor': 'Home decor',
-      'Accessories': 'Accessories',
-      'Apparel': 'Apparel',
-      'Clothing': 'Clothing',
-      'Hats': 'Hats',
-      'Drinkware': 'Drinkware',
-      'Bags': 'Bags',
-    },
-    zh: {
-      'Home decor': '家居装饰',
-      'Accessories': '配饰',
-      'Apparel': '服装',
-      'Clothing': '服装',
-      'Hats': '帽子',
-      'Drinkware': '饮具',
-      'Bags': '包袋',
-    }
+  const chartTranslations = {
+    seriesName: translate('dashboard.chart.seriesName', 'Units sold'),
+    yAxis: translate('dashboard.chart.yAxis', 'Cumulative units sold'),
   };
 
   const orders = await getDataWithFallback("orders", "bizTrackOrders", DEFAULT_ORDERS);
   const items = await getDataWithFallback("products", "bizTrackProducts", DEFAULT_PRODUCTS);
   const categoryUnits = calculateCategoryUnitsSoldFromOrders(orders, items);
-  const translatedCategories = PRODUCT_CATEGORY_ORDER.map((category) =>
-    (categoryTranslations[currentLang] && categoryTranslations[currentLang][category]) || category
-  );
+  const translatedCategories = PRODUCT_CATEGORY_ORDER.map((category) => {
+    const key = categoryKeyMap[category] || category.toLowerCase().replace(/\s+/g, '');
+    return translate(`products.${key}`, category);
+  });
   const data = PRODUCT_CATEGORY_ORDER.map((c) => (categoryUnits[c] != null ? categoryUnits[c] : 0));
 
   const barChartOptions = {
     series: [{
-      name: chartTranslations[currentLang].seriesName,
+      name: chartTranslations.seriesName,
       data: data,
     }],
     chart: {
@@ -472,7 +452,7 @@ async function initializeChart() {
     },
     yaxis: {
       title: {
-        text: chartTranslations[currentLang].yAxis,
+        text: chartTranslations.yAxis,
       },
       axisTicks: {
         show: false,
@@ -521,9 +501,10 @@ async function initializeChart() {
   const expItems = await getDataWithFallback("expenses", "bizTrackTransactions", DEFAULT_EXPENSES);
   const categoryExpData = calculateCategoryExp(expItems);
 
-  const translatedExpCategories = Object.keys(categoryExpData).map(category =>
-    (expCategoryTranslations[currentLang] && expCategoryTranslations[currentLang][category]) || category
-  );
+  const translatedExpCategories = Object.keys(categoryExpData).map(category => {
+    const key = expenseCategoryKeyMap[category] || category.toLowerCase().replace(/\s+/g, '');
+    return translate(`expenses.${key}`, category);
+  });
 
   const donutChartOptions = {
     series: Object.values(categoryExpData),
@@ -585,16 +566,28 @@ async function initializeChart() {
 
 window.onload = function () {
   (async () => {
-    await loadDashboardSummary();
-
+    // 先初始化 i18n
     if (typeof initI18n === 'function') {
       initI18n();
     } else {
-      setTimeout(function () {
-        if (typeof initI18n === 'function') {
-          initI18n();
-        }
-      }, 100);
+      await new Promise(resolve => {
+        const checkInit = setInterval(() => {
+          if (typeof initI18n === 'function') {
+            clearInterval(checkInit);
+            initI18n();
+            resolve();
+          }
+        }, 50);
+      });
     }
+
+    // i18n 初始化完成后再加载仪表盘数据
+    await loadDashboardSummary();
   })();
 };
+
+window.addEventListener('languageChanged', async () => {
+  if (typeof loadDashboardSummary === 'function') {
+    await loadDashboardSummary();
+  }
+});

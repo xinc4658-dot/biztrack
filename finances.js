@@ -1,3 +1,4 @@
+// finances.js
 function escapeCSVValue(value) {
     const text = String(value ?? "");
     if (/[",\n\r]/.test(text)) {
@@ -6,22 +7,20 @@ function escapeCSVValue(value) {
     return text;
 }
 
-function translateExpenseCategoryForExport(category) {
-    const currentLanguage = localStorage.getItem("bizTrackLanguage") || "en";
+function translate(key, fallback) {
+    return window.t ? window.t(key) : fallback;
+}
 
-    const categories = {
-        zh: {
-            "Rent": "租金",
-            "Utilities": "水电费",
-            "Supplies": "用品",
-            "Order Fulfillment": "订单履行",
-            "Miscellaneous": "杂项"
-        }
+function translateExpenseCategoryForExport(category) {
+    const translations = {
+        Rent: translate('expenses.rent', 'Rent'),
+        Utilities: translate('expenses.utilities', 'Utilities'),
+        Supplies: translate('expenses.supplies', 'Supplies'),
+        'Order Fulfillment': translate('expenses.orderFulfillment', 'Order Fulfillment'),
+        Miscellaneous: translate('expenses.miscellaneous', 'Miscellaneous'),
     };
 
-    return categories[currentLanguage] && categories[currentLanguage][category]
-        ? categories[currentLanguage][category]
-        : category;
+    return translations[category] || category;
 }
 function debounce(fn, delay = 250) {
     let timer;
@@ -72,6 +71,74 @@ async function syncExpensesToDb(action, record, beforeRecord) {
     }
 }
 
+function getCurrentLang() {
+    return window.getCurrentLanguage ? window.getCurrentLanguage() : localStorage.getItem('bizTrackLanguage') || 'en';
+}
+
+function initTransactionDatePicker() {
+    const currentLang = getCurrentLang();
+    const datePickerConfig = window.datePickerI18n ? window.datePickerI18n[currentLang] : null;
+    const trDateInput = document.getElementById('tr-date');
+
+    if (!trDateInput) return;
+
+    trDateInput.placeholder = translate('expenses.datePlaceholder', 'YYYY-MM-DD');
+
+    const createCustomButtons = (instance) => {
+        const buttonsContainer = document.createElement('div');
+        buttonsContainer.className = 'flatpickr-custom-buttons';
+        buttonsContainer.style.cssText = 'display: flex; justify-content: space-between; padding: 10px;';
+
+        const todayButton = document.createElement('button');
+        todayButton.type = 'button';
+        todayButton.className = 'flatpickr-today-button';
+        todayButton.textContent = datePickerConfig ? datePickerConfig.today : translate('common.today', 'Today');
+        todayButton.style.cssText = 'background: #4a90e2; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer;';
+        todayButton.onclick = () => {
+            instance.setDate(new Date());
+        };
+
+        const clearButton = document.createElement('button');
+        clearButton.type = 'button';
+        clearButton.className = 'flatpickr-clear-button';
+        clearButton.textContent = datePickerConfig ? datePickerConfig.clear : translate('common.clear', 'Clear');
+        clearButton.style.cssText = 'background: #e74c3c; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer;';
+        clearButton.onclick = () => {
+            instance.clear();
+        };
+
+        buttonsContainer.appendChild(todayButton);
+        buttonsContainer.appendChild(clearButton);
+        return buttonsContainer;
+    };
+
+    const trDateInputExisting = document.getElementById('tr-date');
+    if (trDateInputExisting._flatpickr) {
+        trDateInputExisting._flatpickr.destroy();
+    }
+
+    flatpickr(trDateInputExisting, {
+        dateFormat: 'Y-m-d',
+        locale: (currentLang === 'zh' || currentLang === 'zhTW') ? 'zh' : 'default',
+        allowInput: true,
+        onReady: function(selectedDates, dateStr, instance) {
+            const calendarContainer = instance.calendarContainer;
+            const buttonsContainer = createCustomButtons(instance);
+            calendarContainer.appendChild(buttonsContainer);
+        },
+        onChange: function(selectedDates, dateStr, instance) {
+            const todayButton = instance.calendarContainer.querySelector('.flatpickr-today-button');
+            const clearButton = instance.calendarContainer.querySelector('.flatpickr-clear-button');
+            if (todayButton) {
+                todayButton.textContent = datePickerConfig ? datePickerConfig.today : translate('common.today', 'Today');
+            }
+            if (clearButton) {
+                clearButton.textContent = datePickerConfig ? datePickerConfig.clear : translate('common.clear', 'Clear');
+            }
+        }
+    });
+}
+
 window.onload = function () {
     console.log('finances.js loaded');
     console.log('addOrUpdate function:', typeof addOrUpdate);
@@ -99,65 +166,7 @@ window.onload = function () {
     }
 
     // 初始化日期选择器
-    const trDateInput = document.getElementById('tr-date');
-    if (trDateInput) {
-        // 设置placeholder
-        trDateInput.placeholder = currentLanguage === 'zh' ? '年-月-日' : 'YYYY-MM-DD';
-
-        // 创建自定义按钮
-        const createCustomButtons = (instance) => {
-            const buttonsContainer = document.createElement('div');
-            buttonsContainer.className = 'flatpickr-custom-buttons';
-            buttonsContainer.style.cssText = 'display: flex; justify-content: space-between; padding: 10px;';
-
-            // 今天按钮
-            const todayButton = document.createElement('button');
-            todayButton.type = 'button';
-            todayButton.className = 'flatpickr-today-button';
-            todayButton.textContent = currentLanguage === 'zh' ? '今天' : 'Today';
-            todayButton.style.cssText = 'background: #4a90e2; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer;';
-            todayButton.onclick = () => {
-                instance.setDate(new Date());
-            };
-
-            // 清除按钮
-            const clearButton = document.createElement('button');
-            clearButton.type = 'button';
-            clearButton.className = 'flatpickr-clear-button';
-            clearButton.textContent = currentLanguage === 'zh' ? '清除' : 'Clear';
-            clearButton.style.cssText = 'background: #e74c3c; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer;';
-            clearButton.onclick = () => {
-                instance.clear();
-            };
-
-            buttonsContainer.appendChild(todayButton);
-            buttonsContainer.appendChild(clearButton);
-
-            return buttonsContainer;
-        };
-
-        flatpickr(trDateInput, {
-            dateFormat: 'Y-m-d',
-            locale: currentLanguage === 'zh' ? 'zh' : 'default',
-            allowInput: true,
-            onReady: function(selectedDates, dateStr, instance) {
-                const calendarContainer = instance.calendarContainer;
-                const buttonsContainer = createCustomButtons(instance);
-                calendarContainer.appendChild(buttonsContainer);
-            },
-            onChange: function(selectedDates, dateStr, instance) {
-                // 更新按钮文本
-                const todayButton = instance.calendarContainer.querySelector('.flatpickr-today-button');
-                const clearButton = instance.calendarContainer.querySelector('.flatpickr-clear-button');
-                if (todayButton) {
-                    todayButton.textContent = currentLanguage === 'zh' ? '今天' : 'Today';
-                }
-                if (clearButton) {
-                    clearButton.textContent = currentLanguage === 'zh' ? '清除' : 'Clear';
-                }
-            }
-        });
-    }
+    initTransactionDatePicker();
 
     const storedTransactions = localStorage.getItem("bizTrackTransactions");
     if (storedTransactions) {
@@ -209,6 +218,9 @@ window.onload = function () {
     renderTransactions(transactions);
     syncExpensesToDb("sync", { trID: "all-expenses" });
     handleQuickAddOpen();
+    if (typeof window.addGuideButton === 'function') {
+        window.addGuideButton('expenses');
+    }
 }
 
 function handleQuickAddOpen() {
@@ -225,9 +237,9 @@ function handleQuickAddOpen() {
 function addOrUpdate(event) {
     event.preventDefault();
     const type = document.getElementById("submitBtn").textContent.trim();
-    const addText = currentLanguage === 'zh' ? '添加' : 'Add';
-    const updateText = currentLanguage === 'zh' ? '更新' : 'Update';
-    const saveText = currentLanguage === 'zh' ? '保存' : 'Save';
+    const addText = translate('expenses.add', 'Add');
+    const updateText = translate('common.update', 'Update');
+    const saveText = translate('expenses.save', 'Save');
 
     if (type === addText || type === saveText) {
         newTransaction(event);
@@ -242,8 +254,8 @@ function updateSubmitButtonText() {
     const submitBtn = document.getElementById("submitBtn");
     if (submitBtn) {
         const currentText = submitBtn.textContent;
-        const addText = currentLanguage === 'zh' ? '添加' : 'Add';
-        const updateText = currentLanguage === 'zh' ? '更新' : 'Update';
+        const addText = translate('expenses.add', 'Add');
+        const updateText = translate('common.update', 'Update');
 
         if (currentText === 'Add' || currentText === '添加') {
             submitBtn.textContent = addText;
@@ -317,11 +329,11 @@ function newTransaction(event) {
 // 翻译类别
 function translateCategory(category) {
     const categoryTranslations = {
-        'Rent': currentLanguage === 'zh' ? '租金' : 'Rent',
-        'Utilities': currentLanguage === 'zh' ? '水电费' : 'Utilities',
-        'Supplies': currentLanguage === 'zh' ? '用品' : 'Supplies',
-        'Order Fulfillment': currentLanguage === 'zh' ? '订单履行' : 'Order Fulfillment',
-        'Miscellaneous': currentLanguage === 'zh' ? '杂项' : 'Miscellaneous'
+        'Rent': translate('expenses.rent', 'Rent'),
+        'Utilities': translate('expenses.utilities', 'Utilities'),
+        'Supplies': translate('expenses.supplies', 'Supplies'),
+        'Order Fulfillment': translate('expenses.orderFulfillment', 'Order Fulfillment'),
+        'Miscellaneous': translate('expenses.miscellaneous', 'Miscellaneous')
     };
     return categoryTranslations[category] || category;
 }
@@ -374,7 +386,7 @@ function displayExpenses() {
     const totalExpenses = transactions
         .reduce((total, transaction) => total + transaction.trAmount,0);
 
-    const totalExpensesText = currentLanguage === 'zh' ? '总支出: ' : 'Total Expenses: ';
+    const totalExpensesText = translate('expenses.totalExpenses', 'Total Expenses: ');
     resultElement.innerHTML = `
         <span>${totalExpensesText}$${totalExpenses.toFixed(2)}</span>
     `;
@@ -389,7 +401,7 @@ function editRow(trID) {
     document.getElementById("tr-amount").value = trToEdit.trAmount;
     document.getElementById("tr-notes").value = trToEdit.trNotes;
   
-    const updateText = currentLanguage === 'zh' ? '更新' : 'Update';
+    const updateText = translate('common.update', 'Update');
     document.getElementById("submitBtn").textContent = updateText;
 
     document.getElementById("transaction-form").style.display = "block";
@@ -430,7 +442,7 @@ function deleteTransaction(trID) {
         syncExpensesToDb("update", updatedTransaction, beforeTransaction);
 
         document.getElementById("transaction-form").reset();
-        const addText = currentLanguage === 'zh' ? '添加' : 'Add';
+        const addText = translate('expenses.add', 'Add');
         document.getElementById("submitBtn").textContent = addText;
     }
 }
@@ -501,27 +513,14 @@ function exportToCSV() {
         };
     });
   
-    const currentLanguage = localStorage.getItem('bizTrackLanguage') || 'en';
-
-    // 根据当前语言获取表头翻译
-    const headerTranslations = {
-        en: {
-            trID: 'Transaction ID',
-            trDate: 'Transaction Date',
-            trCategory: 'Category',
-            trAmount: 'Amount',
-            trNotes: 'Notes'
-        },
-        zh: {
-            trID: '交易ID',
-            trDate: '交易日期',
-            trCategory: '类别',
-            trAmount: '金额',
-            trNotes: '备注'
-        }
+    const currentLanguage = getCurrentLang();
+    const headers = {
+        trID: translate('expenses.exportId', 'Transaction ID'),
+        trDate: translate('expenses.exportDate', 'Transaction Date'),
+        trCategory: translate('expenses.exportCategory', 'Category'),
+        trAmount: translate('expenses.exportAmount', 'Amount'),
+        trNotes: translate('expenses.exportNotes', 'Notes'),
     };
-
-    const headers = headerTranslations[currentLanguage];
 
     const csvContent = generateCSV(transactionsToExport, headers);
   
@@ -536,7 +535,8 @@ function exportToCSV() {
   
     const link = document.createElement('a');
     link.href = window.URL.createObjectURL(blob);
-    link.download = currentLanguage === 'zh' ? 'biztrack_支出表.csv' : 'biztrack_expense_table.csv';
+    const filenameKey = currentLanguage === 'zh' ? 'expenses.exportFilenameZh' : 'expenses.exportFilenameEn';
+    link.download = translate(filenameKey, currentLanguage === 'zh' ? 'biztrack_支出表.csv' : 'biztrack_expense_table.csv');
   
     document.body.appendChild(link);
     link.click();

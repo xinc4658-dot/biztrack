@@ -1,3 +1,4 @@
+// orders.js
 function escapeCSVValue(value) {
     const text = String(value ?? "");
     if (/[",\n\r]/.test(text)) {
@@ -6,8 +7,12 @@ function escapeCSVValue(value) {
     return text;
 }
 
+function getCurrentLang() {
+    return window.getCurrentLanguage ? window.getCurrentLanguage() : localStorage.getItem('bizTrackLanguage') || 'en';
+}
+
 function translateOrderStatusForExport(status) {
-    const currentLanguage = localStorage.getItem("bizTrackLanguage") || "en";
+    const currentLanguage = getCurrentLang();
 
     const statuses = {
         zh: {
@@ -67,75 +72,74 @@ async function syncOrdersToDb(action, record, beforeRecord) {
     }
 }
 
-window.onload = function () {
-    // 等待i18n.js初始化完成
-    setTimeout(function() {
-        // 初始化日期选择器
-        const orderDateInput = document.getElementById('order-date');
-        if (orderDateInput) {
-            // 设置placeholder
-            orderDateInput.placeholder = currentLanguage === 'zh' ? '年-月-日' : 'YYYY-MM-DD';
+function createOrderDatePicker() {
+    const currentLang = getCurrentLang();
+    const datePickerConfig = window.datePickerI18n ? window.datePickerI18n[currentLang] : null;
+    const orderDateInput = document.getElementById('order-date');
 
-            // 创建自定义按钮
-            const createCustomButtons = (instance) => {
-                const buttonsContainer = document.createElement('div');
-                buttonsContainer.className = 'flatpickr-custom-buttons';
-                buttonsContainer.style.cssText = 'display: flex; justify-content: space-between; padding: 10px;';
+    if (!orderDateInput) return;
 
-                // 今天按钮
-                const todayButton = document.createElement('button');
-                todayButton.type = 'button';
-                todayButton.className = 'flatpickr-today-button';
-                todayButton.textContent = currentLanguage === 'zh' ? '今天' : 'Today';
-                todayButton.style.cssText = 'background: #4a90e2; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer;';
-                todayButton.onclick = () => {
-                    instance.setDate(new Date());
-                };
+    orderDateInput.placeholder = window.t ? window.t('orders.orderDatePlaceholder') : 'YYYY-MM-DD';
 
-                // 清除按钮
-                const clearButton = document.createElement('button');
-                clearButton.type = 'button';
-                clearButton.className = 'flatpickr-clear-button';
-                clearButton.textContent = currentLanguage === 'zh' ? '清除' : 'Clear';
-                clearButton.style.cssText = 'background: #e74c3c; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer;';
-                clearButton.onclick = () => {
-                    instance.clear();
-                };
+    const createCustomButtons = (instance) => {
+        const buttonsContainer = document.createElement('div');
+        buttonsContainer.className = 'flatpickr-custom-buttons';
+        buttonsContainer.style.cssText = 'display: flex; justify-content: space-between; padding: 10px;';
 
-                buttonsContainer.appendChild(todayButton);
-                buttonsContainer.appendChild(clearButton);
+        const todayButton = document.createElement('button');
+        todayButton.type = 'button';
+        todayButton.className = 'flatpickr-today-button';
+        todayButton.textContent = datePickerConfig ? datePickerConfig.today : window.t('common.today') || 'Today';
+        todayButton.style.cssText = 'background: #4a90e2; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer;';
+        todayButton.onclick = () => instance.setDate(new Date());
 
-                return buttonsContainer;
-            };
+        const clearButton = document.createElement('button');
+        clearButton.type = 'button';
+        clearButton.className = 'flatpickr-clear-button';
+        clearButton.textContent = datePickerConfig ? datePickerConfig.clear : window.t('common.clear') || 'Clear';
+        clearButton.style.cssText = 'background: #e74c3c; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer;';
+        clearButton.onclick = () => instance.clear();
 
-            flatpickr(orderDateInput, {
-                dateFormat: 'Y-m-d',
-                locale: currentLanguage === 'zh' ? 'zh' : 'default',
-                allowInput: true,
-                onReady: function(selectedDates, dateStr, instance) {
-                    const calendarContainer = instance.calendarContainer;
-                    const buttonsContainer = createCustomButtons(instance);
-                    calendarContainer.appendChild(buttonsContainer);
-                },
-                onChange: function(selectedDates, dateStr, instance) {
-                    // 更新按钮文本
-                    const todayButton = instance.calendarContainer.querySelector('.flatpickr-today-button');
-                    const clearButton = instance.calendarContainer.querySelector('.flatpickr-clear-button');
-                    if (todayButton) {
-                        todayButton.textContent = currentLanguage === 'zh' ? '今天' : 'Today';
-                    }
-                    if (clearButton) {
-                        clearButton.textContent = currentLanguage === 'zh' ? '清除' : 'Clear';
-                    }
-                }
-            });
+        buttonsContainer.appendChild(todayButton);
+        buttonsContainer.appendChild(clearButton);
+        return buttonsContainer;
+    };
+
+    if (orderDateInput._flatpickr) {
+        orderDateInput._flatpickr.destroy();
+    }
+
+    flatpickr(orderDateInput, {
+        dateFormat: 'Y-m-d',
+        locale: (currentLang === 'zh' || currentLang === 'zhTW') ? 'zh' : 'default',
+        allowInput: true,
+        onReady: function(selectedDates, dateStr, instance) {
+            const calendarContainer = instance.calendarContainer;
+            const buttonsContainer = createCustomButtons(instance);
+            calendarContainer.appendChild(buttonsContainer);
+        },
+        onChange: function(selectedDates, dateStr, instance) {
+            const todayButton = instance.calendarContainer.querySelector('.flatpickr-today-button');
+            const clearButton = instance.calendarContainer.querySelector('.flatpickr-clear-button');
+            if (todayButton) {
+                todayButton.textContent = datePickerConfig ? datePickerConfig.today : window.t('common.today') || 'Today';
+            }
+            if (clearButton) {
+                clearButton.textContent = datePickerConfig ? datePickerConfig.clear : window.t('common.clear') || 'Clear';
+            }
         }
+    });
+}
 
-        const storedOrders = localStorage.getItem("bizTrackOrders");
-        if (storedOrders) {
-            orders = JSON.parse(storedOrders);
-        } else {
-            orders = [
+window.onload = function () {
+    // 初始化日期选择器
+    createOrderDatePicker();
+
+    const storedOrders = localStorage.getItem("bizTrackOrders");
+    if (storedOrders) {
+        orders = JSON.parse(storedOrders);
+    } else {
+        orders = [
             {
                 orderID: "1001",
                 orderDate: "2024-01-05",
@@ -191,16 +195,24 @@ window.onload = function () {
                 orderTotal: 37.90,
                 orderStatus: "Pending"
             },
-            ];
+        ];
 
-            localStorage.setItem("bizTrackOrders", JSON.stringify(orders));
-        }
+        localStorage.setItem("bizTrackOrders", JSON.stringify(orders));
+    }
 
-        renderOrders(orders);
-        syncOrdersToDb("sync", { orderID: "all-orders" });
-        handleQuickAddOpen();
-    }, 100);
+    renderOrders(orders);
+    syncOrdersToDb("sync", { orderID: "all-orders" });
+    handleQuickAddOpen();
+    if (typeof window.addGuideButton === 'function') {
+        window.addGuideButton('orders');
+    }
 }
+
+window.addEventListener('languageChanged', function () {
+    createOrderDatePicker();
+    renderOrders(orders);
+    displayRevenue();
+});
 
 function handleQuickAddOpen() {
     const params = new URLSearchParams(window.location.search);
@@ -238,6 +250,26 @@ function newOrder(event) {
   const orderTotal = ((itemPrice * qtyBought) + shipping + taxes);
   const orderStatus = document.getElementById("order-status").value;
 
+  if (!orderID) {
+    alert(window.t("common.required", { field: window.t('orders.orderId') }));
+    return;
+  }
+  if (!orderDate) {
+    alert(window.t("common.selectDate"));
+    return;
+  }
+  if (!itemName) {
+    alert(window.t("common.required", { field: window.t('orders.itemName') }));
+    return;
+  }
+  if (isNaN(itemPrice) || itemPrice <= 0) {
+    alert(window.t("common.invalidPositive", { field: window.t('orders.itemPrice') }));
+    return;
+  }
+  if (isNaN(qtyBought) || qtyBought <= 0) {
+    alert(window.t("common.invalidPositive", { field: window.t('orders.quantityBought') }));
+    return;
+  }
   if (isDuplicateID(orderID, null)) {
     alert(window.t("common.orderIdExists"));
     return;
@@ -266,36 +298,7 @@ function newOrder(event) {
 
 
 
-// 翻译订单状态
-function translateOrderStatus(status) {
-  if (!status) return status;
 
-  // 获取当前语言，优先使用i18n.js中的currentLanguage变量
-  let currentLang = 'en';
-  if (typeof currentLanguage !== 'undefined') {
-    currentLang = currentLanguage;
-  } else {
-    currentLang = localStorage.getItem('bizTrackLanguage') || 'en';
-  }
-
-  // 订单状态翻译映射
-  const translations = {
-    en: {
-      'Pending': 'Pending',
-      'Processing': 'Processing',
-      'Shipped': 'Shipped',
-      'Delivered': 'Delivered'
-    },
-    zh: {
-      'Pending': '待处理',
-      'Processing': '处理中',
-      'Shipped': '已发货',
-      'Delivered': '已送达'
-    }
-  };
-
-  return translations[currentLang][status] || status;
-}
 
 function renderOrders(orders) {
     const orderTableBody = document.getElementById("tableBody");
@@ -330,7 +333,7 @@ function renderOrders(orders) {
 
       // 翻译产品名称和订单状态 - 使用i18n.js中的函数
       const translatedName = typeof translateProductName === 'function' ? translateProductName(order.itemName) : order.itemName;
-      const translatedStatus = translateOrderStatus(order.orderStatus);
+      const translatedStatus = window.t ? window.t(`orders.${String(order.orderStatus).toLowerCase()}`) : order.orderStatus;
 
       // 【新增】对 itemName 进行转义
       const safeName = window.escapeHTML(translatedName);
@@ -366,15 +369,8 @@ function displayRevenue() {
         .reduce((total, order) => total + order.orderTotal, 0);
 
     // 获取当前语言，优先使用i18n.js中的currentLanguage变量
-    let currentLang = 'en';
-    if (typeof currentLanguage !== 'undefined') {
-      currentLang = currentLanguage;
-    } else {
-      currentLang = localStorage.getItem('bizTrackLanguage') || 'en';
-    }
-
-    // 翻译"总收入"文本
-    const totalRevenueText = currentLang === 'zh' ? '总收入' : 'Total Revenue';
+    const currentLang = getCurrentLang();
+    const totalRevenueText = window.t ? window.t('orders.totalRevenue') : 'Total Revenue';
 
     resultElement.innerHTML = `
         <span>${totalRevenueText}: $${totalRevenue.toFixed(2)}</span>
@@ -434,6 +430,22 @@ function updateOrder(orderID) {
             orderStatus: document.getElementById("order-status").value,
         };
 
+        if (!updatedOrder.orderID) {
+            alert(window.t("common.required", { field: window.t('orders.orderId') }));
+            return;
+        }
+        if (!updatedOrder.orderDate) {
+            alert(window.t("common.selectDate"));
+            return;
+        }
+        if (isNaN(updatedOrder.itemPrice) || updatedOrder.itemPrice <= 0) {
+            alert(window.t("common.invalidPositive", { field: window.t('orders.itemPrice') }));
+            return;
+        }
+        if (isNaN(updatedOrder.qtyBought) || updatedOrder.qtyBought <= 0) {
+            alert(window.t("common.invalidPositive", { field: window.t('orders.quantityBought') }));
+            return;
+        }
         if (isDuplicateID(updatedOrder.orderID, orderID)) {
             alert(window.t("common.orderIdExists"));
             return;
@@ -520,7 +532,7 @@ function exportToCSV() {
         return {
             orderID: order.orderID,
             orderDate: order.orderDate,
-            itemName: localStorage.getItem('bizTrackLanguage') === 'zh' && typeof translateProductName === 'function' ? translateProductName(order.itemName) : order.itemName,
+            itemName: typeof translateProductName === 'function' ? translateProductName(order.itemName) : order.itemName,
             itemPrice: order.itemPrice.toFixed(2),
             qtyBought: order.qtyBought,
             shipping: order.shipping.toFixed(2),
@@ -530,7 +542,7 @@ function exportToCSV() {
         };
     });
   
-    const currentLanguage = localStorage.getItem('bizTrackLanguage') || 'en';
+    const currentLanguage = getCurrentLang();
 
     // 根据当前语言获取表头翻译
     const headerTranslations = {
@@ -558,7 +570,7 @@ function exportToCSV() {
         }
     };
 
-    const headers = headerTranslations[currentLanguage];
+    const headers = headerTranslations[currentLanguage] || headerTranslations.en;
 
     const csvContent = generateCSV(ordersToExport, headers);
   
@@ -574,7 +586,9 @@ function exportToCSV() {
   
     const link = document.createElement('a');
     link.href = window.URL.createObjectURL(blob);
-    link.download = currentLanguage === 'zh' ? 'biztrack_订单表.csv' : 'biztrack_order_table.csv';
+    const filenameKey = currentLanguage === 'zh' ? 'orders.exportFilenameZh' : 'orders.exportFilenameEn';
+    const fileName = window.t ? window.t(filenameKey, currentLanguage === 'zh' ? 'biztrack_订单表.csv' : 'biztrack_order_table.csv') : (currentLanguage === 'zh' ? 'biztrack_订单表.csv' : 'biztrack_order_table.csv');
+    link.download = fileName;
   
     document.body.appendChild(link);
     link.click();
