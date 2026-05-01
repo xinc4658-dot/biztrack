@@ -354,6 +354,7 @@ export const zh = {
     thanks: "为了编码、混乱以及介于两者之间的一切，以及对Sam的衷心感谢！"
   },
   privacy: {
+    manageCookies: "管理 Cookie", // 【新增这一行】
     cookieMessage: "我们使用必要的 Cookie 和本地存储来确保 BizTrack 的核心功能。",
     policyLink: "隐私政策",
     acceptAll: "全部接受",

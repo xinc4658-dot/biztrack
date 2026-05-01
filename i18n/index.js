@@ -8,6 +8,15 @@ import { datePickerI18n } from './datePicker.js';
 const translations = { en, zh, zhTW };
 let currentLanguage = localStorage.getItem('bizTrackLanguage') || 'en';
 
+// 【新增】重置 Cookie 偏好并刷新页面
+window.resetCookieConsent = function() {
+    // 移除 localStorage 中的偏好记录
+    localStorage.removeItem('bizTrack_cookieChoice');
+    
+    // 刷新页面，刷新后由于没有了记录，initCookieBanner 会自动重新弹出
+    location.reload(); 
+};
+
 window.datePickerI18n = datePickerI18n;
 window.getCurrentLanguage = function () {
   return currentLanguage;
@@ -713,6 +722,61 @@ function updatePageTranslations() {
   });
 }
 
+// ==========================================
+// 隐私合规与 Cookie 横幅 （勿删）
+// ==========================================
+function initCookieBanner() {
+    if (!localStorage.getItem('bizTrack_cookieChoice')) {
+        const banner = document.createElement('div');
+        banner.id = 'cookie-compliance-banner';
+        
+        // 样式调整，z-index 设置为 10001 确保在用户引导蒙层之上
+        banner.style.cssText = `
+            position: fixed; bottom: 0; left: 0; width: 100%; 
+            background-color: #f8f9fa; color: #333; 
+            padding: 15px 20px; display: flex; flex-direction: row; justify-content: space-between; 
+            align-items: center; flex-wrap: wrap; gap: 15px; z-index: 10001; 
+            box-shadow: 0 -4px 15px rgba(0,0,0,0.1); 
+            font-family: 'Lato', sans-serif; font-size: 14px; box-sizing: border-box;
+        `;
+        
+        // 安全获取翻译文本，如果翻译还没加载，提供默认英文
+        const msg = window.t('privacy.cookieMessage') || 'We use cookies to ensure the core functionality of BizTrack.';
+        const policy = window.t('privacy.policyLink') || 'Privacy Policy';
+        const rejectAll = window.t('privacy.rejectAll') || 'Reject All';
+        const necessary = window.t('privacy.necessaryOnly') || 'Necessary Only';
+        const acceptAll = window.t('privacy.acceptAll') || 'Accept All';
+
+        banner.innerHTML = `
+            <div style="flex-grow: 1; text-align: left; min-width: 250px;">
+                <span data-i18n="privacy.cookieMessage">${msg}</span>
+                <a href="./privacy.html" style="color: #247BA0; text-decoration: underline; margin-left: 5px; font-weight: bold;" data-i18n="privacy.policyLink">${policy}</a>
+            </div>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <button id="reject-all-btn" style="background-color: transparent; border: 1px solid #dc3545; color: #dc3545; padding: 6px 14px; border-radius: 4px; cursor: pointer; white-space: nowrap;" data-i18n="privacy.rejectAll">${rejectAll}</button>
+                <button id="necessary-only-btn" style="background-color: transparent; border: 1px solid #6c757d; color: #6c757d; padding: 6px 14px; border-radius: 4px; cursor: pointer; white-space: nowrap;" data-i18n="privacy.necessaryOnly">${necessary}</button>
+                <button id="accept-all-btn" style="background-color: #249672; color: white; border: none; padding: 7px 18px; border-radius: 4px; cursor: pointer; font-weight: bold; white-space: nowrap;" data-i18n="privacy.acceptAll">${acceptAll}</button>
+            </div>
+        `;
+        document.body.appendChild(banner);
+
+        document.getElementById('reject-all-btn').addEventListener('click', () => {
+            localStorage.setItem('bizTrack_cookieChoice', 'rejected_all');
+            banner.style.display = 'none';
+        });
+
+        document.getElementById('necessary-only-btn').addEventListener('click', () => {
+            localStorage.setItem('bizTrack_cookieChoice', 'necessary_only');
+            banner.style.display = 'none';
+        });
+
+        document.getElementById('accept-all-btn').addEventListener('click', () => {
+            localStorage.setItem('bizTrack_cookieChoice', 'accepted_all');
+            banner.style.display = 'none';
+        });
+    }
+}
+
 // 立即初始化
 document.addEventListener('DOMContentLoaded', () => {
   window.changeLanguage(currentLanguage);
@@ -720,4 +784,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (sel) sel.value = currentLanguage;
   sel?.addEventListener('change', e => window.changeLanguage(e.target.value));
   window.addEventListener('languageChanged', refreshGuideText);
+  
+  // 【新增】在页面加载完成后调用横幅渲染函数
+  initCookieBanner();
 });
