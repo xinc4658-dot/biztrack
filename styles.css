@@ -1072,3 +1072,23 @@ button:focus-visible {
   outline: 2px solid #007bff !important;
   outline-offset: 2px;
 }
+/* Narrow screen sidebar drawer fix */
+@media (max-width: 1200px) {
+    .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 260px;
+        max-width: 82vw;
+        height: 100vh;
+        z-index: 9999;
+        background: var(--black-color);
+        overflow-y: auto;
+    }
+
+    .main-content {
+        margin-left: 0;
+        width: 100%;
+        max-width: 100%;
+    }
+}

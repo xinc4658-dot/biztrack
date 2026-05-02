@@ -591,3 +591,6 @@ window.addEventListener('languageChanged', async () => {
     await loadDashboardSummary();
   }
 });
+
+window.openSidebar = openSidebar;
+window.closeSidebar = closeSidebar;
