@@ -54,7 +54,8 @@ async function syncExpensesToDb(action, record, beforeRecord) {
 
     try {
         await window.biztrackDbHelpers.syncCollection("expenses", transactions, "trID");
-        if (action) {
+        const isBulkPageSync = action === "sync" && record && String(record.trID) === "all-expenses";
+        if (action && !isBulkPageSync) {
             await window.biztrackDbHelpers.logActivity("expenses", action, record.trID, record, beforeRecord);
         }
     } catch (error) {
@@ -221,16 +222,17 @@ window.newTransaction = function() {
     const trAmountLabel = (translate('history.fieldTrAmount', 'Amount')).replace(/[:：]\s*$/, '');
     const trNotesLabel = (translate('history.fieldTrNotes', 'Notes')).replace(/[:：]\s*$/, '');
 
-    if (!trDate || !trCategory || !trNotes || isNaN(trAmount)) {
-        alert(translate("common.fillAllFields", "Please fill in all required fields.") || "Please fill in all required fields.");
+    if (!trDate || !trCategory || !trNotes) {
+        alert(translate("common.fillAllFields", "Please fill in all required fields."));
         return;
     }
-    if (isNaN(trAmount)) {
-        alert(translate("common.invalidNumber", `Please enter a valid number for ${trAmountLabel}`, {field: trAmountLabel}) || `Please enter a valid number for ${trAmountLabel}`);
+    const trAmountRaw = document.getElementById("tr-amount").value.trim();
+    if (trAmountRaw === "" || isNaN(trAmount)) {
+        alert(translate("common.invalidNumber", `「${trAmountLabel}」should contain a number.`, { field: trAmountLabel }));
         return;
     }
     if (trAmount < 0) {
-        alert(translate("common.invalidPositive", `Please enter a positive number for ${trAmountLabel}`, {field: trAmountLabel}) || `Please enter a positive number for ${trAmountLabel}`);
+        alert(translate("common.invalidPositive", `「${trAmountLabel}」must be 0 or greater.`, { field: trAmountLabel }));
         return;
     }
 
@@ -376,16 +378,17 @@ window.deleteTransaction = function(trID) {
         const trAmountLabel = (translate('history.fieldTrAmount', 'Amount')).replace(/[:：]\s*$/, '');
         const trNotesLabel = (translate('history.fieldTrNotes', 'Notes')).replace(/[:：]\s*$/, '');
 
-        if (!trDate || !trCategory || !trNotes || isNaN(trAmount)) {
-            alert(translate("common.fillAllFields", "Please fill in all required fields.") || "Please fill in all required fields.");
+        if (!trDate || !trCategory || !trNotes) {
+            alert(translate("common.fillAllFields", "Please fill in all required fields."));
             return;
         }
-        if (isNaN(trAmount)) {
-            alert(translate("common.invalidNumber", `Please enter a valid number for ${trAmountLabel}`, {field: trAmountLabel}) || `Please enter a valid number for ${trAmountLabel}`);
+        const trAmountRaw = document.getElementById("tr-amount").value.trim();
+        if (trAmountRaw === "" || isNaN(trAmount)) {
+            alert(translate("common.invalidNumber", `「${trAmountLabel}」should contain a number.`, { field: trAmountLabel }));
             return;
         }
         if (trAmount < 0) {
-            alert(translate("common.invalidPositive", `Please enter a positive number for ${trAmountLabel}`, {field: trAmountLabel}) || `Please enter a positive number for ${trAmountLabel}`);
+            alert(translate("common.invalidPositive", `「${trAmountLabel}」must be 0 or greater.`, { field: trAmountLabel }));
             return;
         }
 

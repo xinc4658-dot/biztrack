@@ -2,8 +2,45 @@ import { openSidebar, closeSidebar } from './shared-utils.js';
 
 window.openSidebar = openSidebar;
 window.closeSidebar = closeSidebar;
-const db = window.biztrackDb;
-const logsRef = db ? db.collection("activity_logs") : null;
+
+function getActivityLogsRef() {
+  const db = window.biztrackDb;
+  return db ? db.collection("activity_logs") : null;
+}
+
+function getLogTimeMs(log) {
+  if (log && log.createdAt && typeof log.createdAt.toDate === "function") {
+    return log.createdAt.toDate().getTime();
+  }
+  const t = log && (log.changedAt || log.clientTime);
+  if (t) {
+    const d = new Date(t);
+    if (!isNaN(d.getTime())) return d.getTime();
+  }
+  return 0;
+}
+
+const BULK_SYNC_IDS = new Set(["all-products", "all-orders", "all-expenses"]);
+
+function filterActivityLogs(rawLogs, hideBulkSyncPlaceholder) {
+  return rawLogs.filter((log) => {
+    const action = (log.action || "").toLowerCase();
+    const rid = String(log.entityId || log.recordId || "");
+    if (
+      hideBulkSyncPlaceholder &&
+      action === "sync" &&
+      BULK_SYNC_IDS.has(rid)
+    ) {
+      return false;
+    }
+    return (
+      action === "create" ||
+      action === "update" ||
+      action === "delete" ||
+      action === "sync"
+    );
+  });
+}
 
 let historyLogsCache = null;
 const HISTORY_CACHE_KEY = "bizTrackRecentHistoryLogs";
@@ -264,24 +301,40 @@ async function loadHistory() {
   }
 
   try {
+    const logsRef = getActivityLogsRef();
     if (!logsRef) {
       throw new Error(errText);
     }
 
-    const snapshot = await logsRef.orderBy("createdAt", "desc").limit(50).get();
-    const logs = snapshot.docs
-      .map((doc) => doc.data())
-      .filter((log) => {
-        const action = (log.action || "").toLowerCase();
-        return action === "create" || action === "update" || action === "delete";
-      });
+    let logs = [];
+    try {
+      // Use where-only query (no orderBy) to avoid requiring a composite index.
+      // Sorting is done client-side after fetching.
+      const snapshot = await logsRef
+        .where("action", "in", ["create", "update", "delete"])
+        .get();
+      logs = snapshot.docs.map((doc) => doc.data());
+      logs.sort((a, b) => getLogTimeMs(b) - getLogTimeMs(a));
+    } catch (e) {
+      console.warn("activity_logs: filtered query failed, falling back:", e);
+      try {
+        const snapshot = await logsRef.orderBy("createdAt", "desc").limit(500).get();
+        const rawLogs = snapshot.docs.map((doc) => doc.data());
+        logs = filterActivityLogs(rawLogs, true);
+        if (logs.length === 0 && rawLogs.length > 0) {
+          logs = filterActivityLogs(rawLogs, false);
+        }
+      } catch (e2) {
+        console.warn("activity_logs: fallback query also failed:", e2);
+      }
+    }
     historyLogsCache = logs;
     localStorage.setItem(HISTORY_CACHE_KEY, JSON.stringify(logs));
     renderLogs(logs);
   } catch (error) {
     console.error("Failed to load activity logs:", error);
     historyLogsCache = null;
-    const cellMsg = !logsRef ? errText : noHistText;
+    const cellMsg = !getActivityLogsRef() ? errText : noHistText;
     tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;">${cellMsg}</td></tr>`;
   }
 }

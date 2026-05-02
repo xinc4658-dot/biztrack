@@ -54,7 +54,10 @@ window.syncOrdersToDb = async function(action, record, beforeRecord) {
   if (!window.biztrackDbHelpers?.isReady()) return;
   try {
     await window.biztrackDbHelpers.syncCollection("orders", orders, "orderID");
-    if (action) await window.biztrackDbHelpers.logActivity("orders", action, record.orderID, record, beforeRecord);
+    const isBulkPageSync = action === "sync" && record && String(record.orderID) === "all-orders";
+    if (action && !isBulkPageSync) {
+      await window.biztrackDbHelpers.logActivity("orders", action, record.orderID, record, beforeRecord);
+    }
   } catch (e) {
     console.error("Orders sync failed:", e);
   }
@@ -111,29 +114,63 @@ window.newOrder = function(event) {
   const orderID = document.getElementById("order-id").value.trim();
   const orderDate = document.getElementById("order-date").value.trim();
   const itemName = document.getElementById("item-name").value.trim();
-  const itemPrice = parseFloat(document.getElementById("item-price").value.trim());
-  const qtyBought = parseInt(document.getElementById("qty-bought").value.trim());
-  const shipping = parseFloat(document.getElementById("shipping").value.trim()) || 0;
-  const taxes = parseFloat(document.getElementById("taxes").value.trim()) || 0;
+  const itemPriceRaw = document.getElementById("item-price").value.trim();
+  const qtyBoughtRaw = document.getElementById("qty-bought").value.trim();
+  const shippingRaw = document.getElementById("shipping").value.trim();
+  const taxesRaw = document.getElementById("taxes").value.trim();
+  const itemPrice = parseFloat(itemPriceRaw);
+  const qtyBought = parseInt(qtyBoughtRaw);
+  const shipping = parseFloat(shippingRaw);
+  const taxes = parseFloat(taxesRaw);
   const orderStatus = document.getElementById("order-status").value.trim();
-  const orderTotal = (itemPrice * qtyBought) + shipping + taxes;
-  const orderIDLabel = (translate('history.fieldOrderID', 'Order ID')).replace(/[:：]\s*$/, '');
-  const itemNameLabel = (translate('history.fieldItemName', 'Item Name')).replace(/[:：]\s*$/, '');
+  const orderTotal = (itemPrice * qtyBought) + (shippingRaw !== "" ? shipping : 0) + (taxesRaw !== "" ? taxes : 0);
   const itemPriceLabel = (translate('history.fieldItemPrice', 'Item Price')).replace(/[:：]\s*$/, '');
   const qtyBoughtLabel = (translate('history.fieldQtyBought', 'Qty Bought')).replace(/[:：]\s*$/, '');
+  const shippingLabel = (translate('history.fieldShipping', 'Shipping')).replace(/[:：]\s*$/, '');
+  const taxesLabel = (translate('history.fieldTaxes', 'Taxes')).replace(/[:：]\s*$/, '');
 
-  if (!orderID || !orderDate || !itemName || !orderStatus || isNaN(itemPrice) || isNaN(qtyBought)) {
-    alert(translate("common.fillAllFields", "Please fill in all required fields.") || "Please fill in all required fields.");
+  if (!orderID || !orderDate || !itemName || !orderStatus) {
+    alert(translate("common.fillAllFields", "Please fill in all required fields."));
     return;
   }
-  if (isNaN(itemPrice) || isNaN(qtyBought)) {
-    const invalidField = isNaN(itemPrice) ? itemPriceLabel : qtyBoughtLabel;
-    alert(translate("common.invalidNumber", `Please enter a valid number for ${invalidField}`, { field: invalidField }));
+  if (itemPriceRaw === "" || isNaN(itemPrice)) {
+    alert(translate("common.invalidNumber", `「${itemPriceLabel}」should contain a number.`, { field: itemPriceLabel }));
     return;
   }
-  if (itemPrice < 0 || qtyBought < 0) {
-    const invalidField = itemPrice < 0 ? itemPriceLabel : qtyBoughtLabel;
-    alert(translate("common.invalidPositive", `Please enter a positive number for ${invalidField}`, { field: invalidField }));
+  if (qtyBoughtRaw === "" || isNaN(qtyBought)) {
+    alert(translate("common.invalidNumber", `「${qtyBoughtLabel}」should contain a number.`, { field: qtyBoughtLabel }));
+    return;
+  }
+  if (shippingRaw === "") {
+    alert(translate("common.invalidNumber", `「${shippingLabel}」should contain a number.`, { field: shippingLabel }));
+    return;
+  }
+  if (isNaN(shipping)) {
+    alert(translate("common.invalidNumber", `「${shippingLabel}」should contain a number.`, { field: shippingLabel }));
+    return;
+  }
+  if (taxesRaw === "") {
+    alert(translate("common.invalidNumber", `「${taxesLabel}」should contain a number.`, { field: taxesLabel }));
+    return;
+  }
+  if (isNaN(taxes)) {
+    alert(translate("common.invalidNumber", `「${taxesLabel}」should contain a number.`, { field: taxesLabel }));
+    return;
+  }
+  if (itemPrice < 0) {
+    alert(translate("common.invalidPositive", `「${itemPriceLabel}」must be 0 or greater.`, { field: itemPriceLabel }));
+    return;
+  }
+  if (qtyBought < 0) {
+    alert(translate("common.invalidPositive", `「${qtyBoughtLabel}」must be 0 or greater.`, { field: qtyBoughtLabel }));
+    return;
+  }
+  if (shipping < 0) {
+    alert(translate("common.invalidPositive", `「${shippingLabel}」must be 0 or greater.`, { field: shippingLabel }));
+    return;
+  }
+  if (taxes < 0) {
+    alert(translate("common.invalidPositive", `「${taxesLabel}」must be 0 or greater.`, { field: taxesLabel }));
     return;
   }
   if (orders.some(o => o.orderID === orderID)) return alert(translate("common.orderIdExists", "ID exists"));
@@ -233,29 +270,55 @@ window.updateOrder = function() {
 
   const orderDate = document.getElementById("order-date").value.trim();
   const itemName = document.getElementById("item-name").value.trim();
-  const itemPrice = parseFloat(document.getElementById("item-price").value.trim());
-  const qtyBought = parseInt(document.getElementById("qty-bought").value.trim());
-  const shipping = parseFloat(document.getElementById("shipping").value.trim()) || 0;
-  const taxes = parseFloat(document.getElementById("taxes").value.trim()) || 0;
+  const itemPriceRaw = document.getElementById("item-price").value.trim();
+  const qtyBoughtRaw = document.getElementById("qty-bought").value.trim();
+  const shippingRaw = document.getElementById("shipping").value.trim();
+  const taxesRaw = document.getElementById("taxes").value.trim();
+  const itemPrice = parseFloat(itemPriceRaw);
+  const qtyBought = parseInt(qtyBoughtRaw);
+  const shipping = parseFloat(shippingRaw);
+  const taxes = parseFloat(taxesRaw);
   const orderStatus = document.getElementById("order-status").value.trim();
-  const orderTotal = (itemPrice * qtyBought) + shipping + taxes;
-  const orderIDLabel = (translate('history.fieldOrderID', 'Order ID')).replace(/[:：]\s*$/, '');
-  const itemNameLabel = (translate('history.fieldItemName', 'Item Name')).replace(/[:：]\s*$/, '');
+  const orderTotal = (itemPrice * qtyBought) + (shippingRaw !== "" ? shipping : 0) + (taxesRaw !== "" ? taxes : 0);
   const itemPriceLabel = (translate('history.fieldItemPrice', 'Item Price')).replace(/[:：]\s*$/, '');
   const qtyBoughtLabel = (translate('history.fieldQtyBought', 'Qty Bought')).replace(/[:：]\s*$/, '');
+  const shippingLabel = (translate('history.fieldShipping', 'Shipping')).replace(/[:：]\s*$/, '');
+  const taxesLabel = (translate('history.fieldTaxes', 'Taxes')).replace(/[:：]\s*$/, '');
 
-  if (!orderID || !orderDate || !itemName || !orderStatus || isNaN(itemPrice) || isNaN(qtyBought)) {
-    alert(translate("common.fillAllFields", "Please fill in all required fields.") || "Please fill in all required fields.");
+  if (!orderID || !orderDate || !itemName || !orderStatus) {
+    alert(translate("common.fillAllFields", "Please fill in all required fields."));
     return;
   }
-  if (isNaN(itemPrice) || isNaN(qtyBought)) {
-    const invalidField = isNaN(itemPrice) ? itemPriceLabel : qtyBoughtLabel;
-    alert(translate("common.invalidNumber", `Please enter a valid number for ${invalidField}`, { field: invalidField }));
+  if (itemPriceRaw === "" || isNaN(itemPrice)) {
+    alert(translate("common.invalidNumber", `「${itemPriceLabel}」should contain a number.`, { field: itemPriceLabel }));
     return;
   }
-  if (itemPrice < 0 || qtyBought < 0) {
-    const invalidField = itemPrice < 0 ? itemPriceLabel : qtyBoughtLabel;
-    alert(translate("common.invalidPositive", `Please enter a positive number for ${invalidField}`, { field: invalidField }));
+  if (qtyBoughtRaw === "" || isNaN(qtyBought)) {
+    alert(translate("common.invalidNumber", `「${qtyBoughtLabel}」should contain a number.`, { field: qtyBoughtLabel }));
+    return;
+  }
+  if (shippingRaw === "" || isNaN(shipping)) {
+    alert(translate("common.invalidNumber", `「${shippingLabel}」should contain a number.`, { field: shippingLabel }));
+    return;
+  }
+  if (taxesRaw === "" || isNaN(taxes)) {
+    alert(translate("common.invalidNumber", `「${taxesLabel}」should contain a number.`, { field: taxesLabel }));
+    return;
+  }
+  if (itemPrice < 0) {
+    alert(translate("common.invalidPositive", `「${itemPriceLabel}」must be 0 or greater.`, { field: itemPriceLabel }));
+    return;
+  }
+  if (qtyBought < 0) {
+    alert(translate("common.invalidPositive", `「${qtyBoughtLabel}」must be 0 or greater.`, { field: qtyBoughtLabel }));
+    return;
+  }
+  if (shipping < 0) {
+    alert(translate("common.invalidPositive", `「${shippingLabel}」must be 0 or greater.`, { field: shippingLabel }));
+    return;
+  }
+  if (taxes < 0) {
+    alert(translate("common.invalidPositive", `「${taxesLabel}」must be 0 or greater.`, { field: taxesLabel }));
     return;
   }
 
