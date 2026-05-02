@@ -1,13 +1,18 @@
 // finances.js
-import { escapeHTML, replaceParams } from './i18n/utils.js';
+import {
+    escapeHTML,
+    openSidebar,
+    closeSidebar,
+    debounce,
+    sanitizeCSVField,
+    generateCSV,
+    downloadCSV,
+    sortTableRowsByDataset
+} from './shared-utils.js';
+import { replaceParams } from './i18n/utils.js';
+import { DEFAULT_EXPENSES } from './data-service.js';
 
-function escapeCSVValue(value) {
-    const text = String(value ?? "");
-    if (/[",\n\r]/.test(text)) {
-        return `"${text.replace(/"/g, '""')}"`;
-    }
-    return text;
-}
+const escapeCSVValue = sanitizeCSVField;
 
 function translate(key, fallback, params = {}) {
     return window.t ? window.t(key, params) : fallback;
@@ -24,30 +29,14 @@ function translateExpenseCategoryForExport(category) {
 
     return translations[category] || category;
 }
-function debounce(fn, delay = 250) {
-    let timer;
-    return function (...args) {
-        clearTimeout(timer);
-        timer = setTimeout(() => fn.apply(this, args), delay);
-    };
-}
 
-
-window.openSidebar = function() {
-    var side = document.getElementById('sidebar');
-    side.style.display = (side.style.display === "block") ? "none" : "block";
-}
-
-window.closeSidebar = function() {
-    document.getElementById('sidebar').style.display = 'none';
-}
+window.openSidebar = openSidebar;
+window.closeSidebar = closeSidebar;
 
 
 window.openForm = function() {
     var form = document.getElementById("transaction-form")
-    console.log('Form display before toggle:', form.style.display);
     form.style.display = (form.style.display === "block") ? "none" : "block";
-    console.log('Form display after toggle:', form.style.display);
 }
 
 window.closeForm = function() {
@@ -142,10 +131,6 @@ function initTransactionDatePicker() {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('finances.js loaded');
-    console.log('addOrUpdate function:', typeof addOrUpdate);
-    console.log('newTransaction function:', typeof newTransaction);
-
     // 初始化i18n
     if (typeof initI18n === 'function') {
         initI18n();
@@ -153,18 +138,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // 添加表单的submit事件监听器
     const form = document.getElementById('transaction-form');
-    console.log('Form:', form);
     if (form) {
-        console.log('Form found');
         form.addEventListener('submit', function(event) {
-            console.log('Form submitted');
-            console.log('Event type:', event.type);
-            console.log('Event target:', event.target);
             event.preventDefault();
             addOrUpdate(event);
         });
     } else {
-        console.log('Form not found');
     }
 
     // 初始化日期选择器
@@ -174,49 +153,11 @@ document.addEventListener('DOMContentLoaded', function() {
     if (storedTransactions) {
         transactions = JSON.parse(storedTransactions);
     } else {
-        transactions = [
-            {
-                trID: 1,
-                trDate: "2024-01-05",
-                trCategory: "Rent",
-                trAmount: 100.00,
-                trNotes: "January Rent"
-            },
-            {
-                trID: 2,
-                trDate: "2024-01-15",
-                trCategory: "Order Fulfillment",
-                trAmount: 35.00,
-                trNotes: "Order #1005"
-            },
-            {
-                trID: 3,
-                trDate: "2024-01-08",
-                trCategory: "Utilities",
-                trAmount: 120.00,
-                trNotes: "Internet"
-            },
-            {
-                trID: 4,
-                trDate: "2024-02-05",
-                trCategory: "Supplies",
-                trAmount: 180.00,
-                trNotes: "Embroidery Machine"
-            },
-            {
-                trID: 5,
-                trDate: "2024-01-25",
-                trCategory: "Miscellaneous",
-                trAmount: 20.00,
-                trNotes: "Pizza"
-            },
-        ];
-
-        serialNumberCounter = transactions.length + 1
-  
+        transactions = DEFAULT_EXPENSES.map(transaction => ({ ...transaction }));
         localStorage.setItem("bizTrackTransactions", JSON.stringify(transactions));
     }
-  
+
+    serialNumberCounter = transactions.length + 1;
     renderTransactions(transactions);
     syncExpensesToDb("sync", { trID: "all-expenses" });
     handleQuickAddOpen();
@@ -275,11 +216,6 @@ window.newTransaction = function() {
     const trNotes = document.getElementById("tr-notes").value.trim();
 
     // 调试信息
-    console.log('trDate:', trDate);
-    console.log('trCategory:', trCategory);
-    console.log('trAmount:', trAmount);
-    console.log('trNotes:', trNotes);
-
     const trDateLabel = (translate('history.fieldTrDate', 'Date')).replace(/[:：]\s*$/, '');
     const trCategoryLabel = (translate('history.fieldTrCategory', 'Category')).replace(/[:：]\s*$/, '');
     const trAmountLabel = (translate('history.fieldTrAmount', 'Amount')).replace(/[:：]\s*$/, '');
@@ -314,14 +250,7 @@ window.newTransaction = function() {
       trAmount,
       trNotes,
     };
-    
-    console.log('New transaction:', transaction);
-    console.log('Transactions before push:', transactions);
-
     transactions.push(transaction);
-
-    console.log('Transactions after push:', transactions);
-  
     renderTransactions(transactions);
     localStorage.setItem("bizTrackTransactions", JSON.stringify(transactions));
     syncExpensesToDb("create", transaction);
@@ -355,9 +284,6 @@ function renderTransactions(transactions) {
     transactionTableBody.innerHTML = "";
 
     // 调试信息
-    console.log('renderTransactions called with:', transactions);
-    console.log('transactionTableBody:', transactionTableBody);
-
     const transactionToRender = transactions;
 
     transactionToRender.forEach(transaction => {
@@ -486,30 +412,13 @@ window.deleteTransaction = function(trID) {
 
 window.sortTable = function(column) {
     const tbody = document.getElementById("tableBody");
-    const rows = Array.from(tbody.querySelectorAll("tr"));
-
-    const isNumeric = column === "trID" || column === "trAmount";
-
-    const sortedRows = rows.sort((a, b) => {
-        const aValue = isNumeric ? parseFloat(a.dataset[column]) : a.dataset[column];
-        const bValue = isNumeric ? parseFloat(b.dataset[column]) : b.dataset[column];
-
-        if (typeof aValue === "string" && typeof bValue === "string") {
-            // Case-insensitive string comparison for text columns
-            return aValue.localeCompare(bValue, undefined, { sensitivity: "base" });
-        } else {
-            return aValue - bValue;
-        }
-    });
-
-    tbody.replaceChildren(...sortedRows);
+    sortTableRowsByDataset(tbody, column, ["trID", "trAmount"]);
 }
 
-document.getElementById("searchInput").addEventListener("keyup", function(event) {
-    if (event.key === "Enter") {
-        performSearch();
-    }
-});
+const searchInput = document.getElementById("searchInput");
+if (searchInput) {
+    searchInput.addEventListener("input", debounce(performSearch, 250));
+}
 
 
 function performSearch() {
@@ -560,58 +469,9 @@ window.exportToCSV = function() {
     };
 
     const csvContent = generateCSV(transactionsToExport, headers);
-  
-    // 使用TextEncoder处理编码问题
-    const encoder = new TextEncoder();
-    const BOM = new Uint8Array([0xEF, 0xBB, 0xBF]);
-    const csvBytes = encoder.encode(csvContent);
-    const csvWithBOM = new Uint8Array(BOM.length + csvBytes.length);
-    csvWithBOM.set(BOM, 0);
-    csvWithBOM.set(csvBytes, BOM.length);
-    const blob = new Blob([csvWithBOM], { type: 'text/csv;charset=utf-8' });
-  
-    const link = document.createElement('a');
-    link.href = window.URL.createObjectURL(blob);
-    // 直接根据当前语言设置文件名，不使用translate函数
     const filename = currentLanguage === 'zh' ? 'biztrack_支出表.csv' : 'biztrack_expense_table.csv';
-    link.download = filename;
-  
-    document.body.appendChild(link);
-    link.click();
-  
-    document.body.removeChild(link);
+    downloadCSV(csvContent, filename);
 }
   
-// 新增一个专门用来净化 CSV 字段的辅助函数
-window.sanitizeCSVField = function(value) {
-    // 将 null、undefined 等转为空字符串，其他转为字符串
-    let strValue = value === null || value === undefined ? "" : String(value);
-
-    // 1. 防御 CSV 注入攻击 (Macro Injection)
-    // 如果内容是以 =、+、- 或 @ 开头，在其前面追加一个单引号，迫使 Excel 将其识别为纯文本
-    if (/^[=+\-@]/.test(strValue)) {
-        strValue = "'" + strValue;
-    }
-
-    // 2. 修复 CSV 格式错乱问题
-    // 如果内容本身包含逗号（,）、换行符（\n）或双引号（"），必须用双引号把它包起来，
-    // 并且将内部原有的双引号转义（替换为两个双引号 ""）
-    if (strValue.includes(',') || strValue.includes('\n') || strValue.includes('"')) {
-        strValue = '"' + strValue.replace(/"/g, '""') + '"';
-    }
-
-    return strValue;
-}
-
-// 替换原有的 generateCSV 函数
-window.generateCSV = function(data, headers) {
-    // 对表头进行处理
-    const headerRow = Object.keys(headers).map(key => sanitizeCSVField(headers[key])).join(',');
-    
-    // 对每一行数据的每一个字段进行安全净化处理
-    const rows = data.map(item => {
-        return Object.values(item).map(val => sanitizeCSVField(val)).join(',');
-    });
-
-    return `${headerRow}\n${rows.join('\n')}`;
-}
+window.sanitizeCSVField = sanitizeCSVField;
+window.generateCSV = generateCSV;

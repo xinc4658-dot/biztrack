@@ -1,5 +1,16 @@
 // orders.js —— 最终修复版：所有按钮正常、无控制台报错
-import { escapeHTML, replaceParams } from './i18n/utils.js';
+import { replaceParams } from './i18n/utils.js';
+import {
+  escapeHTML,
+  openSidebar,
+  closeSidebar,
+  debounce,
+  sanitizeCSVField,
+  generateCSV,
+  downloadCSV,
+  sortTableRowsByDataset
+} from './shared-utils.js';
+import { DEFAULT_ORDERS } from './data-service.js';
 
 // 翻译函数
 function translate(key, fallback, params = {}) {
@@ -7,11 +18,7 @@ function translate(key, fallback, params = {}) {
 }
 
 // ========== 全局工具函数（必须暴露给 HTML onclick） ==========
-window.escapeCSVValue = function(value) {
-  const text = String(value ?? "");
-  if (/[",\n\r]/.test(text)) return `"${text.replace(/"/g, '""')}"`;
-  return text;
-};
+window.escapeCSVValue = sanitizeCSVField;
 
 window.getCurrentLang = function() {
   return window.getCurrentLanguage ? window.getCurrentLanguage() : localStorage.getItem('bizTrackLanguage') || 'en';
@@ -25,23 +32,11 @@ window.translateOrderStatusForExport = function(status) {
   return statuses[currentLanguage]?.[status] || status;
 };
 
-window.debounce = function(fn, delay = 250) {
-  let timer;
-  return (...args) => {
-    clearTimeout(timer);
-    timer = setTimeout(() => fn.apply(this, args), delay);
-  };
-};
+window.debounce = debounce;
 
 // ========== 侧边栏 / 表单 ==========
-window.openSidebar = function() {
-  const side = document.getElementById('sidebar');
-  side.style.display = side.style.display === "block" ? "none" : "block";
-};
-
-window.closeSidebar = function() {
-  document.getElementById('sidebar').style.display = 'none';
-};
+window.openSidebar = openSidebar;
+window.closeSidebar = closeSidebar;
 
 window.openForm = function() {
   const form = document.getElementById("order-form");
@@ -162,6 +157,14 @@ window.renderOrders = function(orders) {
     const tr = document.createElement("tr");
     tr.className = "order-row";
     tr.dataset.orderID = order.orderID;
+    tr.dataset.orderDate = order.orderDate;
+    tr.dataset.itemName = order.itemName;
+    tr.dataset.itemPrice = order.itemPrice;
+    tr.dataset.qtyBought = order.qtyBought;
+    tr.dataset.shipping = order.shipping;
+    tr.dataset.taxes = order.taxes;
+    tr.dataset.orderTotal = order.orderTotal;
+    tr.dataset.orderStatus = order.orderStatus;
 
     const safeName = window.escapeHTML?.(window.translateProductName?.(order.itemName) || order.itemName) || order.itemName;
     const statusText = window.t?.(`orders.${order.orderStatus.toLowerCase()}`) || order.orderStatus;
@@ -267,14 +270,8 @@ window.updateOrder = function() {
 
 // 关键：暴露给 onclick
 window.sortTable = function(column) {
-  const rows = Array.from(document.querySelectorAll("#tableBody tr"));
-  const isNum = ["itemPrice","qtyBought","shipping","taxes","orderTotal"].includes(column);
-  rows.sort((a,b) => {
-    const av = isNum ? parseFloat(a.dataset[column]) : a.dataset[column];
-    const bv = isNum ? parseFloat(b.dataset[column]) : b.dataset[column];
-    return isNum ? av - bv : String(av).localeCompare(String(bv));
-  });
-  document.getElementById("tableBody").replaceChildren(...rows);
+  const tbody = document.getElementById("tableBody");
+  sortTableRowsByDataset(tbody, column, ["itemPrice", "qtyBought", "shipping", "taxes", "orderTotal"]);
 };
 
 window.performSearch = function() {
@@ -308,23 +305,9 @@ window.exportToCSV = function() {
     orderStatus: window.translateOrderStatusForExport(o.orderStatus)
   }));
 
-  function sanitize(v) {
-    let s = String(v ?? "");
-    if (/^[=+\-@]/.test(s)) s = "'" + s;
-    if (s.includes(',') || s.includes('\n') || s.includes('"')) s = `"${s.replace(/"/g, '""')}"`;
-    return s;
-  }
-
-  const csv = [
-    Object.values(head).map(sanitize).join(','),
-    ...data.map(row => Object.values(row).map(sanitize).join(','))
-  ].join('\n');
-
-  const blob = new Blob([new Uint8Array([0xEF,0xBB,0xBF]), csv], { type: 'text/csv;charset=utf-8' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = lang === 'zh' ? 'biztrack_订单表.csv' : 'biztrack_orders.csv';
-  a.click();
+  const csv = generateCSV(data, head);
+  const filename = lang === 'zh' ? 'biztrack_订单表.csv' : 'biztrack_orders.csv';
+  downloadCSV(csv, filename);
 };
 
 // ========== 初始化（修复时序，无重复） ==========
@@ -335,13 +318,7 @@ document.addEventListener('DOMContentLoaded', function() {
   if (stored) {
     orders = JSON.parse(stored);
   } else {
-    orders = [
-      { orderID:"1001", orderDate:"2024-01-05", itemName:"Baseball caps", itemPrice:25, qtyBought:2, shipping:2.5, taxes:9, orderTotal:61.5, orderStatus:"Pending" },
-      { orderID:"1002", orderDate:"2024-03-05", itemName:"Water bottles", itemPrice:17, qtyBought:3, shipping:3.5, taxes:6, orderTotal:60.5, orderStatus:"Processing" },
-      { orderID:"1003", orderDate:"2024-02-05", itemName:"Tote bags", itemPrice:20, qtyBought:4, shipping:2.5, taxes:2, orderTotal:84.5, orderStatus:"Shipped" },
-      { orderID:"1004", orderDate:"2023-01-05", itemName:"Canvas prints", itemPrice:55, qtyBought:1, shipping:2.5, taxes:19, orderTotal:76.5, orderStatus:"Delivered" },
-      { orderID:"1005", orderDate:"2024-01-15", itemName:"Beanies", itemPrice:15, qtyBought:2, shipping:3.9, taxes:4, orderTotal:37.9, orderStatus:"Pending" }
-    ];
+    orders = DEFAULT_ORDERS.map(order => ({ ...order }));
     localStorage.setItem("bizTrackOrders", JSON.stringify(orders));
   }
 

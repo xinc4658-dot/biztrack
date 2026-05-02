@@ -1,12 +1,7 @@
-function openSidebar() {
-  var side = document.getElementById("sidebar");
-  side.style.display = side.style.display === "block" ? "none" : "block";
-}
+import { openSidebar, closeSidebar } from './shared-utils.js';
 
-function closeSidebar() {
-  document.getElementById("sidebar").style.display = "none";
-}
-
+window.openSidebar = openSidebar;
+window.closeSidebar = closeSidebar;
 const db = window.biztrackDb;
 const logsRef = db ? db.collection("activity_logs") : null;
 

@@ -1,5 +1,15 @@
 // products.js（纯净版，无重复、无冲突）
-import { escapeHTML, replaceParams } from './i18n/utils.js';
+import { replaceParams } from './i18n/utils.js';
+import {
+  escapeHTML,
+  openSidebar,
+  closeSidebar,
+  debounce,
+  generateCSV,
+  downloadCSV,
+  sortTableRowsByDataset
+} from './shared-utils.js';
+import { DEFAULT_PRODUCTS } from './data-service.js';
 
 // ========== 全局函数（必须挂到 window，给 onclick 用） ==========
 window.translateProductDescription = function(description) {
@@ -9,14 +19,8 @@ window.translateProductDescription = function(description) {
   return translated === key ? description : translated;
 };
 
-window.openSidebar = function() {
-  const side = document.getElementById('sidebar');
-  side.style.display = side.style.display === 'block' ? 'none' : 'block';
-};
-
-window.closeSidebar = function() {
-  document.getElementById('sidebar').style.display = 'none';
-};
+window.openSidebar = openSidebar;
+window.closeSidebar = closeSidebar;
 
 window.openForm = function() {
   const form = document.getElementById("product-form");
@@ -40,25 +44,9 @@ window.syncProductsToDb = async function(action, record, beforeRecord) {
   }
 };
 
-let productCategoryMap = {
-  'Baseball caps': 'Hats',
-  'Snapbacks': 'Hats',
-  'Beanies': 'Hats',
-  'Bucket hats': 'Hats',
-  'Mugs': 'Drinkware',
-  'Water bottles': 'Drinkware',
-  'Tumblers': 'Drinkware',
-  'T-shirts': 'Clothing',
-  'Sweatshirts': 'Clothing',
-  'Hoodies': 'Clothing',
-  'Pillow cases': 'Accessories',
-  'Tote bags': 'Accessories',
-  'Stickers': 'Accessories',
-  'Posters': 'Home decor',
-  'Framed posters': 'Home decor',
-  'Canvas prints': 'Home decor'
-};
-
+const productCategoryMap = Object.fromEntries(
+  DEFAULT_PRODUCTS.map((product) => [product.prodName, product.prodCat])
+);
 const productCategoryTranslationKey = {
   'Hats': 'products.hats',
   'Drinkware': 'products.drinkware',
@@ -85,30 +73,11 @@ function isNameCategoryPairValid(prodName, prodCat) {
 }
 
 const PRODUCTS_CATALOG_VERSION = "full-16-v1";
-const DEFAULT_PRODUCTS_FULL = [
-  { prodID: "PD001", prodName: "Baseball caps", prodDesc: "Peace embroidered cap", prodCat: "Hats", prodPrice: 25.0, prodSold: 20 },
-  { prodID: "PD002", prodName: "Snapbacks", prodDesc: "Classic snapback fit", prodCat: "Hats", prodPrice: 28.0, prodSold: 15 },
-  { prodID: "PD003", prodName: "Beanies", prodDesc: "Warm knit beanie", prodCat: "Hats", prodPrice: 18.5, prodSold: 32 },
-  { prodID: "PD004", prodName: "Bucket hats", prodDesc: "Summer bucket style", prodCat: "Hats", prodPrice: 22.0, prodSold: 12 },
-  { prodID: "PD005", prodName: "Mugs", prodDesc: "Ceramic travel mug", prodCat: "Drinkware", prodPrice: 14.0, prodSold: 45 },
-  { prodID: "PD006", prodName: "Water bottles", prodDesc: "Floral lotus printed bottle", prodCat: "Drinkware", prodPrice: 48.5, prodSold: 10 },
-  { prodID: "PD007", prodName: "Tumblers", prodDesc: "Insulated tumbler", prodCat: "Drinkware", prodPrice: 32.0, prodSold: 28 },
-  { prodID: "PD008", prodName: "T-shirts", prodDesc: "Soft cotton tee", prodCat: "Clothing", prodPrice: 19.99, prodSold: 55 },
-  { prodID: "PD009", prodName: "Sweatshirts", prodDesc: "Palestine sweater", prodCat: "Clothing", prodPrice: 17.5, prodSold: 70 },
-  { prodID: "PD010", prodName: "Hoodies", prodDesc: "Fleece-lined hoodie", prodCat: "Clothing", prodPrice: 42.0, prodSold: 35 },
-  { prodID: "PD011", prodName: "Pillow cases", prodDesc: "Morrocan print pillow case", prodCat: "Accessories", prodPrice: 17.0, prodSold: 40 },
-  { prodID: "PD012", prodName: "Tote bags", prodDesc: "Canvas tote", prodCat: "Accessories", prodPrice: 24.0, prodSold: 22 },
-  { prodID: "PD013", prodName: "Stickers", prodDesc: "Vinyl sticker pack", prodCat: "Accessories", prodPrice: 6.5, prodSold: 100 },
-  { prodID: "PD014", prodName: "Posters", prodDesc: "Vibes printed poster", prodCat: "Home decor", prodPrice: 12.0, prodSold: 60 },
-  { prodID: "PD015", prodName: "Framed posters", prodDesc: "Ready-to-hang frame", prodCat: "Home decor", prodPrice: 35.0, prodSold: 18 },
-  { prodID: "PD016", prodName: "Canvas prints", prodDesc: "Gallery canvas wrap", prodCat: "Home decor", prodPrice: 55.0, prodSold: 14 },
-];
-
 function loadProductsFromStorage() {
   const stored = localStorage.getItem("bizTrackProducts");
   const ver = localStorage.getItem("bizTrackProductsCatalogVersion");
   if (!stored || ver !== PRODUCTS_CATALOG_VERSION) {
-    products = DEFAULT_PRODUCTS_FULL.map(x => ({...x}));
+    products = DEFAULT_PRODUCTS.map(x => ({...x}));
     localStorage.setItem("bizTrackProducts", JSON.stringify(products));
     localStorage.setItem("bizTrackProductsCatalogVersion", PRODUCTS_CATALOG_VERSION);
     return;
@@ -261,18 +230,7 @@ window.updateProduct = function() {
 };
 
 // ========== 导出CSV ==========
-function sanitizeCSVField(v) {
-  let s = v == null ? "" : String(v);
-  if (/^[=+\-@]/.test(s)) s = "'" + s;
-  if (s.includes(',') || s.includes('\n') || s.includes('"')) s = '"' + s.replace(/"/g,'""') + '"';
-  return s;
-}
 
-function generateCSV(data, headers) {
-  const header = Object.values(headers).map(sanitizeCSVField).join(',');
-  const rows = data.map(row => Object.values(row).map(sanitizeCSVField).join(','));
-  return [header, ...rows].join('\n');
-}
 
 window.exportToCSV = function() {
   const currentLang = window.getCurrentLanguage?.() || 'en';
@@ -294,20 +252,14 @@ window.exportToCSV = function() {
     prodSold: p.prodSold
   }));
   const csv = generateCSV(data, headers);
-  const BOM = new Uint8Array([0xEF,0xBB,0xBF]);
-  const blob = new Blob([BOM, csv], {type:'text/csv;charset=utf-8'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = currentLang === 'zh' || currentLang === 'zhTW' ? 'biztrack_产品表.csv' : 'biztrack_product_table.csv';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+  const filename = currentLang === 'zh' || currentLang === 'zhTW'
+    ? 'biztrack_产品表.csv'
+    : 'biztrack_product_table.csv';
+
+  downloadCSV(csv, filename);
 };
 
 // ========== 搜索 & 排序 ==========
-function debounce(fn, d=250) { let t; return (...a)=>{clearTimeout(t);t=setTimeout(()=>fn(...a),d);}; }
 
 window.performSearch = function() {
   const kw = document.getElementById("searchInput").value.trim().toLowerCase();
@@ -321,17 +273,7 @@ window.performSearch = function() {
 
 window.sortTable = function(col) {
   const tbody = document.getElementById("tableBody");
-  const rows = Array.from(tbody.querySelectorAll("tr"));
-  const num = col === "prodPrice" || col === "prodSold";
-  rows.sort((a, b) => {
-    const av = a.dataset[col] ?? '';
-    const bv = b.dataset[col] ?? '';
-    if (num) {
-      return parseFloat(av) - parseFloat(bv);
-    }
-    return String(av).localeCompare(String(bv), undefined, { numeric: true, sensitivity: 'base' });
-  });
-  tbody.replaceChildren(...rows);
+  sortTableRowsByDataset(tbody, col, ["prodPrice", "prodSold"]);
 };
 
 // ========== 初始化（只执行一次，时序正确） ==========
