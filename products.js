@@ -38,7 +38,10 @@ window.syncProductsToDb = async function(action, record, beforeRecord) {
   if (!window.biztrackDbHelpers?.isReady()) return;
   try {
     await window.biztrackDbHelpers.syncCollection("products", products, "prodID");
-    if (action) await window.biztrackDbHelpers.logActivity("products", action, record.prodID, record, beforeRecord);
+    const isBulkPageSync = action === "sync" && record && String(record.prodID) === "all-products";
+    if (action && !isBulkPageSync) {
+      await window.biztrackDbHelpers.logActivity("products", action, record.prodID, record, beforeRecord);
+    }
   } catch (e) {
     console.error("syncProductsToDb", e);
   }
@@ -156,18 +159,26 @@ window.newProduct = function(e) {
   const priceLabel = (window.t?.('products.productPrice') || 'Product Price').replace(/[:：]\s*$/, '');
   const soldLabel = (window.t?.('products.productSold') || 'Stock Quantity').replace(/[:：]\s*$/, '');
 
-  if (!prodID || !prodName || !prodCat || isNaN(prodPrice) || isNaN(prodSold)) {
-    alert(window.t?.("common.fillAllFields")||"Please fill in all required fields.");
+  if (!prodID || !prodName || !prodCat) {
+    alert(window.t?.("common.fillAllFields") || "Please fill in all required fields.");
     return;
   }
-  if (isNaN(prodPrice) || isNaN(prodSold)) {
-    const invalidField = isNaN(prodPrice) ? priceLabel : soldLabel;
-    alert(window.t?.("common.invalidNumber", { field: invalidField }) || `Please enter a valid number for ${invalidField}`);
+  const priceRaw = document.getElementById("product-price").value.trim();
+  const soldRaw = document.getElementById("product-sold").value.trim();
+  if (priceRaw === "" || isNaN(prodPrice)) {
+    alert(window.t?.("common.invalidNumber", { field: priceLabel }) || `「${priceLabel}」should contain a number.`);
     return;
   }
-  if (prodPrice < 0 || prodSold < 0) {
-    const invalidField = prodPrice < 0 ? priceLabel : soldLabel;
-    alert(window.t?.("common.invalidPositive", { field: invalidField }) || `Please enter a positive number for ${invalidField}`);
+  if (soldRaw === "" || isNaN(prodSold)) {
+    alert(window.t?.("common.invalidNumber", { field: soldLabel }) || `「${soldLabel}」should contain a number.`);
+    return;
+  }
+  if (prodPrice < 0) {
+    alert(window.t?.("common.invalidPositive", { field: priceLabel }) || `「${priceLabel}」must be 0 or greater.`);
+    return;
+  }
+  if (prodSold < 0) {
+    alert(window.t?.("common.invalidPositive", { field: soldLabel }) || `「${soldLabel}」must be 0 or greater.`);
     return;
   }
   if (products.some(x => x.prodID === prodID)) {
@@ -200,18 +211,26 @@ window.updateProduct = function() {
   const priceLabel = (window.t?.('products.productPrice') || 'Product Price').replace(/[:：]\s*$/, '');
   const soldLabel = (window.t?.('products.productSold') || 'Stock Quantity').replace(/[:：]\s*$/, '');
 
-  if (!prodID || !prodName || !prodCat || isNaN(prodPrice) || isNaN(prodSold)) {
-    alert(window.t?.("common.fillAllFields")||"Please fill in all required fields.");
+  if (!prodID || !prodName || !prodCat) {
+    alert(window.t?.("common.fillAllFields") || "Please fill in all required fields.");
     return;
   }
-  if (isNaN(prodPrice) || isNaN(prodSold)) {
-    const invalidField = isNaN(prodPrice) ? priceLabel : soldLabel;
-    alert(window.t?.("common.invalidNumber", { field: invalidField }) || `Please enter a valid number for ${invalidField}`);
+  const priceRaw = document.getElementById("product-price").value.trim();
+  const soldRaw = document.getElementById("product-sold").value.trim();
+  if (priceRaw === "" || isNaN(prodPrice)) {
+    alert(window.t?.("common.invalidNumber", { field: priceLabel }) || `「${priceLabel}」should contain a number.`);
     return;
   }
-  if (prodPrice < 0 || prodSold < 0) {
-    const invalidField = prodPrice < 0 ? priceLabel : soldLabel;
-    alert(window.t?.("common.invalidPositive", { field: invalidField }) || `Please enter a positive number for ${invalidField}`);
+  if (soldRaw === "" || isNaN(prodSold)) {
+    alert(window.t?.("common.invalidNumber", { field: soldLabel }) || `「${soldLabel}」should contain a number.`);
+    return;
+  }
+  if (prodPrice < 0) {
+    alert(window.t?.("common.invalidPositive", { field: priceLabel }) || `「${priceLabel}」must be 0 or greater.`);
+    return;
+  }
+  if (prodSold < 0) {
+    alert(window.t?.("common.invalidPositive", { field: soldLabel }) || `「${soldLabel}」must be 0 or greater.`);
     return;
   }
   if (!isNameCategoryPairValid(prodName, prodCat)) {
