@@ -1072,3 +1072,62 @@ button:focus-visible {
   outline: 2px solid #007bff !important;
   outline-offset: 2px;
 }
+/* Fix sidebar display on narrow screens */
+@media (max-width: 768px) {
+    .sidebar {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: auto;
+        width: 220px;
+        max-width: 80vw;
+        height: 100vh;
+        z-index: 9999;
+        background: var(--black-color);
+        flex-direction: column;
+        justify-content: flex-start;
+        align-items: stretch;
+        overflow-y: auto;
+    }
+
+    .sidebar[style*="display: block"],
+    .sidebar[style*="display: flex"] {
+        display: flex !important;
+    }
+
+    .main-content {
+        margin-left: 0;
+        width: 100%;
+        max-width: 100%;
+    }
+}
+/* Sidebar should work on tablet and narrow desktop widths */
+@media (max-width: 1200px) {
+    .sidebar {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 260px;
+        max-width: 82vw;
+        height: 100vh;
+        z-index: 9999;
+        background: var(--black-color);
+        flex-direction: column;
+        justify-content: flex-start;
+        align-items: stretch;
+        overflow-y: auto;
+    }
+
+    .sidebar[style*="display: block"],
+    .sidebar[style*="display: flex"] {
+        display: flex !important;
+    }
+
+    .main-content {
+        margin-left: 0;
+        width: 100%;
+        max-width: 100%;
+    }
+}
