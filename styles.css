@@ -1092,3 +1092,32 @@ button:focus-visible {
         max-width: 100%;
     }
 }
+/* Accessible sidebar close button */
+.sidebar-close-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    margin-left: auto;
+    padding: 0;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--light-orange);
+    font-size: 1.4rem;
+    cursor: pointer;
+}
+
+.sidebar-close-btn:hover {
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.sidebar-close-btn:focus-visible {
+    outline: 3px solid var(--light-orange);
+    outline-offset: 3px;
+}
+
+.sidebar-close-btn i {
+    pointer-events: none;
+}

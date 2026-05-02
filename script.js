@@ -1,28 +1,22 @@
-// Script.js
+import { openSidebar, closeSidebar, escapeHTML } from './shared-utils.js';
+import {
+  DEFAULT_EXPENSES,
+  DEFAULT_ORDERS,
+  DEFAULT_PRODUCTS,
+  getDataWithFallback,
+  toNumber
+} from './data-service.js';
+import {
+  PRODUCT_CATEGORY_ORDER,
+  calculateCategoryUnitsSoldFromOrders,
+  calculateCategoryExpenses as calculateCategoryExp,
+  calculateDashboardSummary
+} from './analytics-service.js';
 
-function openSidebar() {
-  var side = document.getElementById('sidebar');
-  side.style.display = (side.style.display === "block") ? "none" : "block";
-}
+window.openSidebar = openSidebar;
+window.closeSidebar = closeSidebar;
 
-function closeSidebar() {
-  document.getElementById('sidebar').style.display = 'none';
-}
-
-function toNumber(value) {
-  const num = Number(value);
-  return Number.isFinite(num) ? num : 0;
-}
-
-function escapeHtmlForText(text) {
-  if (text == null || text === undefined) return '';
-  return String(text)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
-}
-
+const escapeHtmlForText = escapeHTML;
 function renderLowStockList(products) {
   const listEl = document.getElementById('low-stock-list');
   if (!listEl) return;
@@ -54,183 +48,11 @@ function renderLowStockList(products) {
     .join('');
 }
 
-const DEFAULT_EXPENSES = [
-  {
-    trID: 1,
-    trDate: "2024-01-05",
-    trCategory: "Rent",
-    trAmount: 100.00,
-    trNotes: "January Rent"
-  },
-  {
-    trID: 2,
-    trDate: "2024-01-15",
-    trCategory: "Order Fulfillment",
-    trAmount: 35.00,
-    trNotes: "Order #1005"
-  },
-  {
-    trID: 3,
-    trDate: "2024-01-08",
-    trCategory: "Utilities",
-    trAmount: 120.00,
-    trNotes: "Internet"
-  },
-  {
-    trID: 4,
-    trDate: "2024-02-05",
-    trCategory: "Supplies",
-    trAmount: 180.00,
-    trNotes: "Embroidery Machine"
-  },
-  {
-    trID: 5,
-    trDate: "2024-01-25",
-    trCategory: "Miscellaneous",
-    trAmount: 20.00,
-    trNotes: "Pizza"
-  },
-];
-
-const DEFAULT_ORDERS = [
-  {
-    orderID: "1001",
-    orderDate: "2024-01-05",
-    itemName: "Baseball caps",
-    itemPrice: 25.00,
-    qtyBought: 2,
-    shipping: 2.50,
-    taxes: 9.00,
-    orderTotal: 61.50,
-    orderStatus: "Pending"
-  },
-  {
-    orderID: "1002",
-    orderDate: "2024-03-05",
-    itemName: "Water bottles",
-    itemPrice: 17.00,
-    qtyBought: 3,
-    shipping: 3.50,
-    taxes: 6.00,
-    orderTotal: 60.50,
-    orderStatus: "Processing"
-  },
-  {
-    orderID: "1003",
-    orderDate: "2024-02-05",
-    itemName: "Tote bags",
-    itemPrice: 20.00,
-    qtyBought: 4,
-    shipping: 2.50,
-    taxes: 2.00,
-    orderTotal: 84.50,
-    orderStatus: "Shipped"
-  },
-  {
-    orderID: "1004",
-    orderDate: "2023-01-05",
-    itemName: "Canvas prints",
-    itemPrice: 55.00,
-    qtyBought: 1,
-    shipping: 2.50,
-    taxes: 19.00,
-    orderTotal: 76.50,
-    orderStatus: "Delivered"
-  },
-  {
-    orderID: "1005",
-    orderDate: "2024-01-15",
-    itemName: "Beanies",
-    itemPrice: 15.00,
-    qtyBought: 2,
-    shipping: 3.90,
-    taxes: 4.00,
-    orderTotal: 37.90,
-    orderStatus: "Pending"
-  },
-];
-
-// 与 products.js 默认目录一致（表单下拉顺序）
-const DEFAULT_PRODUCTS = [
-  { prodID: "PD001", prodName: "Baseball caps", prodDesc: "Peace embroidered cap", prodCat: "Hats", prodPrice: 25.0, prodSold: 20 },
-  { prodID: "PD002", prodName: "Snapbacks", prodDesc: "Classic snapback fit", prodCat: "Hats", prodPrice: 28.0, prodSold: 15 },
-  { prodID: "PD003", prodName: "Beanies", prodDesc: "Warm knit beanie", prodCat: "Hats", prodPrice: 18.5, prodSold: 32 },
-  { prodID: "PD004", prodName: "Bucket hats", prodDesc: "Summer bucket style", prodCat: "Hats", prodPrice: 22.0, prodSold: 12 },
-  { prodID: "PD005", prodName: "Mugs", prodDesc: "Ceramic travel mug", prodCat: "Drinkware", prodPrice: 14.0, prodSold: 45 },
-  { prodID: "PD006", prodName: "Water bottles", prodDesc: "Floral lotus printed bottle", prodCat: "Drinkware", prodPrice: 48.5, prodSold: 10 },
-  { prodID: "PD007", prodName: "Tumblers", prodDesc: "Insulated tumbler", prodCat: "Drinkware", prodPrice: 32.0, prodSold: 28 },
-  { prodID: "PD008", prodName: "T-shirts", prodDesc: "Soft cotton tee", prodCat: "Clothing", prodPrice: 19.99, prodSold: 55 },
-  { prodID: "PD009", prodName: "Sweatshirts", prodDesc: "Palestine sweater", prodCat: "Clothing", prodPrice: 17.5, prodSold: 70 },
-  { prodID: "PD010", prodName: "Hoodies", prodDesc: "Fleece-lined hoodie", prodCat: "Clothing", prodPrice: 42.0, prodSold: 35 },
-  { prodID: "PD011", prodName: "Pillow cases", prodDesc: "Morrocan print pillow case", prodCat: "Accessories", prodPrice: 17.0, prodSold: 40 },
-  { prodID: "PD012", prodName: "Tote bags", prodDesc: "Canvas tote", prodCat: "Accessories", prodPrice: 24.0, prodSold: 22 },
-  { prodID: "PD013", prodName: "Stickers", prodDesc: "Vinyl sticker pack", prodCat: "Accessories", prodPrice: 6.5, prodSold: 100 },
-  { prodID: "PD014", prodName: "Posters", prodDesc: "Vibes printed poster", prodCat: "Home decor", prodPrice: 12.0, prodSold: 60 },
-  { prodID: "PD015", prodName: "Framed posters", prodDesc: "Ready-to-hang frame", prodCat: "Home decor", prodPrice: 35.0, prodSold: 18 },
-  { prodID: "PD016", prodName: "Canvas prints", prodDesc: "Gallery canvas wrap", prodCat: "Home decor", prodPrice: 55.0, prodSold: 14 },
-];
-
 let barChart = null;
 let donutChart = null;
 
-function calculateExpTotal(transactions) {
-  return transactions.reduce((total, transaction) => total + toNumber(transaction.trAmount), 0);
-}
-
-function calculateRevTotal(orders) {
-  return orders.reduce((total, order) => total + toNumber(order.orderTotal), 0);
-}
-
-const PRODUCT_CATEGORY_ORDER = ["Hats", "Drinkware", "Clothing", "Accessories", "Home decor"];
-
-function findCategoryForItemName(itemName, products) {
-  if (!itemName || typeof itemName !== "string") return null;
-  const trimmed = itemName.trim();
-  for (let i = 0; i < products.length; i++) {
-    const p = products[i];
-    if (!p || !p.prodName) continue;
-    if (p.prodName === trimmed) return p.prodCat;
-  }
-  const lower = trimmed.toLowerCase();
-  for (let j = 0; j < products.length; j++) {
-    const q = products[j];
-    if (!q || !q.prodName) continue;
-    if (q.prodName.trim().toLowerCase() === lower) return q.prodCat;
-  }
-  return null;
-}
-
-function calculateCategoryUnitsSoldFromOrders(orders, products) {
-  const totals = {};
-  PRODUCT_CATEGORY_ORDER.forEach((c) => {
-    totals[c] = 0;
-  });
-  (orders || []).forEach((order) => {
-    const cat = findCategoryForItemName(order.itemName, products);
-    if (!cat || totals[cat] === undefined) return;
-    totals[cat] += toNumber(order.qtyBought);
-  });
-  return totals;
-}
-
 window.PRODUCT_CATEGORY_ORDER = PRODUCT_CATEGORY_ORDER;
 window.calculateCategoryUnitsSoldFromOrders = calculateCategoryUnitsSoldFromOrders;
-
-function calculateCategoryExp(transactions) {
-  const categoryExpenses = {};
-
-  transactions.forEach(transaction => {
-    const category = transaction.trCategory;
-
-    if (!categoryExpenses[category]) {
-      categoryExpenses[category] = 0;
-    }
-
-    categoryExpenses[category] += toNumber(transaction.trAmount);
-  });
-
-  return categoryExpenses;
-}
 
 function updateCardContent() {
   const currentLang = window.getCurrentLanguage ? window.getCurrentLanguage() : localStorage.getItem('bizTrackLanguage') || 'en';
@@ -281,39 +103,19 @@ function updateCardContent() {
   }
 }
 
-async function getDataWithFallback(collectionName, localStorageKey, fallbackData) {
-  const localData = JSON.parse(localStorage.getItem(localStorageKey) || "null");
-  const fallback = localData || fallbackData;
-
-  if (window.biztrackDb) {
-    try {
-      const snapshot = await window.biztrackDb.collection(collectionName).get();
-      const remoteData = snapshot.docs.map((doc) => doc.data());
-
-      if (remoteData.length > 0) {
-        localStorage.setItem(localStorageKey, JSON.stringify(remoteData));
-        return remoteData;
-      }
-    } catch (error) {
-      console.error(`Failed to read ${collectionName} from Firestore:`, error);
-    }
-  }
-
-  return fallback;
-}
-
 async function loadDashboardSummary() {
   const expenses = await getDataWithFallback("expenses", "bizTrackTransactions", DEFAULT_EXPENSES);
   const revenues = await getDataWithFallback("orders", "bizTrackOrders", DEFAULT_ORDERS);
 
-  const totalExpenses = calculateExpTotal(expenses);
-  const totalRevenues = calculateRevTotal(revenues);
-  const totalBalance = totalRevenues - totalExpenses;
-  const numOrders = revenues.length;
-  const pendingOrders = revenues.filter((order) => order.orderStatus === "Pending").length;
-  const processingOrders = revenues.filter((order) => order.orderStatus === "Processing").length;
-  const shippedOrders = revenues.filter((order) => order.orderStatus === "Shipped").length;
-  const deliveredOrders = revenues.filter((order) => order.orderStatus === "Delivered").length;
+  const summary = calculateDashboardSummary(expenses, revenues);
+  const totalExpenses = summary.totalExpenses;
+  const totalRevenues = summary.totalRevenues;
+  const totalBalance = summary.totalBalance;
+  const numOrders = summary.numOrders;
+  const pendingOrders = summary.statusCounts.Pending;
+  const processingOrders = summary.statusCounts.Processing;
+  const shippedOrders = summary.statusCounts.Shipped;
+  const deliveredOrders = summary.statusCounts.Delivered;
 
   const currentLang = window.getCurrentLanguage ? window.getCurrentLanguage() : localStorage.getItem('bizTrackLanguage') || 'en';
   const translate = (key, fallback) => (window.t ? window.t(key) : fallback);
