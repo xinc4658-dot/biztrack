@@ -1,5 +1,5 @@
 const firebaseConfig = {
-  apiKey: "AIzaSyAPvWqcw0L2Wei64mlugdm5H9ZivClxM-M",
+  apiKey: "AIzaSyAPwWqcwQL2Wei64mluqdm5H9ZiyClxM-M",
   authDomain: "biztrack-cloud.firebaseapp.com",
   projectId: "biztrack-cloud",
   storageBucket: "biztrack-cloud.firebasestorage.app",
@@ -13,6 +13,7 @@ if (window.firebase && !firebase.apps.length) {
 }
 
 window.biztrackDb = window.firebase ? firebase.firestore() : null;
+window.biztrackAuth = window.firebase ? firebase.auth() : null;
 window.biztrackCollections = {
   products: "products",
   orders: "orders",

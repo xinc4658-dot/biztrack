@@ -93,7 +93,8 @@
             </div>
             <div class="user-info">
                 <button class="manage-cookies-btn" onclick="resetCookieConsent()" data-i18n="privacy.manageCookies">Manage Cookies</button>
-                
+                <button class="auth-login-btn" onclick="window.location.href='./login.html'" style="background:#249672;color:white;border:none;padding:6px 14px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:700;">Sign In</button>
+                <button class="auth-logout-btn" onclick="biztrackLogout()" style="background:transparent;color:#c0392b;border:1px solid #c0392b;padding:6px 14px;border-radius:6px;cursor:pointer;font-size:13px;display:none;">Sign Out</button>
                 <div class="language-switcher">
                     <select id="languageSelector" aria-label="Select language">
                         <option value="en">English</option>
@@ -157,9 +158,9 @@
                 <div class="dashboard-tool-card">
                     <h2 class="main-title" data-i18n="dashboard.quickActions">Quick Actions</h2>
                     <div class="quick-action-buttons">
-                        <a class="quick-action-btn" href="./products.html?quickAdd=1" data-i18n="products.addProduct">Add Product</a>
-                        <a class="quick-action-btn" href="./orders.html?quickAdd=1" data-i18n="orders.addOrder">Add Order</a>
-                        <a class="quick-action-btn" href="./finances.html?quickAdd=1" data-i18n="expenses.addExpense">Add Expense</a>
+                        <a class="quick-action-btn" href="./products.html" data-i18n="products.addProduct">Add Product</a>
+                        <a class="quick-action-btn" href="./orders.html" data-i18n="orders.addOrder">Add Order</a>
+                        <a class="quick-action-btn" href="./finances.html" data-i18n="expenses.addExpense">Add Expense</a>
                     </div>
                 </div>
                 <div class="dashboard-tool-card dashboard-inventory-card">
@@ -196,8 +197,10 @@
     <!-- Apex Charts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/apexcharts/3.45.2/apexcharts.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
     <script src="./firebase.js"></script>
+    <script src="./auth.js"></script>
     <script type="module" src="./i18n/index.js"></script>
     <script type="module" src="./privacy-modal.js"></script>
     <script type="module" src="./script.js"></script>

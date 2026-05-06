@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - BizTrack</title>
+    <link rel="icon" type="image/x-icon" href="./assets/favicon.ico">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Lato', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .login-card {
+            background: #fff;
+            border-radius: 16px;
+            padding: 48px 40px;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .login-logo {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .login-logo h1 {
+            font-size: 28px;
+            font-weight: 700;
+            color: #249672;
+            letter-spacing: 1px;
+        }
+
+        .login-logo p {
+            color: #888;
+            font-size: 14px;
+            margin-top: 4px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-size: 13px;
+            font-weight: 700;
+            color: #444;
+            margin-bottom: 6px;
+        }
+
+        input[type="email"],
+        input[type="password"] {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1.5px solid #ddd;
+            border-radius: 8px;
+            font-size: 15px;
+            font-family: 'Lato', sans-serif;
+            transition: border-color 0.2s;
+            outline: none;
+        }
+
+        input:focus {
+            border-color: #249672;
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 13px;
+            background: #249672;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-top: 8px;
+        }
+
+        .btn-login:hover { background: #1d7a5e; }
+        .btn-login:disabled { background: #aaa; cursor: not-allowed; }
+
+        .error-msg {
+            display: none;
+            background: #fdecea;
+            color: #c0392b;
+            border: 1px solid #f5c6cb;
+            border-radius: 8px;
+            padding: 10px 14px;
+            font-size: 13px;
+            margin-bottom: 16px;
+        }
+
+        .error-msg.show { display: block; }
+    </style>
+</head>
+<body>
+    <div class="login-card">
+        <div class="login-logo">
+            <h1>BizTrack</h1>
+            <p>Sign in to access your dashboard</p>
+        </div>
+
+        <div id="error-msg" class="error-msg" role="alert"></div>
+
+        <form id="login-form">
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" placeholder="your@email.com" required autocomplete="email">
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" placeholder="••••••••" required autocomplete="current-password">
+            </div>
+            <button type="submit" class="btn-login" id="login-btn">Sign In</button>
+        </form>
+
+        <div style="text-align:center; margin-top:20px;">
+            <a href="./index.html" style="color:#888; font-size:13px; text-decoration:none;">
+                Continue as Guest (read-only)
+            </a>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="./firebase.js"></script>
+    <script>
+        // If already logged in, go straight to dashboard
+        firebase.auth().onAuthStateChanged(function(user) {
+            if (user) {
+                window.location.href = './index.html';
+            }
+        });
+
+        document.getElementById('login-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+            const btn = document.getElementById('login-btn');
+            const errorMsg = document.getElementById('error-msg');
+
+            btn.disabled = true;
+            btn.textContent = 'Signing in...';
+            errorMsg.classList.remove('show');
+
+            firebase.auth().signInWithEmailAndPassword(email, password)
+                .then(function() {
+                    window.location.href = './index.html';
+                })
+                .catch(function(error) {
+                    console.error('Auth error code:', error.code, error.message);
+                    const messages = {
+                        'auth/user-not-found': 'No account found with this email.',
+                        'auth/wrong-password': 'Incorrect password.',
+                        'auth/invalid-email': 'Please enter a valid email address.',
+                        'auth/too-many-requests': 'Too many attempts. Please try again later.',
+                        'auth/invalid-credential': 'Incorrect email or password.',
+                        'auth/invalid-login-credentials': 'Incorrect email or password.',
+                        'auth/network-request-failed': 'Network error. Check your connection.',
+                    };
+                    errorMsg.textContent = messages[error.code] || ('Login failed: ' + error.code);
+                    errorMsg.classList.add('show');
+                    btn.disabled = false;
+                    btn.textContent = 'Sign In';
+                });
+        });
+    </script>
+</body>
+</html>

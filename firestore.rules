@@ -1,0 +1,72 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Helper functions ──────────────────────────────────────────
+
+    function isLoggedIn() {
+      return request.auth != null;
+    }
+
+    function hasOnlyAllowedKeys(data, allowed) {
+      return data.keys().hasOnly(allowed);
+    }
+
+    // ── Products collection ───────────────────────────────────────
+    match /products/{productId} {
+      allow read: if true;  // guests can browse
+
+      allow write: if isLoggedIn()
+        && request.resource.data.keys().hasAll(['prodID', 'prodName', 'prodCat', 'prodPrice', 'prodSold'])
+        && hasOnlyAllowedKeys(request.resource.data, ['prodID', 'prodName', 'prodDesc', 'prodCat', 'prodPrice', 'prodSold'])
+        && request.resource.data.prodPrice is number
+        && request.resource.data.prodPrice >= 0
+        && request.resource.data.prodSold is number
+        && request.resource.data.prodSold >= 0;
+    }
+
+    // ── Orders collection ─────────────────────────────────────────
+    match /orders/{orderId} {
+      allow read: if true;  // guests can browse
+
+      allow write: if isLoggedIn()
+        && request.resource.data.keys().hasAll(['orderID', 'orderDate', 'itemName', 'itemPrice', 'qtyBought', 'orderTotal', 'orderStatus'])
+        && hasOnlyAllowedKeys(request.resource.data, ['orderID', 'orderDate', 'itemName', 'itemPrice', 'qtyBought', 'shipping', 'taxes', 'orderTotal', 'orderStatus'])
+        && request.resource.data.itemPrice is number
+        && request.resource.data.itemPrice >= 0
+        && request.resource.data.qtyBought is number
+        && request.resource.data.qtyBought >= 0
+        && request.resource.data.orderTotal is number
+        && request.resource.data.orderStatus in ['Pending', 'Processing', 'Shipped', 'Delivered'];
+    }
+
+    // ── Expenses collection ───────────────────────────────────────
+    match /expenses/{expenseId} {
+      allow read: if true;  // guests can browse
+
+      allow write: if isLoggedIn()
+        && request.resource.data.keys().hasAll(['trID', 'trDate', 'trCategory', 'trAmount', 'trNotes'])
+        && hasOnlyAllowedKeys(request.resource.data, ['trID', 'trDate', 'trCategory', 'trAmount', 'trNotes'])
+        && request.resource.data.trAmount is number
+        && request.resource.data.trAmount >= 0
+        && request.resource.data.trCategory in ['Rent', 'Utilities', 'Supplies', 'Order Fulfillment', 'Miscellaneous'];
+    }
+
+    // ── Activity logs collection ──────────────────────────────────
+    match /activity_logs/{logId} {
+      allow read: if true;  // guests can browse
+
+      allow create: if isLoggedIn()
+        && request.resource.data.keys().hasAll(['entity', 'action', 'recordId', 'changedAt'])
+        && request.resource.data.action in ['create', 'update', 'delete', 'sync'];
+
+      allow update, delete: if false;
+    }
+
+    // ── Block access to everything else ──────────────────────────
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

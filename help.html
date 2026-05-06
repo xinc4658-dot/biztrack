@@ -89,6 +89,8 @@
                 <h1 data-i18n="help.title">Using BizTrack: A Quick Guide</h1>
             </div>
             <div class="user-info">
+                <button class="auth-login-btn" onclick="window.location.href='./login.html'" style="background:#249672;color:white;border:none;padding:6px 14px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:700;">Sign In</button>
+                <button class="auth-logout-btn" onclick="biztrackLogout()" style="background:transparent;color:#c0392b;border:1px solid #c0392b;padding:6px 14px;border-radius:6px;cursor:pointer;font-size:13px;display:none;">Sign Out</button>
                 <div class="language-switcher">
                     <select id="languageSelector" aria-label="Select language">
                         <option value="en">English</option>
@@ -166,6 +168,10 @@
             </section>
         </div>
     </main>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="./firebase.js"></script>
+    <script src="./auth.js"></script>
     <script type="module" src="./i18n/index.js"></script>
     <script type="module" src="./static-page.js"></script>
 </body>
