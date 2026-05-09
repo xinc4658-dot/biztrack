@@ -193,6 +193,7 @@ window.addOrUpdate = function(event) {
 }
 
 // 更新提交按钮的文本
+window.updateSubmitButtonText = updateSubmitButtonText;
 function updateSubmitButtonText() {
     const submitBtn = document.getElementById("submitBtn");
     if (submitBtn) {
@@ -478,3 +479,4 @@ window.exportToCSV = function() {
   
 window.sanitizeCSVField = sanitizeCSVField;
 window.generateCSV = generateCSV;
+window.performSearch = performSearch;
