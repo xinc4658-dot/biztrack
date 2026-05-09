@@ -87,6 +87,7 @@ function loadProductsFromStorage() {
   }
   products = JSON.parse(stored);
 }
+window.loadProductsFromStorage = loadProductsFromStorage;
 
 // ========== 渲染 & 按钮逻辑（全部挂 window） ==========
 window.renderProducts = function(products) {

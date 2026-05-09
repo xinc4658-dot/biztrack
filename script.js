@@ -396,3 +396,6 @@ window.addEventListener('languageChanged', async () => {
 
 window.openSidebar = openSidebar;
 window.closeSidebar = closeSidebar;
+window.updateCardContent = updateCardContent;
+window.initializeChart = initializeChart;
+window.renderLowStockList = renderLowStockList;
