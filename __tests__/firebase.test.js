@@ -191,6 +191,59 @@ describe('firebase: logActivity with active db', () => {
     expect(callArg.action).toBe('create');
     expect(callArg.recordId).toBe('1');
   });
+
+  test('uses empty recordId and default objects when optional args are nullish', async () => {
+    const mockAdd = jest.fn(() => Promise.resolve());
+    window.biztrackDb = {
+      collection: jest.fn(() => ({ add: mockAdd })),
+    };
+
+    await window.biztrackDbHelpers.logActivity('orders', 'delete', null, null, null);
+    const callArg = mockAdd.mock.calls[0][0];
+    expect(callArg.recordId).toBe('');
+    expect(callArg.entityId).toBe('');
+    expect(callArg.changedData).toEqual({});
+    expect(callArg.afterData).toEqual({});
+    expect(callArg.beforeData).toEqual({});
+  });
+});
+
+describe('firebase: replaceCollection early exit', () => {
+  test('returns without touching Firestore when biztrackDb is null', async () => {
+    window.biztrackDb = null;
+    await expect(
+      window.biztrackDbHelpers.syncCollection('products', [{ prodID: '1', name: 'A' }], 'prodID')
+    ).resolves.toBeUndefined();
+  });
+});
+
+describe('firebase: replaceCollection doc id branches', () => {
+  test('uses numeric index when idField is missing or empty on an item', async () => {
+    const mockDoc = jest.fn(() => ({ ref: {} }));
+    const mockSet = jest.fn();
+    const mockCommit = jest.fn(() => Promise.resolve());
+
+    window.biztrackDb = {
+      collection: jest.fn(() => ({
+        get: jest.fn(() => Promise.resolve({ forEach: jest.fn() })),
+        doc: mockDoc,
+      })),
+      batch: jest.fn(() => ({
+        delete: jest.fn(),
+        set: mockSet,
+        commit: mockCommit,
+      })),
+    };
+
+    await window.biztrackDbHelpers.syncCollection(
+      'products',
+      [{ prodName: 'no-id' }, { prodID: '', prodName: 'empty-id' }],
+      'prodID'
+    );
+
+    expect(mockDoc).toHaveBeenCalledWith('1');
+    expect(mockDoc).toHaveBeenCalledWith('2');
+  });
 });
 
 describe('firebase: replaceCollection snapshot iteration', () => {
