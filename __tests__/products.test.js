@@ -74,6 +74,13 @@ describe('window.translateProductCategory (products.js)', () => {
     expect(typeof window.translateProductCategory).toBe('function');
   });
 
+  test('uses raw category when window.t is undefined but mapping key exists', () => {
+    const prev = window.t;
+    window.t = undefined;
+    expect(window.translateProductCategory('Hats')).toBe('Hats');
+    window.t = prev;
+  });
+
   test('returns original category when no translation found', () => {
     window.t.mockImplementation((key) => key);
     const result = window.translateProductCategory('Hats');
@@ -235,6 +242,46 @@ describe('window.renderProducts', () => {
     window.renderProducts([]);
     expect(tbody.querySelectorAll('tr').length).toBe(0);
   });
+
+  test('uses plain field values when translate helpers are absent', () => {
+    const tbody = document.getElementById('tableBody') || (() => {
+      const el = document.createElement('tbody');
+      el.id = 'tableBody';
+      document.body.appendChild(el);
+      return el;
+    })();
+
+    const prevName = window.translateProductName;
+    const prevDesc = window.translateProductDescription;
+    const prevCat = window.translateProductCategory;
+    delete window.translateProductName;
+    delete window.translateProductDescription;
+    delete window.translateProductCategory;
+
+    window.renderProducts(sampleProducts);
+
+    expect(tbody.querySelectorAll('tr').length).toBe(2);
+
+    window.translateProductName = prevName;
+    window.translateProductDescription = prevDesc;
+    window.translateProductCategory = prevCat;
+  });
+
+  test('uses default Edit/Delete button titles when window.t is undefined', () => {
+    const tbody = document.getElementById('tableBody') || (() => {
+      const el = document.createElement('tbody');
+      el.id = 'tableBody';
+      document.body.appendChild(el);
+      return el;
+    })();
+
+    const prevT = window.t;
+    window.t = undefined;
+    window.renderProducts(sampleProducts);
+    expect(tbody.innerHTML).toContain('Edit');
+    expect(tbody.innerHTML).toContain('Delete');
+    window.t = prevT;
+  });
 });
 
 // ── window.deleteProduct ──────────────────────────────────────────────────
@@ -257,6 +304,12 @@ describe('window.exportToCSV (products)', () => {
 
   test('runs without throwing for zh language', () => {
     window.getCurrentLanguage.mockReturnValue('zh');
+    expect(() => window.exportToCSV()).not.toThrow();
+    window.getCurrentLanguage.mockReturnValue('en');
+  });
+
+  test('uses Traditional Chinese csv filename when language is zhTW', () => {
+    window.getCurrentLanguage.mockReturnValue('zhTW');
     expect(() => window.exportToCSV()).not.toThrow();
     window.getCurrentLanguage.mockReturnValue('en');
   });

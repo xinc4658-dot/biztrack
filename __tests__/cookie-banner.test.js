@@ -222,4 +222,38 @@ describe('cookie-banner: initCookieBanner', () => {
       document.getElementById('accept-all-btn').click();
     }).not.toThrow();
   });
+
+  test('non-string cookie message from window.t skips HTML escaping branch', () => {
+    window.t = jest.fn((key) => {
+      if (key === 'privacy.cookieMessage') return 42;
+      return key;
+    });
+    window.initCookieBanner();
+    expect(document.getElementById('cookie-compliance-banner')).not.toBeNull();
+  });
+
+  test('enforceInertState marks nested descendants under body children', () => {
+    const section = document.createElement('section');
+    section.appendChild(document.createElement('div')).appendChild(document.createElement('span'));
+    document.body.appendChild(section);
+
+    window.initCookieBanner();
+    jest.advanceTimersByTime(150);
+
+    const nestedSpan = section.querySelector('span');
+    expect(nestedSpan.inert).toBe(true);
+  });
+
+  test('Enter on banner does not activate click when focus is not on a button', () => {
+    window.initCookieBanner();
+    const banner = document.getElementById('cookie-compliance-banner');
+    banner.focus();
+
+    const enterEvent = new KeyboardEvent('keydown', {
+      key: 'Enter', bubbles: true, cancelable: true
+    });
+    banner.dispatchEvent(enterEvent);
+
+    expect(localStorage.getItem('bizTrack_cookieChoice')).toBeNull();
+  });
 });

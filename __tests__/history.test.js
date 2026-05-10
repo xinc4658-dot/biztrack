@@ -319,6 +319,45 @@ describe('loadHistory via window load event (Firebase mock)', () => {
     const rows = document.getElementById('historyTableBody').querySelectorAll('tr');
     expect(rows.length).toBeGreaterThan(0);
   });
+
+  test('fallback: only bulk-sync logs → second filter pass includes sync rows (lines 324-326)', async () => {
+    makeHistoryTbody();
+    const bulkOnly = { action: 'sync', entityType: 'products', entityId: 'all-products', clientTime: '2024-01-01' };
+    window.biztrackDb = {
+      collection: jest.fn(() => ({
+        where: jest.fn(() => ({ get: jest.fn().mockRejectedValue(new Error('needs index')) })),
+        orderBy: jest.fn(() => ({
+          limit: jest.fn(() => ({
+            get: jest.fn().mockResolvedValue({ docs: [{ data: () => bulkOnly }] }),
+          })),
+        })),
+      })),
+    };
+    window.dispatchEvent(new Event('load'));
+    await new Promise(r => setTimeout(r, 350));
+    const tbody = document.getElementById('historyTableBody');
+    expect(tbody.querySelectorAll('tr').length).toBeGreaterThan(0);
+    window.biztrackDb = null;
+  });
+
+  test('fallback: orderBy query also fails → inner catch (lines 327-328)', async () => {
+    makeHistoryTbody();
+    window.biztrackDb = {
+      collection: jest.fn(() => ({
+        where: jest.fn(() => ({ get: jest.fn().mockRejectedValue(new Error('filtered query failed')) })),
+        orderBy: jest.fn(() => ({
+          limit: jest.fn(() => ({
+            get: jest.fn().mockRejectedValue(new Error('fallback query failed')),
+          })),
+        })),
+      })),
+    };
+    window.dispatchEvent(new Event('load'));
+    await new Promise(r => setTimeout(r, 350));
+    const tbody = document.getElementById('historyTableBody');
+    expect(tbody.querySelector('tr')).not.toBeNull();
+    window.biztrackDb = null;
+  });
 });
 
 // ── formatTimestamp: timestamp.toDate() and invalid fallback branches ─────
