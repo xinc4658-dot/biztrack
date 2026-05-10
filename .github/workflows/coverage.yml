@@ -1,6 +1,3 @@
-# Jest 覆盖率 +（可选）上传到 Codecov
-# 需先在 GitHub: Settings → Secrets and variables → Actions 添加 CODECOV_TOKEN
-
 name: Test Coverage
 
 on:
