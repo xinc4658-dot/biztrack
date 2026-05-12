@@ -595,4 +595,23 @@ describe('window.loadProductsFromStorage (lines 83-86)', () => {
     localStorage.setItem('bizTrackProductsCatalogVersion', 'v0.0.0-wrong');
     expect(() => window.loadProductsFromStorage()).not.toThrow();
   });
+
+  test('parses stored JSON when catalog version matches (line 88)', () => {
+    const row = {
+      prodID: 'ZZ99',
+      prodName: 'Snapbacks',
+      prodDesc: 'x',
+      prodCat: 'Hats',
+      prodPrice: 9,
+      prodSold: 3,
+    };
+    localStorage.setItem('bizTrackProducts', JSON.stringify([row]));
+    localStorage.setItem('bizTrackProductsCatalogVersion', 'full-16-v1');
+    expect(() => window.loadProductsFromStorage()).not.toThrow();
+    const tbody = document.createElement('tbody');
+    tbody.id = 'tableBody';
+    document.body.appendChild(tbody);
+    window.renderProducts(JSON.parse(localStorage.getItem('bizTrackProducts')));
+    expect(tbody.textContent).toContain('ZZ99');
+  });
 });

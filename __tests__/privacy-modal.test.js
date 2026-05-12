@@ -76,6 +76,21 @@ describe('privacy-modal: showPrivacyModal', () => {
     expect(focusSpy).toHaveBeenCalled();
   });
 
+  test('closing modal restores focus to the previously focused element (lines 80–81)', () => {
+    const trigger = document.createElement('button');
+    trigger.id = 'focus-me';
+    document.body.appendChild(trigger);
+    trigger.focus();
+    expect(document.activeElement).toBe(trigger);
+
+    window.showPrivacyModal();
+    jest.advanceTimersByTime(100);
+    document.getElementById('privacy-modal-close').click();
+
+    expect(document.getElementById('privacy-modal')).toBeNull();
+    expect(document.activeElement).toBe(trigger);
+  });
+
   test('Tab key wraps focus when on the last focusable element', () => {
     window.showPrivacyModal();
     const modal = document.getElementById('privacy-modal');

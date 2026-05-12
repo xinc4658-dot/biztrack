@@ -82,22 +82,36 @@ async function bootstrapAllCollectionsFromLocalStorage() {
     return;
   }
 
-  const products = JSON.parse(localStorage.getItem("bizTrackProducts") || "[]");
-  const orders = JSON.parse(localStorage.getItem("bizTrackOrders") || "[]");
-  const expenses = JSON.parse(localStorage.getItem("bizTrackTransactions") || "[]");
+  const collections = [
+    { collectionKey: "products", localKey: "bizTrackProducts", idField: "prodID" },
+    { collectionKey: "orders", localKey: "bizTrackOrders", idField: "orderID" },
+    { collectionKey: "expenses", localKey: "bizTrackTransactions", idField: "trID" },
+  ];
 
-  try {
-    if (products.length) {
-      await window.biztrackDbHelpers.syncCollection("products", products, "prodID");
+  for (const { collectionKey, localKey, idField } of collections) {
+    try {
+      const firestoreName = window.biztrackCollections[collectionKey];
+      if (!firestoreName) continue;
+
+      const snapshot = await window.biztrackDb.collection(firestoreName).get();
+      const remoteData = [];
+      snapshot.forEach((doc) => {
+        remoteData.push(doc.data());
+      });
+
+      if (remoteData.length > 0) {
+        localStorage.setItem(localKey, JSON.stringify(remoteData));
+        continue;
+      }
+
+      const raw = localStorage.getItem(localKey);
+      const localItems = raw ? JSON.parse(raw) : [];
+      if (Array.isArray(localItems) && localItems.length > 0) {
+        await window.biztrackDbHelpers.syncCollection(collectionKey, localItems, idField);
+      }
+    } catch (error) {
+      console.error("Initial Firestore bootstrap failed (" + collectionKey + "):", error);
     }
-    if (orders.length) {
-      await window.biztrackDbHelpers.syncCollection("orders", orders, "orderID");
-    }
-    if (expenses.length) {
-      await window.biztrackDbHelpers.syncCollection("expenses", expenses, "trID");
-    }
-  } catch (error) {
-    console.error("Initial Firestore bootstrap failed:", error);
   }
 }
 
