@@ -1,5 +1,7 @@
 // orders.js — test window-level functions exposed at module load time
 
+import * as dataService from '../data-service.js';
+
 beforeAll(() => {
   // Provide required globals before importing the module
   window.t = jest.fn((key) => key);
@@ -687,6 +689,18 @@ describe('DOMContentLoaded handler (orders)', () => {
     window.dispatchEvent(new CustomEvent('languageChanged'));
     await new Promise(r => setTimeout(r, 100));
     expect(true).toBe(true);
+  });
+
+  test('uses DEFAULT_ORDERS when getDataWithFallback returns non-array (line 383)', async () => {
+    const spy = jest.spyOn(dataService, 'getDataWithFallback').mockResolvedValue(null);
+    localStorage.removeItem('bizTrackOrders');
+    setupOrdersDOM();
+    document.dispatchEvent(new Event('DOMContentLoaded'));
+    await new Promise((r) => setTimeout(r, 100));
+    const stored = JSON.parse(localStorage.getItem('bizTrackOrders') || '[]');
+    expect(Array.isArray(stored)).toBe(true);
+    expect(stored.length).toBeGreaterThan(0);
+    spy.mockRestore();
   });
 });
 

@@ -133,6 +133,40 @@ describe('firebase: bootstrap from localStorage', () => {
     expect(mockCommit).toHaveBeenCalled();
   });
 
+  test('bootstrap pulls remote products into localStorage and does not overwrite cloud when remote exists', async () => {
+    const mockCommit = jest.fn(() => Promise.resolve());
+    const remoteProduct = { data: () => ({ prodID: 'FROM_CLOUD', prodName: 'Remote' }) };
+    window.biztrackDb = {
+      collection: jest.fn((collectionName) => ({
+        get: jest.fn(() => {
+          if (collectionName === 'products') {
+            return Promise.resolve({
+              forEach: (fn) => fn(remoteProduct),
+            });
+          }
+          return Promise.resolve({ forEach: jest.fn() });
+        }),
+        doc: jest.fn(() => ({})),
+        add: jest.fn(() => Promise.resolve()),
+      })),
+      batch: jest.fn(() => ({
+        delete: jest.fn(),
+        set: jest.fn(),
+        commit: mockCommit,
+      })),
+    };
+    localStorage.setItem('bizTrackProducts', JSON.stringify([{ prodID: 'STALE_LOCAL' }]));
+    localStorage.setItem('bizTrackOrders', JSON.stringify([]));
+    localStorage.setItem('bizTrackTransactions', JSON.stringify([]));
+
+    window.dispatchEvent(new Event('load'));
+    await new Promise((r) => setTimeout(r, 0));
+
+    const cached = JSON.parse(localStorage.getItem('bizTrackProducts') || '[]');
+    expect(cached).toEqual([{ prodID: 'FROM_CLOUD', prodName: 'Remote' }]);
+    expect(mockCommit).not.toHaveBeenCalled();
+  });
+
   test('bootstrap syncs orders from localStorage', async () => {
     const { db, mockCommit } = makeMockDb();
     window.biztrackDb = db;
@@ -174,6 +208,24 @@ describe('firebase: bootstrap from localStorage', () => {
     };
     localStorage.setItem('bizTrackProducts', JSON.stringify([{ prodID: 'PD001' }]));
     expect(() => window.dispatchEvent(new Event('load'))).not.toThrow();
+  });
+
+  test('bootstrap continues when biztrackCollections entry is missing (line 94)', async () => {
+    const { db } = makeMockDb();
+    const savedCols = { ...window.biztrackCollections };
+    window.biztrackDb = db;
+    window.biztrackCollections = {
+      ...savedCols,
+      orders: undefined,
+    };
+    localStorage.setItem('bizTrackProducts', JSON.stringify([{ prodID: 'P1' }]));
+    localStorage.setItem('bizTrackOrders', JSON.stringify([{ orderID: '1001' }]));
+    localStorage.setItem('bizTrackTransactions', JSON.stringify([]));
+
+    expect(() => window.dispatchEvent(new Event('load'))).not.toThrow();
+    await new Promise((r) => setTimeout(r, 0));
+
+    window.biztrackCollections = savedCols;
   });
 });
 

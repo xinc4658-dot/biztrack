@@ -223,6 +223,28 @@ describe('cookie-banner: initCookieBanner', () => {
     }).not.toThrow();
   });
 
+  test('closeBanner clears inert flag on elements (line 114)', () => {
+    window.initCookieBanner();
+    jest.advanceTimersByTime(200);
+    const blocked = document.createElement('div');
+    blocked.id = 'blocked-node';
+    blocked.setAttribute('inert', '');
+    document.body.appendChild(blocked);
+    document.getElementById('accept-all-btn').click();
+    expect(blocked.inert).toBe(false);
+  });
+
+  test('escapeHTML maps special characters in translated banner strings', () => {
+    window.t = jest.fn((key) => {
+      if (key === 'privacy.cookieMessage') return 'A & B <script>';
+      return key;
+    });
+    window.initCookieBanner();
+    const span = document.querySelector('[data-i18n="privacy.cookieMessage"]');
+    expect(span.innerHTML).toContain('&amp;');
+    expect(span.innerHTML).toContain('&lt;');
+  });
+
   test('non-string cookie message from window.t skips HTML escaping branch', () => {
     window.t = jest.fn((key) => {
       if (key === 'privacy.cookieMessage') return 42;

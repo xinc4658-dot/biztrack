@@ -10,7 +10,7 @@ import {
   downloadCSV,
   sortTableRowsByDataset
 } from './shared-utils.js';
-import { DEFAULT_ORDERS } from './data-service.js';
+import { DEFAULT_ORDERS, getDataWithFallback } from './data-service.js';
 
 // 翻译函数
 function translate(key, fallback, params = {}) {
@@ -374,19 +374,17 @@ window.exportToCSV = function() {
 };
 
 // ========== 初始化（修复时序，无重复） ==========
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
   window.createOrderDatePicker();
 
-  const stored = localStorage.getItem("bizTrackOrders");
-  if (stored) {
-    orders = JSON.parse(stored);
-  } else {
-    orders = DEFAULT_ORDERS.map(order => ({ ...order }));
-    localStorage.setItem("bizTrackOrders", JSON.stringify(orders));
-  }
+  const merged = await getDataWithFallback("orders", "bizTrackOrders", DEFAULT_ORDERS);
+  orders = Array.isArray(merged)
+    ? merged.map((order) => ({ ...order }))
+    : DEFAULT_ORDERS.map((order) => ({ ...order }));
+  localStorage.setItem("bizTrackOrders", JSON.stringify(orders));
 
   window.renderOrders(orders);
-  window.syncOrdersToDb("sync", { orderID:"all-orders" });
+  window.syncOrdersToDb("sync", { orderID: "all-orders" });
   window.handleQuickAddOpen?.();
   window.addGuideButton?.('orders');
 

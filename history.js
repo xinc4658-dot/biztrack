@@ -185,22 +185,6 @@ function formatTimestamp(timestamp, fallback) {
   return "-";
 }
 
-function formatData(data) {
-  if (!data || (typeof data === "object" && Object.keys(data).length === 0)) {
-    return "-";
-  }
-
-  const lines = Object.entries(data).map(([key, value]) => {
-     const rawStringValue =
-      typeof value === "object" && value !== null ? JSON.stringify(value) : translateCellValue(key, value);
-      // 2. 【新增】进行 XSS 转义包装
-    const safeValue = window.escapeHTML(rawStringValue);
-    return `<div><span class="log-key">${translateFieldKey(key)}</span>: ${safeValue}</div>`;
-  });
-
-  return `<div class="log-data">${lines.join("")}</div>`;
-}
-
 function getPreferredFieldOrder(entity) {
   const fieldOrders = {
     products: ["prodID", "prodName", "prodDesc", "prodCat", "prodPrice", "prodSold"],

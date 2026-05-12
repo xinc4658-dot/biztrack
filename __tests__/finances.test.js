@@ -1,5 +1,7 @@
 // finances.js — test window-level functions exposed at module load time
 
+import * as dataService from '../data-service.js';
+
 beforeAll(() => {
   window.t = jest.fn((key) => key);
   window.biztrackDb = null;
@@ -572,7 +574,7 @@ describe('DOMContentLoaded: form submit listener and handleQuickAddOpen', () => 
     expect(() => document.dispatchEvent(new Event('DOMContentLoaded'))).not.toThrow();
   });
 
-  test('handleQuickAddOpen shows form when quickAdd=1 in URL (lines 174-178)', () => {
+  test('handleQuickAddOpen shows form when quickAdd=1 in URL (lines 174-178)', async () => {
     Object.defineProperty(window, 'location', {
       writable: true,
       value: { search: '?quickAdd=1', href: 'http://localhost/?quickAdd=1' },
@@ -588,7 +590,34 @@ describe('DOMContentLoaded: form submit listener and handleQuickAddOpen', () => 
     totalExp.id = 'total-expenses';
     document.body.appendChild(totalExp);
     document.dispatchEvent(new Event('DOMContentLoaded'));
+    await Promise.resolve();
     expect(form.style.display).toBe('block');
+  });
+
+  test('uses DEFAULT_EXPENSES when getDataWithFallback returns non-array (line 156)', async () => {
+    const spy = jest.spyOn(dataService, 'getDataWithFallback').mockResolvedValue({ notArray: true });
+    const form = document.createElement('form');
+    form.id = 'transaction-form';
+    document.body.appendChild(form);
+    const tbody = document.createElement('tbody');
+    tbody.id = 'tableBody';
+    document.body.appendChild(tbody);
+    const totalExp = document.createElement('div');
+    totalExp.id = 'total-expenses';
+    document.body.appendChild(totalExp);
+    const trDate = document.createElement('input');
+    trDate.id = 'tr-date';
+    document.body.appendChild(trDate);
+
+    document.dispatchEvent(new Event('DOMContentLoaded'));
+    await Promise.resolve();
+    await Promise.resolve();
+
+    const stored = JSON.parse(localStorage.getItem('bizTrackTransactions') || '[]');
+    expect(Array.isArray(stored)).toBe(true);
+    expect(stored.length).toBeGreaterThan(0);
+
+    spy.mockRestore();
   });
 });
 

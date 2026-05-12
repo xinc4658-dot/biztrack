@@ -9,7 +9,7 @@ import {
   downloadCSV,
   sortTableRowsByDataset
 } from './shared-utils.js';
-import { DEFAULT_PRODUCTS } from './data-service.js';
+import { DEFAULT_PRODUCTS, getDataWithFallback } from './data-service.js';
 
 // ========== 全局函数（必须挂到 window，给 onclick 用） ==========
 window.translateProductDescription = function(description) {
@@ -297,12 +297,17 @@ window.sortTable = function(col) {
 };
 
 // ========== 初始化（只执行一次，时序正确） ==========
-function init() {
+async function init() {
   document.getElementById("product-name")?.addEventListener("change", window.syncCategoryWithSelectedName);
-  loadProductsFromStorage();
+
+  const merged = await getDataWithFallback("products", "bizTrackProducts", DEFAULT_PRODUCTS);
+  products = Array.isArray(merged) ? merged.map((x) => ({ ...x })) : DEFAULT_PRODUCTS.map((x) => ({ ...x }));
+  localStorage.setItem("bizTrackProducts", JSON.stringify(products));
+  localStorage.setItem("bizTrackProductsCatalogVersion", PRODUCTS_CATALOG_VERSION);
+
   window.renderProducts(products);
   window.addEventListener('languageChanged', () => window.renderProducts(products));
-  window.syncProductsToDb("sync", {prodID:"all-products"});
+  window.syncProductsToDb("sync", { prodID: "all-products" });
   if (typeof window.addGuideButton === 'function') {
     window.addGuideButton('products');
   }

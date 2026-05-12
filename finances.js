@@ -10,7 +10,7 @@ import {
     sortTableRowsByDataset
 } from './shared-utils.js';
 import { replaceParams } from './i18n/utils.js';
-import { DEFAULT_EXPENSES } from './data-service.js';
+import { DEFAULT_EXPENSES, getDataWithFallback } from './data-service.js';
 
 const escapeCSVValue = sanitizeCSVField;
 
@@ -131,7 +131,7 @@ function initTransactionDatePicker() {
     });
 }
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
     // 初始化i18n
     if (typeof initI18n === 'function') {
         initI18n();
@@ -150,13 +150,11 @@ document.addEventListener('DOMContentLoaded', function() {
     // 初始化日期选择器
     initTransactionDatePicker();
 
-    const storedTransactions = localStorage.getItem("bizTrackTransactions");
-    if (storedTransactions) {
-        transactions = JSON.parse(storedTransactions);
-    } else {
-        transactions = DEFAULT_EXPENSES.map(transaction => ({ ...transaction }));
-        localStorage.setItem("bizTrackTransactions", JSON.stringify(transactions));
-    }
+    const merged = await getDataWithFallback("expenses", "bizTrackTransactions", DEFAULT_EXPENSES);
+    transactions = Array.isArray(merged)
+        ? merged.map((transaction) => ({ ...transaction }))
+        : DEFAULT_EXPENSES.map((transaction) => ({ ...transaction }));
+    localStorage.setItem("bizTrackTransactions", JSON.stringify(transactions));
 
     serialNumberCounter = transactions.length + 1;
     renderTransactions(transactions);
