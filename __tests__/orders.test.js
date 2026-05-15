@@ -95,6 +95,15 @@ describe('window.translateOrderStatusForExport', () => {
     window.getCurrentLanguage.mockReturnValue('en');
   });
 
+  test('translates statuses to Traditional Chinese when lang is zhTW', () => {
+    window.getCurrentLanguage.mockReturnValue('zhTW');
+    expect(window.translateOrderStatusForExport('Pending')).toBe('待處理');
+    expect(window.translateOrderStatusForExport('Processing')).toBe('處理中');
+    expect(window.translateOrderStatusForExport('Shipped')).toBe('已出貨');
+    expect(window.translateOrderStatusForExport('Delivered')).toBe('已送達');
+    window.getCurrentLanguage.mockReturnValue('en');
+  });
+
   test('returns unknown status unchanged', () => {
     window.getCurrentLanguage.mockReturnValue('zh');
     expect(window.translateOrderStatusForExport('Unknown')).toBe('Unknown');
@@ -1093,9 +1102,19 @@ describe('exportToCSV language handling', () => {
     window.getCurrentLang = savedGetLang;
   });
 
+  test('uses zhTW headers when getCurrentLang returns zhTW', () => {
+    const savedGetLang = window.getCurrentLang;
+    window.getCurrentLang = jest.fn(() => 'zhTW');
+    window.translateOrderStatusForExport = window.translateOrderStatusForExport || jest.fn((s) => s);
+    global.URL.createObjectURL = jest.fn(() => 'blob:mock');
+    global.URL.revokeObjectURL = jest.fn();
+    expect(() => window.exportToCSV()).not.toThrow();
+    window.getCurrentLang = savedGetLang;
+  });
+
   test('falls back to en headers when lang is not in headers map (line 358 || branch)', () => {
     const savedGetLang = window.getCurrentLang;
-    window.getCurrentLang = jest.fn(() => 'zhTW');  // not in headers → || headers.en
+    window.getCurrentLang = jest.fn(() => 'fr');
     window.translateOrderStatusForExport = window.translateOrderStatusForExport || jest.fn((s) => s);
     global.URL.createObjectURL = jest.fn(() => 'blob:mock');
     global.URL.revokeObjectURL = jest.fn();

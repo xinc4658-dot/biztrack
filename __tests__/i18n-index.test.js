@@ -165,6 +165,19 @@ describe('window.translateProductName', () => {
     expect(window.translateProductName(null)).toBe(null);
     expect(window.translateProductName(undefined)).toBe(undefined);
   });
+
+  test('translates English product names when language is zhTW', () => {
+    window.changeLanguage('zhTW');
+    expect(window.translateProductName('Beanies')).toBe('無簷便帽');
+    window.changeLanguage('en');
+  });
+
+  test('maps Simplified Chinese product labels to Traditional when language is zhTW', () => {
+    window.changeLanguage('zhTW');
+    expect(window.translateProductName('无檐便帽')).toBe('無簷便帽');
+    expect(window.translateProductName('马克杯')).toBe('馬克杯');
+    window.changeLanguage('en');
+  });
 });
 
 // ── window.translateProductCategory ──────────────────────────────────────
