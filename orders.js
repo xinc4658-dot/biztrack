@@ -27,7 +27,8 @@ window.getCurrentLang = function() {
 window.translateOrderStatusForExport = function(status) {
   const currentLanguage = window.getCurrentLang();
   const statuses = {
-    zh: { "Pending": "待处理", "Processing": "处理中", "Shipped": "已发货", "Delivered": "已送达" }
+    zh: { "Pending": "待处理", "Processing": "处理中", "Shipped": "已发货", "Delivered": "已送达" },
+    zhTW: { "Pending": "待處理", "Processing": "處理中", "Shipped": "已出貨", "Delivered": "已送達" }
   };
   return statuses[currentLanguage]?.[status] || status;
 };
@@ -353,7 +354,8 @@ window.exportToCSV = function() {
   const lang = window.getCurrentLang();
   const headers = {
     en: { orderID:"Order ID", orderDate:"Date", itemName:"Product", itemPrice:"Price", qtyBought:"Qty", shipping:"Shipping", taxes:"Taxes", orderTotal:"Total", orderStatus:"Status" },
-    zh: { orderID:"订单ID", orderDate:"日期", itemName:"产品", itemPrice:"价格", qtyBought:"数量", shipping:"运费", taxes:"税费", orderTotal:"总额", orderStatus:"状态" }
+    zh: { orderID:"订单ID", orderDate:"日期", itemName:"产品", itemPrice:"价格", qtyBought:"数量", shipping:"运费", taxes:"税费", orderTotal:"总额", orderStatus:"状态" },
+    zhTW: { orderID:"訂單ID", orderDate:"訂單日期", itemName:"商品名稱", itemPrice:"商品價格", qtyBought:"購買數量", shipping:"運費", taxes:"稅費", orderTotal:"訂單總額", orderStatus:"訂單狀態" }
   };
   const head = headers[lang] || headers.en;
   const data = orders.map(o => ({
@@ -369,7 +371,11 @@ window.exportToCSV = function() {
   }));
 
   const csv = generateCSV(data, head);
-  const filename = lang === 'zh' ? 'biztrack_订单表.csv' : 'biztrack_orders.csv';
+  const filename = lang === 'zhTW'
+    ? 'biztrack_訂單表.csv'
+    : lang === 'zh'
+      ? 'biztrack_订单表.csv'
+      : 'biztrack_orders.csv';
   downloadCSV(csv, filename);
 };
 

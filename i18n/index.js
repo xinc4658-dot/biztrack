@@ -650,7 +650,15 @@ window.translateProductName = function (name) {
   if (!name) return name;
   const map = translations[currentLanguage]?.productNames;
   if (!map) return name;
-  return map[name] || name;
+  if (map[name]) return map[name];
+  if (currentLanguage === 'zhTW') {
+    const zhMap = translations.zh?.productNames;
+    if (zhMap) {
+      const englishKey = Object.keys(zhMap).find((key) => zhMap[key] === name);
+      if (englishKey && map[englishKey]) return map[englishKey];
+    }
+  }
+  return name;
 };
 
 // 产品描述翻译
